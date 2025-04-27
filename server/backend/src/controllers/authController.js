@@ -41,3 +41,13 @@ export const registerController = async (req, res) => {
     throw new Error("Đăng ký thất bại");
   }
 };
+
+export const logoutController = async (req, res) => {
+  try {
+    // Vì dùng JWT, không cần xóa token ở server
+    // Client sẽ tự xóa token ở phía client
+    res.status(200).json({ message: "Đăng xuất thành công" });
+  } catch (error) {
+    throw new Error("Đăng xuất thất bại");
+  }
+};
