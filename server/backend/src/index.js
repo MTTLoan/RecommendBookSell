@@ -15,7 +15,6 @@ connectDB();
 
 app.use("/api/auth", authRoutes);
 
-// Áp dụng error handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
