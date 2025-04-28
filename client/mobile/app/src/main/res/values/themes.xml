@@ -5,5 +5,10 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
+    <style name="Widget.AppCompat.Button" parent="Base.Widget.AppCompat.Button">
+        <item name="backgroundTint">@null</item> <!-- xóa tint mặc định -->
+    </style>
+
+
     <style name="Theme.Book" parent="Base.Theme.Book" />
 </resources>
