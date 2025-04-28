@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Trạng thái khi nhấn -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/light_gray" /> <!-- nền khi nhấn -->
+            <stroke
+                android:width="2dp"
+                android:color="@color/black" /> <!-- viền giữ nguyên màu đen -->
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Trạng thái bình thường -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent" /> <!-- nền trong suốt -->
+            <stroke
+                android:width="2dp"
+                android:color="@color/black" /> <!-- viền màu đen -->
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+</selector>
