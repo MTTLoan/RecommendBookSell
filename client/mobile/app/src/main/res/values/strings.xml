@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">Book</string>
+    <string name="back">back</string>
+    <string name="login">Đăng nhập</string>
+    <string name="signup">Đăng ký</string>
+    <string name="subSignup">Hãy tạo tài khoản để tiếp tục!</string>
+    <string name="userName.">Tên tài khoản (*)</string>
+    <string name="userName">Tên tài khoản</string>
+    <string name="name_p">Họ và tên (*)</string>
+    <string name="name">Họ và tên</string>
+    <string name="email_p">Email (*)</string>
+    <string name="email">Email</string>
+    <string name="phone_p">Số điện thoại (*)</string>
+    <string name="phone">Số điện thoại</string>
+    <string name="password_p">Mật khẩu (*)</string>
+    <string name="password">Mật khẩu</string>
+    <string name="confirmpw_p">Nhập lại mật khẩu (*)</string>
+    <string name="comfirmpw">Nhập lại mật khẩu</string>
+    <string name="policy">Bằng việc đăng nhập/đăng ký, bạn đồng ý với Điều khoản và Chính sách bảo mật của chúng tôi</string>
 </resources>
