@@ -1,8 +1,13 @@
 package com.example.app.network;
 
+import com.example.app.models.Notification;
 import com.example.app.models.User;
+
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 public interface ApiService {
@@ -21,4 +26,7 @@ public interface ApiService {
             this.confirm_password = confirm_password;
         }
     }
+
+    @GET("api/notifications")
+    Call<List<Notification>> getNotifications();
 }
