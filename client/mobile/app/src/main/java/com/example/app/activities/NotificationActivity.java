@@ -24,7 +24,7 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.notification);
+        setContentView(R.layout.activity_notification);
 
         recyclerView = findViewById(R.id.recyclerViewNotifications);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -36,7 +36,7 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
                 "Đơn hàng SPXVN05578654567 đã được đặt thành công. Ngày giao hàng dự kiến là 10-04-2025. Nhấn vào đây để xem chi tiết đơn hàng.",
                 false, "11:23 09-04-2025"));
         notifications.add(new Notification(2, 1, "Giao hàng thành công",
-                "Đơn hàng SPXVN05578654567 đã giao thành công đến bạn. Nếu bạn chưa nhận hàng hay gặp vấn đề gì, hãy nhấn Trả hàng/Hoàn tiền trước ngày 10-03-2025.",
+                "Đơn hàng SPXVN0578654567 đã giao thành công đến bạn. Nếu bạn chưa nhận hàng hay gặp vấn đề gì, hãy nhấn Trả hàng/Hoàn tiền trước ngày 10-03-2025.",
                 true, "11:23 09-03-2025"));
         notifications.add(new Notification(3, 1, "Đã gửi cho đơn vị vận chuyển",
                 "Đơn hàng SPXVN05578654567 đã được gửi cho đơn vị vận chuyển. Ngày giao hàng dự kiến là 10-03-2025. Nhấn vào đây để xem chi tiết đơn hàng.",
