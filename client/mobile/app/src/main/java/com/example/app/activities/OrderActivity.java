@@ -2,6 +2,7 @@ package com.example.app.activities;
 
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -9,16 +10,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.app.R;
 import com.example.app.adapters.OrderItemAdapter;
-import com.example.app.models.OrderItem;
 import com.example.app.models.Order;
+import com.example.app.models.OrderItem;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class OrderActivity extends AppCompatActivity {
-    private TextView tvOrderCode, tvOrderDate, tvStatus, tvShippingAddress, tvTotalAmount;
+    private TextView tvTitle, tvStatus, tvOrderCode, tvOrderDate, tvShippingAddress, tvTotalGoods, tvShippingFee, tvTotal;
     private RecyclerView rvOrderItems;
     private Button btnCancelOrder;
+    private ImageView ivReturn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,13 +30,17 @@ public class OrderActivity extends AppCompatActivity {
         setContentView(R.layout.activity_order);
 
         // Ánh xạ view
+        tvTitle = findViewById(R.id.tvTitle);
+        tvStatus = findViewById(R.id.tvStatus);
         tvOrderCode = findViewById(R.id.tvOrderCode);
         tvOrderDate = findViewById(R.id.tvOrderDate);
-        tvStatus = findViewById(R.id.tvStatus);
         tvShippingAddress = findViewById(R.id.tvShippingAddress);
-        tvTotalAmount = findViewById(R.id.tvTotalAmount);
+        tvTotalGoods = findViewById(R.id.tvTotalGoods);
+        tvShippingFee = findViewById(R.id.tvShippingFee);
+        tvTotal = findViewById(R.id.tvTotal);
         rvOrderItems = findViewById(R.id.rvOrderItems);
         btnCancelOrder = findViewById(R.id.btnCancelOrder);
+        ivReturn = findViewById(R.id.ivReturn);
 
         // Tạo dữ liệu giả theo ví dụ đơn hàng
         List<OrderItem> items = new ArrayList<>();
@@ -55,17 +63,36 @@ public class OrderActivity extends AppCompatActivity {
                 "0123 456 789" // user_phone_number (Users)
         );
 
+        // Định dạng ngày giờ
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+        String formattedDate = "";
+        try {
+            formattedDate = outputFormat.format(inputFormat.parse(order.getOrderDate()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // Gán dữ liệu vào view
-        tvOrderCode.setText(order.getId());
-        tvOrderDate.setText(order.getOrderDate());
-        tvStatus.setText(order.getStatus());
-        tvShippingAddress.setText("Địa chỉ giao hàng\n" + order.getUserFullName() + "\n" +
+        tvTitle.setText("THÔNG TIN ĐƠN HÀNG");
+        tvStatus.setText("Trạng thái: " + (order.getStatus().equals("completed") ? "Hoàn thành" : order.getStatus()));
+        tvOrderCode.setText(String.valueOf(order.getId()));
+        tvOrderDate.setText(formattedDate);
+        tvShippingAddress.setText(order.getUserFullName() + "\n" +
                 order.getUserPhoneNumber() + "\n" +
                 order.getShippingAddress() + ", " +
                 order.getShippingAddressWard() + ", " +
                 order.getShippingAddressDistrict() + ", " +
                 order.getShippingAddressProvince());
-        tvTotalAmount.setText(String.format("%,.0fđ", order.getTotalAmount()));
+
+        // Tính tổng tiền hàng, phí vận chuyển, thành tiền
+        double totalGoods = order.getTotalAmount();
+        double shippingFee = 20000; // Giả định phí vận chuyển
+        double total = totalGoods + shippingFee;
+
+        tvTotalGoods.setText(String.format(Locale.forLanguageTag("vi-VN"), "%,.0fđ", totalGoods));
+        tvShippingFee.setText(String.format(Locale.forLanguageTag("vi-VN"), "%,.0fđ", shippingFee));
+        tvTotal.setText(String.format(Locale.forLanguageTag("vi-VN"), "%,.0fđ", total));
 
         // Thiết lập RecyclerView
         rvOrderItems.setLayoutManager(new LinearLayoutManager(this));
@@ -74,7 +101,10 @@ public class OrderActivity extends AppCompatActivity {
 
         // Sự kiện nút Hủy đơn hàng
         btnCancelOrder.setOnClickListener(v -> {
-
+            // Xử lý hủy đơn hàng
         });
+
+        // Sự kiện nút quay lại
+        ivReturn.setOnClickListener(v -> finish());
     }
 }

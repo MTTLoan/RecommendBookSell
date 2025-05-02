@@ -73,7 +73,7 @@
         android:id="@+id/registerForm"
         android:layout_width="0dp"
         android:layout_height="710dp"
-        android:background="@drawable/rounded_top"
+        android:background="@drawable/top_white"
         android:paddingHorizontal="24dp"
         android:paddingTop="48dp"
         android:paddingBottom="90dp"
