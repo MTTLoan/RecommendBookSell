@@ -16,5 +16,7 @@
     <string name="password">Mật khẩu</string>
     <string name="confirmpw_p">Nhập lại mật khẩu (*)</string>
     <string name="comfirmpw">Nhập lại mật khẩu</string>
-    <string name="policy">Bằng việc đăng nhập hoặc đăng ký, bạn đồng ý với Điều khoản và Chính sách bảo mật của chúng tôi</string>
+    <string name="policy">Bằng việc đăng nhập/đăng ký, bạn đồng ý với Điều khoản và Chính sách bảo mật của chúng tôi</string>
+    <string name="quantity_label">SL: %d</string>
+    <string name="price_format">%,.0fđ</string>
 </resources>

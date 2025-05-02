@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:background="@drawable/bg_white"
+    android:layout_marginBottom="12dp">
+
+    <!-- Hình ảnh sách -->
+    <ImageView
+        android:id="@+id/iv_book_image"
+        android:layout_width="25dp"
+        android:layout_height="30dp"
+        android:src="@drawable/placeholder_book"
+        android:scaleType="centerCrop"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/tv_book_name"/>
+
+    <!-- Tiêu đề sách -->
+    <TextView
+        android:id="@+id/tv_book_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Sách Mindset tâm lý học thành công - Carol Dw..."
+        android:textSize="14sp"
+        android:fontFamily="@font/roboto_bold"
+        android:textColor="@android:color/black"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/iv_book_image"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Xếp hạng -->
+    <TextView
+        android:id="@+id/tv_rating_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Xếp hạng"
+        android:textSize="14sp"
+        android:fontFamily="@font/roboto_regular"
+        android:textColor="#1A1B36"
+        android:layout_marginEnd="8dp"
+        android:paddingTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/iv_book_image"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <RatingBar
+        android:id="@+id/rating_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="5"
+        android:stepSize="1.0"
+        style="@style/Widget.AppCompat.RatingBar.Small"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_rating_label"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_review_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Viết đánh giá"
+        android:textSize="14sp"
+        android:fontFamily="@font/roboto_regular"
+        android:textColor="#1A1B36"
+        android:layout_marginBottom="8dp"
+        android:paddingTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/rating_bar"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- Phần "Viết đánh giá" (đóng khung với background #FAFAFA) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_review_section"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_fafafa"
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_review_label"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Đánh giá: Nội dung -->
+        <TextView
+            android:id="@+id/tv_content_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nội dung: "
+            android:fontFamily="@font/roboto_regular"
+            android:textSize="12sp"
+            android:textColor="@android:color/black"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/et_content"/>
+
+        <EditText
+            android:id="@+id/et_content"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Nhập đánh giá nội dung..."
+            android:textSize="12sp"
+            android:fontFamily="@font/roboto_regular"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888"
+            android:background="@null"
+            android:layout_marginBottom="4dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tv_content_label"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Đánh giá: Bao bì -->
+        <TextView
+            android:id="@+id/tv_packaging_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bao bì: "
+            android:textSize="12sp"
+            android:fontFamily="@font/roboto_regular"
+            android:textColor="@android:color/black"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintTop_toBottomOf="@id/et_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/et_packaging"/>
+
+        <EditText
+            android:id="@+id/et_packaging"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Nhập đánh giá bao bì..."
+            android:textSize="12sp"
+            android:fontFamily="@font/roboto_regular"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888"
+            android:background="@null"
+            android:layout_marginBottom="4dp"
+            app:layout_constraintTop_toBottomOf="@id/et_content"
+            app:layout_constraintStart_toEndOf="@id/tv_packaging_label"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Đánh giá: Đóng gói -->
+        <TextView
+            android:id="@+id/tv_shipping_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đóng gói: "
+            android:textSize="12sp"
+            android:fontFamily="@font/roboto_regular"
+            android:textColor="@android:color/black"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintTop_toBottomOf="@id/et_packaging"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/et_shipping"/>
+
+        <EditText
+            android:id="@+id/et_shipping"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Nhập đánh giá đóng gói..."
+            android:textSize="12sp"
+            android:fontFamily="@font/roboto_regular"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888"
+            android:background="@null"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintTop_toBottomOf="@id/et_packaging"
+            app:layout_constraintStart_toEndOf="@id/tv_shipping_label"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Phần viết đánh giá riêng -->
+        <EditText
+            android:id="@+id/et_comment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Nhập đánh giá của bạn..."
+            android:textSize="12sp"
+            android:fontFamily="@font/roboto_regular"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888"
+            android:background="@null"
+            app:layout_constraintTop_toBottomOf="@id/et_shipping"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
