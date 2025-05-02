@@ -43,7 +43,7 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
         ));
         Picasso.get()
                 .load(item.getImageUrl())
-                .placeholder(android.R.drawable.ic_menu_gallery) // Placeholder mặc định của Android
+                .placeholder(android.R.drawable.ic_menu_gallery)
                 .into(holder.ivBookImage);
     }
 
