@@ -3,6 +3,8 @@ import express from "express";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
+import otpRoutes from "./routes/otp.js";
+import verifyEmailRoutes from "./routes/verifyEmail.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 dotenv.config();
@@ -13,7 +15,12 @@ app.use(express.json());
 
 connectDB();
 
+// login, register, logout routes
 app.use("/api/auth", authRoutes);
+
+// otp routes
+app.use("/api/otp", otpRoutes);
+app.use("/api/verify_email", verifyEmailRoutes);
 
 app.use(errorHandler);
 

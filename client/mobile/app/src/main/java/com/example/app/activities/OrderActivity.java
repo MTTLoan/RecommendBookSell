@@ -59,8 +59,8 @@ public class OrderActivity extends AppCompatActivity {
                 "TP.HCM", // shipping_address_province
                 "291 Pasteur", // shipping_address
                 items,
-                "Mai Thị Thanh Loan", // user_full_name (Users)
-                "0123 456 789" // user_phone_number (Users)
+                "Mai Thị Thanh Loan", // user_full_name (User)
+                "0123 456 789" // user_phone_number (User)
         );
 
         // Định dạng ngày giờ

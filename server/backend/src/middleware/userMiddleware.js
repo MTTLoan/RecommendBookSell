@@ -123,7 +123,7 @@ export const registerValidator = validate({
     ...emailSchema,
     custom: {
       options: async (value) => {
-        const user = await userService.users.findOne({ email: value });
+        const user = await userService.User.findOne({ email: value });
         if (user) {
           throw new Error("Email đã tồn tại");
         }
@@ -135,7 +135,7 @@ export const registerValidator = validate({
     ...phoneNumberSchema,
     custom: {
       options: async (value) => {
-        const user = await userService.users.findOne({ phoneNumber: value });
+        const user = await userService.User.findOne({ phoneNumber: value });
         if (user) {
           throw new Error("Số điện thoại đã tồn tại");
         }
