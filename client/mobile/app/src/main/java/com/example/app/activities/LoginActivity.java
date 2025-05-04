@@ -76,55 +76,64 @@ public class LoginActivity extends AppCompatActivity {
             OnBackPressedDispatcher onBackPressedDispatcher = null;
             onBackPressedDispatcher.onBackPressed();  // Sử dụng dispatcher thay vì onBackPressed()
         });
-        
-        // Sự kiện nhấn "Đăng ký"
-        tbtnLogin.setOnClickListener(v -> {
-            Log.d(TAG, "Signup link clicked");
-            startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
-            finish();
-        });
 
-        // Xử lý sự kiện cho nút Đăng nhập
         btnLogin.setOnClickListener(v -> {
-            String username = etEmail.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
+            // Hardcode credentials
+            String email = "ngoclinhruby711@gmail.com";
+            String password = "Password123!";
 
-            // Kiểm tra các trường có rỗng không
-            if (username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
-                return;
-            }
+            // Tạo request body
+            UserLoginRequest request = new UserLoginRequest(email, password);
 
-            // Gửi yêu cầu đăng nhập
-            UserLoginRequest request = new UserLoginRequest(username, password);
+            // Log request body
+            Log.d(TAG, "Request Body: email=" + email + ", password=" + password);
+            Log.d(TAG, "UserLoginRequest: email=" + request.getEmail() + ", password=" + request.getPassword());
+
+            // Gọi API đăng nhập
             apiService.login(request).enqueue(new Callback<User>() {
                 @Override
                 public void onResponse(Call<User> call, Response<User> response) {
+                    Log.d(TAG, "Request URL: " + call.request().url());
+                    Log.d(TAG, "Response Code: " + response.code());
+                    Log.d(TAG, "Response Headers: " + response.headers());
                     if (response.isSuccessful() && response.body() != null) {
                         User user = response.body();
-                        String token = user.getToken();
-                        if (token != null) {
-                            Log.d(TAG, "Token received: " + token);
-                            AuthUtils.saveToken(LoginActivity.this, token);
-                            Toast.makeText(LoginActivity.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(LoginActivity.this, LoginActivity.class));
-                            finish();
-                        } else {
-                            Log.d(TAG, "Token is null");
-                            Toast.makeText(LoginActivity.this, "Không nhận được token", Toast.LENGTH_SHORT).show();
-                        }
+                        Toast.makeText(LoginActivity.this, "Đăng nhập thành công: " + user.getFullName(), Toast.LENGTH_SHORT).show();
+
+                        // Lưu token vào SharedPreferences
+                        AuthUtils.saveToken(LoginActivity.this, user.getToken());
+
+                        // Chuyển hướng đến NotificationActivity
+                        Intent intent = new Intent(LoginActivity.this, NotificationActivity.class);
+                        startActivity(intent);
+                        finish();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Thông tin đăng nhập không chính xác", Toast.LENGTH_SHORT).show();
+                        String errorMessage = "Lỗi đăng nhập (Mã: " + response.code() + "): ";
+                        if (response.errorBody() != null) {
+                            try {
+                                String errorBody = response.errorBody().string();
+                                errorMessage += errorBody;
+                                Log.e(TAG, "Error Body: " + errorBody);
+                            } catch (Exception e) {
+                                errorMessage += "Không thể đọc lỗi từ server";
+                                Log.e(TAG, "Error parsing errorBody", e);
+                            }
+                        } else {
+                            errorMessage += "Không có thông tin lỗi";
+                        }
+                        Log.e(TAG, errorMessage);
+                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<User> call, Throwable t) {
-                    Toast.makeText(LoginActivity.this, "Đăng nhập thất bại: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    String errorMessage = "Đăng nhập thất bại: " + t.getMessage();
+                    Log.e(TAG, errorMessage, t);
+                    Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 }
             });
         });
-
 
         // Xử lý sự kiện cho "Quên mật khẩu"
         tvForgotPassword.setOnClickListener(v -> {

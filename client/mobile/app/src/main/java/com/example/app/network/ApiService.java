@@ -47,21 +47,11 @@ public interface ApiService {
     @GET("api/notifications")
     Call<List<Notification>> getNotifications();
 
-    /**
-     * Đăng nhập bằng email và password
-     * @param request chứa email và password
-     * @return thông tin User nếu thành công
-     */
     @POST("/api/auth/login")
     @Headers("Content-Type: application/json")
     Call<User> login(@Body UserLoginRequest request);
 
-    /**
-     * Đăng nhập bằng Google - sử dụng idToken nhận từ Google Sign-In
-     * @param request chứa email và idToken
-     * @return thông tin User nếu thành công
-     */
-    @POST("/api/auth/google-login")
-    @Headers("Content-Type: application/json")
+
+    @POST("google-login")
     Call<User> loginWithGoogle(@Body UserLoginRequest request);
 }
