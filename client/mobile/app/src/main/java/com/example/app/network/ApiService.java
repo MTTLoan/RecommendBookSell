@@ -30,16 +30,16 @@ public interface ApiService {
     }
 
     public class UserLoginRequest {
-        private final String email;
+        private final String username;
         private final String password;
 
         public UserLoginRequest(String email, String password) {
-            this.email = email;
+            this.username = email;
             this.password = password;
         }
 
         // Getter (nếu cần)
-        public String getEmail() { return email; }
+        public String getEmail() { return username; }
         public String getPassword() { return password; }
     }
 

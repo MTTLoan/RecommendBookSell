@@ -2,6 +2,7 @@ package com.example.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.service.voice.VoiceInteractionSession;
 import android.text.InputType;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -11,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.app.R;
@@ -68,11 +70,13 @@ public class LoginActivity extends AppCompatActivity {
         // Khởi tạo ApiService
         apiService = RetrofitClient.getApiService();
 
+        // Sự kiện nhấn nút "Quay lại"
         ivReturn.setOnClickListener(v -> {
             Log.d(TAG, "Return button clicked");
-            finish(); // Đóng Activity hiện tại và quay lại trang trước trong stack.
+            OnBackPressedDispatcher onBackPressedDispatcher = null;
+            onBackPressedDispatcher.onBackPressed();  // Sử dụng dispatcher thay vì onBackPressed()
         });
-
+        
         // Sự kiện nhấn "Đăng ký"
         tbtnLogin.setOnClickListener(v -> {
             Log.d(TAG, "Signup link clicked");
@@ -82,23 +86,45 @@ public class LoginActivity extends AppCompatActivity {
 
         // Xử lý sự kiện cho nút Đăng nhập
         btnLogin.setOnClickListener(v -> {
-            Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
             String username = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
+
             // Kiểm tra các trường có rỗng không
             if (username.isEmpty() || password.isEmpty()) {
-                Log.d(TAG, "Validation failed: Some fields are empty");
-                Toast.makeText(this, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            Log.d(TAG, "All fields are filled. Sending request to API...");
-            Log.d(TAG, "Request data: username=" + username + ", password=" + password);
+            // Gửi yêu cầu đăng nhập
+            UserLoginRequest request = new UserLoginRequest(username, password);
+            apiService.login(request).enqueue(new Callback<User>() {
+                @Override
+                public void onResponse(Call<User> call, Response<User> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        User user = response.body();
+                        String token = user.getToken();
+                        if (token != null) {
+                            Log.d(TAG, "Token received: " + token);
+                            AuthUtils.saveToken(LoginActivity.this, token);
+                            Toast.makeText(LoginActivity.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(LoginActivity.this, LoginActivity.class));
+                            finish();
+                        } else {
+                            Log.d(TAG, "Token is null");
+                            Toast.makeText(LoginActivity.this, "Không nhận được token", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Thông tin đăng nhập không chính xác", Toast.LENGTH_SHORT).show();
+                    }
+                }
 
-            Intent intent = new Intent(LoginActivity.this, NotificationActivity.class);
-            startActivity(intent);
-            finish();
+                @Override
+                public void onFailure(Call<User> call, Throwable t) {
+                    Toast.makeText(LoginActivity.this, "Đăng nhập thất bại: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
+
 
         // Xử lý sự kiện cho "Quên mật khẩu"
         tvForgotPassword.setOnClickListener(v -> {
