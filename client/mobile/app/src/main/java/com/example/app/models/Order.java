@@ -12,8 +12,8 @@ public class Order {
     private String shippingAddressProvince;
     private String shippingAddress;
     private List<OrderItem> items;
-    private String userFullName; // Lấy từ bảng Users
-    private String userPhoneNumber; // Lấy từ bảng Users
+    private String userFullName; // Lấy từ bảng User
+    private String userPhoneNumber; // Lấy từ bảng User
 
     public Order(int id, int userId, String orderDate, double totalAmount, String status,
                  String shippingAddressWard, String shippingAddressDistrict, String shippingAddressProvince,
