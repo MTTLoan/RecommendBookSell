@@ -79,7 +79,7 @@
         android:paddingTop="48dp"
         android:paddingBottom="90dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/registerHeader">
 
@@ -89,7 +89,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="35dp"
             android:paddingBottom="10dp"
-            android:text="Xác thực OTP"
+            android:text="@string/confirmOTP"
             android:textColor="@android:color/black"
             android:textSize="24sp"
             android:textStyle="bold"
@@ -104,7 +104,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:paddingBottom="15dp"
-            android:text="Mã OTP đã được gửi đến email của bạn!"
+            android:text="@string/OTPsent"
             android:textColor="@android:color/black"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -196,27 +196,26 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="64dp"
             android:layout_marginTop="25dp"
-            android:text="Không nhận được OTP?"
+            android:text="@string/noreceiveOTP"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/etOTP" />
 
-        <Button
+        <TextView
             style="@style/Button.NoDefault"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="9dp"
-            android:backgroundTint="@color/white"
+            android:layout_marginTop="25dp"
+            android:layout_marginStart="10dp"
             android:padding="0dp"
-            android:text="Gửi lại"
-            android:textColor="@color/black"
+            android:text="@string/resend"
+            android:textColor="@color/red"
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@id/tvResendOTP"
             app:layout_constraintTop_toBottomOf="@id/etOTP" />
-
 
         <Button
             android:id="@+id/btnCancel"
@@ -226,7 +225,7 @@
             android:layout_marginStart="24dp"
             android:layout_marginTop="28dp"
             android:background="@drawable/button_border"
-            android:text="Hủy"
+            android:text="@string/cancel"
             android:textColor="@android:color/black"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvResendOTP" />
@@ -239,7 +238,7 @@
             android:layout_marginTop="28dp"
             android:background="@drawable/btn_fill"
             android:backgroundTint="@color/green"
-            android:text="Tiếp tục"
+            android:text="@string/next"
             android:textColor="@android:color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.789"
