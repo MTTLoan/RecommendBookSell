@@ -16,7 +16,16 @@
     <string name="password">Mật khẩu</string>
     <string name="confirmpw_p">Nhập lại mật khẩu (*)</string>
     <string name="comfirmpw">Nhập lại mật khẩu</string>
-    <string name="policy">Bằng việc đăng nhập/đăng ký, bạn đồng ý với Điều khoản và Chính sách bảo mật của chúng tôi</string>
+    <string name="policy">Bằng việc đăng nhập hoặc đăng ký, bạn đồng ý với Điều khoản và Chính sách bảo mật của chúng tôi</string>
     <string name="quantity_label">SL: %d</string>
     <string name="price_format">%,.0fđ</string>
+    <string name="subLogin">Đăng nhập để bắt đầu hành trình khám phá.</string>
+    <string name="loginViaGG">Tiếp tục với Google</string>
+    <string name="next">Tiếp tục</string>
+    <string name="cancel">Hủy</string>
+    <string name="resend">Gửi lại</string>
+    <string name="noreceiveOTP">Không nhận được OTP?</string>
+    <string name="OTPsent">Mã OTP đã được gửi đến email của bạn!</string>
+    <string name="confirmOTP">Xác thực OTP</string>
+    <string name="google_client_id">871279169744-q6kb05l6b161cs2nmjkknkhu441ot970.apps.googleusercontent.com.apps.googleusercontent.com</string>
 </resources>

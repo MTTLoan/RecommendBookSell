@@ -2,7 +2,9 @@ package com.example.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -134,5 +136,35 @@ public class RegisterActivity extends AppCompatActivity {
             startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
             finish();
         });
+
+        EditText etPassword = findViewById(R.id.etPassword);
+        EditText etConfirmPassword = findViewById(R.id.etConfirmPassword);
+
+        setupPasswordToggle(etPassword, R.drawable.visibility_24px, R.drawable.visibility_off_24px);
+        setupPasswordToggle(etConfirmPassword, R.drawable.visibility_24px, R.drawable.visibility_off_24px);
+
     }
+
+    private void setupPasswordToggle(EditText editText, int iconShow, int iconHide) {
+        editText.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                int drawableEnd = editText.getCompoundDrawables()[2] != null
+                        ? editText.getCompoundDrawables()[2].getBounds().width() : 0;
+
+                if (event.getRawX() >= (editText.getRight() - drawableEnd - editText.getPaddingEnd())) {
+                    if (editText.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
+                        editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                        editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, iconShow, 0);
+                    } else {
+                        editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        editText.setCompoundDrawablesWithIntrinsicBounds(0, 0, iconHide, 0);
+                    }
+                    editText.setSelection(editText.length());
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
 }

@@ -8,11 +8,13 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Headers;
 import retrofit2.http.POST;
 
 public interface ApiService {
     @POST("auth/register")
     Call<User> register(@Body RegisterRequest request);
+
 
     class RegisterRequest {
         String username, fullName, email, phoneNumber, password, confirm_password;
@@ -27,6 +29,29 @@ public interface ApiService {
         }
     }
 
+    public class UserLoginRequest {
+        private final String username;
+        private final String password;
+
+        public UserLoginRequest(String email, String password) {
+            this.username = email;
+            this.password = password;
+        }
+
+        // Getter (nếu cần)
+        public String getEmail() { return username; }
+        public String getPassword() { return password; }
+    }
+
+
     @GET("api/notifications")
     Call<List<Notification>> getNotifications();
+
+    @POST("/api/auth/login")
+    @Headers("Content-Type: application/json")
+    Call<User> login(@Body UserLoginRequest request);
+
+
+    @POST("google-login")
+    Call<User> loginWithGoogle(@Body UserLoginRequest request);
 }

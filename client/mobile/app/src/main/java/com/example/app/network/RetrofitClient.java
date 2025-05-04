@@ -9,10 +9,11 @@ public class RetrofitClient {
     public static ApiService getApiService() {
         if (retrofit == null) {
             retrofit = new Retrofit.Builder()
-                    .baseUrl("http://54.151.206.48:5000/api/")
+                    .baseUrl("http:10.0.2.2:5000/api/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
         return retrofit.create(ApiService.class);
     }
+
 }
