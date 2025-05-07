@@ -2,6 +2,7 @@ package com.example.app.network;
 
 import com.example.app.models.Notification;
 import com.example.app.models.User;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
@@ -36,13 +37,26 @@ public interface ApiService {
         public UserLoginRequest(String email, String password) {
             this.email = email;
             this.password = password;
+            this.idToken = null; // Đảm bảo idToken không được gửi
         }
-
         // Getter (nếu cần)
         public String getEmail() { return email; }
         public String getPassword() { return password; }
     }
 
+        // Getters
+        public String getEmail() {
+            return email;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public String getIdToken() {
+            return idToken;
+        }
+    }
 
     @GET("api/notifications")
     Call<List<Notification>> getNotifications();
@@ -52,6 +66,6 @@ public interface ApiService {
     Call<User> login(@Body UserLoginRequest request);
 
 
-    @POST("google-login")
+    @POST("/api/auth/login/google")
     Call<User> loginWithGoogle(@Body UserLoginRequest request);
 }

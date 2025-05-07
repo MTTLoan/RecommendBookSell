@@ -1,0 +1,52 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@android:color/white"
+    android:elevation="4dp"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="35dp">
+
+    <!-- Logo + Tên -->
+    <ImageView
+        android:id="@+id/logoIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/logo"
+        android:contentDescription="Logo"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <!-- Icon giỏ hàng -->
+    <ImageView
+        android:id="@+id/cartIcon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/bg_circle_green"
+        android:src="@drawable/ic_shopping_cart_24px"
+        android:padding="6dp"
+        android:contentDescription="Cart"
+        app:layout_constraintEnd_toStartOf="@id/notificationIcon"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="8dp"
+        app:tint="@color/green" />
+
+    <!-- Icon chuông -->
+    <ImageView
+        android:id="@+id/notificationIcon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/bg_circle_green"
+        android:src="@drawable/ic_notifications_24px"
+        android:padding="6dp"
+        android:contentDescription="Notification"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:tint="@color/yellow" />
+</androidx.constraintlayout.widget.ConstraintLayout>
