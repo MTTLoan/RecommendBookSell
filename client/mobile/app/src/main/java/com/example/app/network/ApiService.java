@@ -31,18 +31,28 @@ public interface ApiService {
     }
 
     public class UserLoginRequest {
-        private final String email;
-        private final String password;
+        @SerializedName("email")
+        private String email;
 
-        public UserLoginRequest(String email, String password) {
+        @SerializedName("password")
+        private String password; // Dùng cho đăng nhập thông thường
+
+        @SerializedName("idToken")
+        private String idToken;  // Dùng cho đăng nhập Google
+
+        // Constructor cho đăng nhập thông thường (email, password)
+        public UserLoginRequest(String email, String password, boolean isNormalLogin) {
             this.email = email;
             this.password = password;
             this.idToken = null; // Đảm bảo idToken không được gửi
         }
-        // Getter (nếu cần)
-        public String getEmail() { return email; }
-        public String getPassword() { return password; }
-    }
+
+        // Constructor cho đăng nhập Google (email, idToken)
+        public UserLoginRequest(String email, String idToken) {
+            this.email = email;
+            this.idToken = idToken;
+            this.password = null; // Đảm bảo password không được gửi
+        }
 
         // Getters
         public String getEmail() {
@@ -61,7 +71,7 @@ public interface ApiService {
     @GET("api/notifications")
     Call<List<Notification>> getNotifications();
 
-    @POST("api/auth/login")
+    @POST("/api/auth/login")
     @Headers("Content-Type: application/json")
     Call<User> login(@Body UserLoginRequest request);
 

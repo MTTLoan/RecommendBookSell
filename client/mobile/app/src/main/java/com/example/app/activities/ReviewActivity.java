@@ -80,7 +80,40 @@ public class ReviewActivity extends AppCompatActivity {
 
     // Tải dữ liệu sách ảo (không có đánh giá)
     private void loadFakeBooks() {
-        bookList.add(new Book(1, "Sách Mindset Tâm Lý Học Thành Công - Carol Dw...", "Mô tả sách 1", "image1.jpg", 100000, 5.0f, 10, 50, 1, "2025-04-30"));
-        bookList.add(new Book(2, "Sách Tâm Lý Học Về Tiền", "Mô tả sách 2", "image2.jpg", 120000, 5.0f, 8, 30, 1, "2025-04-30"));
+        // Tạo danh sách ảnh cho sách 1
+        List<Book.Image> images1 = new ArrayList<>();
+        images1.add(new Book.Image("https://example.com/image1.jpg", "Image 1 alt"));
+
+        // Tạo danh sách ảnh cho sách 2
+        List<Book.Image> images2 = new ArrayList<>();
+        images2.add(new Book.Image("https://example.com/image2.jpg", "Image 2 alt"));
+
+        // Thêm sách vào danh sách
+        bookList.add(new Book(
+                1,
+                "Sách Mindset Tâm Lý Học Thành Công - Carol Dw...",
+                "Mô tả sách 1",
+                images1,
+                100000,
+                5.0, // averageRating
+                10,  // ratingCount
+                50,  // stockQuantity
+                1,   // categoryId
+                "2025-04-30",
+                "Carol Dweck" // author
+        ));
+        bookList.add(new Book(
+                2,
+                "Sách Tâm Lý Học Về Tiền",
+                "Mô tả sách 2",
+                images2,
+                120000,
+                5.0, // averageRating
+                8,   // ratingCount
+                30,  // stockQuantity
+                1,   // categoryId
+                "2025-04-30",
+                "Tác giả 2" // author
+        ));
     }
 }

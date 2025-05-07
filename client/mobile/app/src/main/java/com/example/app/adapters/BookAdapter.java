@@ -15,6 +15,7 @@ import com.example.app.R;
 import com.example.app.activities.BookDetailActivity;
 import com.example.app.models.Book;
 import com.example.app.models.Category;
+
 import java.util.List;
 
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder> {
