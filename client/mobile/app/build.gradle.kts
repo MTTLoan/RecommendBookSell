@@ -51,5 +51,6 @@ dependencies {
     implementation ("com.google.android.gms:play-services-auth:19.0.0")
     implementation("androidx.viewpager2:viewpager2:1.1.0")
     implementation ("androidx.recyclerview:recyclerview:1.3.2")
+    implementation ("com.squareup.okhttp3:okhttp:4.12.0")
 }
 
