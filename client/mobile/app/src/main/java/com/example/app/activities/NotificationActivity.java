@@ -46,12 +46,8 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
         recyclerView.setAdapter(adapter);
 
         // Sự kiện nhấn nút quay lại
-        ivReturn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish(); // Đóng Activity và quay lại màn hình trước
-            }
-        });
+        // Back button
+        ivReturn.setOnClickListener(v -> finish());
     }
 
     @Override
