@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import bcryptjs from "bcryptjsjs";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { userService } from "../services/userService.js";
 import { sendVerificationOTPEmail } from "./email_verificationController.js";
@@ -16,7 +16,7 @@ export const registerController = async (req, res) => {
       fullName,
       email,
       phoneNumber,
-      password: await bcryptjs.hash(password, 10),
+      password: await bcrypt.hash(password, 10),
       role: "user",
     });
     await user.save();
@@ -69,7 +69,7 @@ export const loginController = async (req, res) => {
       });
     }
 
-    const isMatch = await bcryptjs.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(400).json({
