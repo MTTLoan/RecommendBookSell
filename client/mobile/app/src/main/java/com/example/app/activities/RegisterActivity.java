@@ -125,10 +125,7 @@ public class RegisterActivity extends AppCompatActivity {
         });
 
         // Sự kiện nhấn nút "Quay lại"
-        ivReturn.setOnClickListener(v -> {
-            Log.d(TAG, "Return button clicked");
-            finish();
-        });
+        ivReturn.setOnClickListener(v -> finish());
 
         // Sự kiện nhấn "Đăng nhập"
         tbtnLogin.setOnClickListener(v -> {

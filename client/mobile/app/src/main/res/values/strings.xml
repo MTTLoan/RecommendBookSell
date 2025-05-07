@@ -27,5 +27,8 @@
     <string name="noreceiveOTP">Không nhận được OTP?</string>
     <string name="OTPsent">Mã OTP đã được gửi đến email của bạn!</string>
     <string name="confirmOTP">Xác thực OTP</string>
-    <string name="google_client_id">871279169744-q6kb05l6b161cs2nmjkknkhu441ot970.apps.googleusercontent.com.apps.googleusercontent.com</string>
+    <string name="google_client_id">871279169744-q6kb05l6b161cs2nmjkknkhu441ot970.apps.googleusercontent.com</string>
+    <string name="resetPassword">Đặt lại mật khẩu</string>
+    <string name="back_Login">QUAY LẠI ĐĂNG NHẬP</string>
+    <string name="old_password">Mật khẩu cũ</string>
 </resources>
