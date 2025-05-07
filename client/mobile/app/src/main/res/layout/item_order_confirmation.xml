@@ -3,45 +3,60 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp">
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="6dp"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_fafafa">
 
+    <!-- Ảnh sách -->
     <ImageView
         android:id="@+id/iv_book_image"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="48dp"
+        android:layout_height="77dp"
         android:scaleType="centerCrop"
         android:contentDescription="Ảnh sách"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- Tên sách -->
     <TextView
         android:id="@+id/tv_book_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Tên sách"
+        android:maxLines="2"
+        android:ellipsize="end"
         android:textSize="14sp"
-        android:layout_marginStart="8dp"
+        android:fontFamily="@font/roboto_medium"
+        android:textColor="@color/black"
+        android:layout_marginStart="10dp"
         app:layout_constraintTop_toTopOf="@id/iv_book_image"
         app:layout_constraintStart_toEndOf="@id/iv_book_image"
-        app:layout_constraintEnd_toStartOf="@id/tv_quantity" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Số lượng -->
     <TextView
         android:id="@+id/tv_quantity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="x1"
-        android:textSize="14sp"
-        app:layout_constraintTop_toTopOf="@id/iv_book_image"
-        app:layout_constraintEnd_toStartOf="@id/tv_price" />
+        android:text="SL: 1"
+        android:textSize="12sp"
+        android:fontFamily="@font/roboto_regular"
+        android:textColor="@color/black"
+        android:layout_marginStart="10dp"
+        app:layout_constraintStart_toEndOf="@id/iv_book_image"
+        app:layout_constraintBottom_toBottomOf="@id/iv_book_image" />
 
+    <!-- Giá -->
     <TextView
         android:id="@+id/tv_price"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="0 VNĐ"
-        android:textSize="14sp"
-        app:layout_constraintTop_toTopOf="@id/iv_book_image"
+        android:textSize="12sp"
+        android:fontFamily="@font/roboto_regular"
+        android:textColor="@color/black"
+        app:layout_constraintTop_toTopOf="@id/tv_quantity"
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

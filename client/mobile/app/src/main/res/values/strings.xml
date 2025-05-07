@@ -31,4 +31,7 @@
     <string name="resetPassword">Đặt lại mật khẩu</string>
     <string name="back_Login">QUAY LẠI ĐĂNG NHẬP</string>
     <string name="old_password">Mật khẩu cũ</string>
+    <string name="prompt_province">Chọn tỉnh/thành phố</string>
+    <string name="prompt_district">Chọn quận/huyện</string>
+    <string name="prompt_ward">Chọn phường/xã</string>
 </resources>
