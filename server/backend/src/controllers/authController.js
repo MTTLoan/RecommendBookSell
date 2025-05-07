@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import bcrypt from "bcryptjs";
+import bcryptjs from "bcryptjsjs";
 import jwt from "jsonwebtoken";
 import { userService } from "../services/userService.js";
 import { sendVerificationOTPEmail } from "./email_verificationController.js";
@@ -16,7 +16,7 @@ export const registerController = async (req, res) => {
       fullName,
       email,
       phoneNumber,
-      password: await bcrypt.hash(password, 10),
+      password: await bcryptjs.hash(password, 10),
       role: "user",
     });
     await user.save();
@@ -69,7 +69,7 @@ export const loginController = async (req, res) => {
       });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcryptjs.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(400).json({
@@ -123,55 +123,58 @@ export const logoutController = async (req, res) => {
 };
 
 // Google login controller
-import { OAuth2Client } from 'google-auth-library';
+import { OAuth2Client } from "google-auth-library";
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export const loginWithGoogle = async (req, res) => {
   const { email, idToken } = req.body;
-  console.log('Received request:', { email, idToken });
+  console.log("Received request:", { email, idToken });
 
   try {
-      const ticket = await client.verifyIdToken({
-          idToken,
-          audience: process.env.GOOGLE_CLIENT_ID,
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    console.log("Token payload:", payload);
+
+    if (payload.email !== email) {
+      console.log("Email mismatch:", {
+        payloadEmail: payload.email,
+        requestEmail: email,
       });
-      const payload = ticket.getPayload();
-      console.log('Token payload:', payload);
+      return res.status(401).json({ message: "Email không trùng khớp" });
+    }
 
-      if (payload.email !== email) {
-          console.log('Email mismatch:', { payloadEmail: payload.email, requestEmail: email });
-          return res.status(401).json({ message: 'Email không trùng khớp' });
-      }
-
-      let user = await User.findOne({ email });
-      if (!user) {
-          user = new User({
-              email,
-              fullName: payload.name,
-              avatar: payload.picture,
-              googleId: payload.sub,
-          });
-          await user.save();
-          console.log('Created new user:', user);
-      } else {
-          console.log('Found existing user:', user);
-      }
-
-      const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
-          expiresIn: '7d',
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = new User({
+        email,
+        fullName: payload.name,
+        avatar: payload.picture,
+        googleId: payload.sub,
       });
+      await user.save();
+      console.log("Created new user:", user);
+    } else {
+      console.log("Found existing user:", user);
+    }
 
-      res.json({
-          user: {
-              id: user._id,
-              fullName: user.fullName,
-              email: user.email,
-              token,
-          },
-      });
+    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.json({
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        token,
+      },
+    });
   } catch (err) {
-      console.error('Google login error:', err);
-      res.status(401).json({ message: 'Xác thực Google thất bại' });
+    console.error("Google login error:", err);
+    res.status(401).json({ message: "Xác thực Google thất bại" });
   }
 };
