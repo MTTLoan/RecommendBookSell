@@ -183,3 +183,23 @@ export const loginValidator = validate({
     trim: true,
   },
 });
+
+
+// Validator quên mật khẩu
+export const forgotPasswordRequestValidator = validate({
+  email: emailSchema,
+});
+
+export const resetPasswordValidator = validate({
+  email: emailSchema,
+  otp: {
+    notEmpty: { errorMessage: "OTP là bắt buộc" },
+    isNumeric: { errorMessage: "OTP chỉ được chứa số" },
+    isLength: {
+      options: { min: 4, max: 4 },
+      errorMessage: "OTP phải gồm đúng 4 chữ số",
+    },
+  },
+  newPassword: passwordSchema,
+  },);
+
