@@ -15,22 +15,14 @@ const userJwtMiddleware = async (req, res, next) => {
       ? token.slice(7).trim()
       : token;
 
-    // verify JWT: kiểm tra tính hợp lệ
-    // process.env.jwtUserSecret là chuỗi bí mật mã hoá
-    jwt.verify(pureToken, process.env.jwtUserSecret, (err, decoded) => {
-      if (err) {
-        res.status(401).json({
-          msg: "Token không hợp lệ",
-        });
-      } else {
-        req.user = decoded.user;
-        next();
-      }
-    });
+    // Verify JWT: kiểm tra tính hợp lệ
+    const decoded = jwt.verify(pureToken, process.env.JWT_SECRET); // Sửa từ jwtUserSecret thành JWT_SECRET
+    req.user = decoded.user;
+    next();
   } catch (err) {
-    console.log("Lỗi middleware: " + err);
-    res.status(500).json({
-      msg: "Lỗi máy chủ",
+    console.log("Lỗi middleware: " + err.message);
+    res.status(401).json({
+      msg: "Token không hợp lệ",
     });
   }
 };
