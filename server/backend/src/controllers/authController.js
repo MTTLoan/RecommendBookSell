@@ -7,10 +7,13 @@ import { sendVerificationOTPEmail } from "./email_verificationController.js";
 export const registerController = async (req, res) => {
   const { username, fullName, email, phoneNumber, password } = req.body;
   try {
-    let user = await userService.User.findOne({ username });
-    if (user)
+    // Kiểm tra xem username đã tồn tại chưa
+    let user = await User.findOne({ username });
+    if (user) {
       return res.status(400).json({ message: "Tên tài khoản đã tồn tại" });
+    }
 
+    // Tạo người dùng mới
     user = new User({
       username,
       fullName,
@@ -21,22 +24,33 @@ export const registerController = async (req, res) => {
     });
     await user.save();
 
-    // gửi otp xác nhận tài khoản
+    // Gửi OTP xác nhận tài khoản
     await sendVerificationOTPEmail(email);
 
+    // Tạo token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
+    // Lưu token vào trường `token` trong cơ sở dữ liệu
+    user.token = token;
+    await user.save();
+
+    // Trả về phản hồi
     res.status(201).json({
+      success: true,
+      msg: "Đăng ký thành công!",
       token,
-      user: user,
+      user,
     });
   } catch (error) {
-    // throw new Error("Đăng ký thất bại");
-    throw new Error("Đăng ký thất bại: " + error.message);
+    console.error("Lỗi đăng ký:", error.message);
+    res.status(500).json({
+      success: false,
+      msg: "Đăng ký thất bại! Lỗi server.",
+    });
   }
 };
 
