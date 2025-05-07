@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="8dp">
+
+    <TextView
+        android:id="@+id/tvUsername"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Thái Thị Sửu"
+        android:textSize="14sp"
+        android:fontFamily="@font/roboto_regular"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/tvRatingLabel" />
+
+    <TextView
+        android:id="@+id/tvRatingLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="4.5/5"
+        android:textSize="14sp"
+        android:fontFamily="@font/roboto_bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvUsername" />
+
+    <TextView
+        android:id="@+id/tvCreatedAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="24/05/2025"
+        android:textSize="10sp"
+        android:fontFamily="@font/roboto_light"
+        android:textColor="@color/txt_subtitle"
+        app:layout_constraintTop_toBottomOf="@id/tvUsername"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tvReviewDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Nội dung đánh giá"
+        android:textSize="12sp"
+        android:layout_marginTop="4dp"
+        android:fontFamily="@font/roboto_regular"
+        android:textColor="@color/txt_subtitle"
+        app:layout_constraintTop_toBottomOf="@id/tvCreatedAt"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

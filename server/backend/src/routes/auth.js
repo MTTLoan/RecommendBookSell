@@ -3,6 +3,7 @@ import {
   logoutController,
   loginController,
   registerController,
+  loginWithGoogle,
 } from "../controllers/authController.js";
 import {
   registerValidator,
@@ -13,6 +14,7 @@ const router = express.Router();
 
 router.post("/register", registerValidator, registerController);
 router.post("/login", loginValidator, loginController);
+router.post("/login/google", loginWithGoogle);
 router.post("/logout", logoutController);
 
 export default router;
