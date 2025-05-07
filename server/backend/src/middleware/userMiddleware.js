@@ -183,3 +183,42 @@ export const loginValidator = validate({
     trim: true,
   },
 });
+
+
+// Validator quên mật khẩu
+export const forgotPasswordRequestValidator = validate({
+  email: emailSchema,
+});
+
+export const resetPasswordValidator = validate({
+  email: emailSchema,
+  newPassword: passwordSchema,
+  confirm_password: {
+    notEmpty: { errorMessage: "Xác nhận mật khẩu là bắt buộc" },
+    isString: { errorMessage: "Xác nhận mật khẩu phải là chuỗi" },
+    trim: true,
+    isLength: {
+      options: { min: 8, max: 50 },
+      errorMessage: "Xác nhận mật khẩu phải từ 8 đến 50 ký tự",
+    },
+    isStrongPassword: {
+      options: {
+        minLength: 8,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1,
+      },
+      errorMessage:
+        "Xác nhận mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt",
+    },
+    custom: {
+      options: (value, { req }) => {
+        if (value !== req.body.newPassword) {
+          throw new Error("Xác nhận mật khẩu không khớp với mật khẩu mới");
+        }
+        return true;
+      },
+    },
+  },
+});

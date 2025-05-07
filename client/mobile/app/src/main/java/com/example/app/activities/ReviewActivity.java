@@ -37,8 +37,8 @@ public class ReviewActivity extends AppCompatActivity {
         reviewAdapter = new ReviewAdapter(this, bookList);
         recyclerReviews.setAdapter(reviewAdapter);
 
-        // Tải dữ liệu sách ảo (không có đánh giá)
-        loadFakeBooks();
+//        // Tải dữ liệu sách ảo (không có đánh giá)
+//        loadFakeBooks();
 
         // Log để kiểm tra dữ liệu
         Log.d("ReviewActivity", "bookList size: " + bookList.size());
@@ -78,9 +78,9 @@ public class ReviewActivity extends AppCompatActivity {
         });
     }
 
-    // Tải dữ liệu sách ảo (không có đánh giá)
-    private void loadFakeBooks() {
-        bookList.add(new Book(1, "Sách Mindset Tâm Lý Học Thành Công - Carol Dw...", "Mô tả sách 1", "image1.jpg", 100000, 5.0f, 10, 50, 1, "2025-04-30"));
-        bookList.add(new Book(2, "Sách Tâm Lý Học Về Tiền", "Mô tả sách 2", "image2.jpg", 120000, 5.0f, 8, 30, 1, "2025-04-30"));
-    }
+//    // Tải dữ liệu sách ảo (không có đánh giá)
+//    private void loadFakeBooks() {
+//        bookList.add(new Book(1, "Sách Mindset Tâm Lý Học Thành Công - Carol Dw...", "Mô tả sách 1", "image1.jpg", 100000, 5.0f, 10, 50, 1, "2025-04-30"));
+//        bookList.add(new Book(2, "Sách Tâm Lý Học Về Tiền", "Mô tả sách 2", "image2.jpg", 120000, 5.0f, 8, 30, 1, "2025-04-30"));
+//    }
 }
