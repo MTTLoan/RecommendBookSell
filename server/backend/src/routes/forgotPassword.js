@@ -1,10 +1,11 @@
 import express from "express";
 import { sendPasswordResetOTP, resetPassword } from "../controllers/forgotPasswordController.js";
+import { forgotPasswordRequestValidator, resetPasswordValidator }  from "../middleware/userMiddleware.js";
 
 const router = express.Router();
 
 // Route to send password reset OTP
-router.post("/forgot-password", async (req, res) => {
+router.post("/forgot-password", forgotPasswordRequestValidator, async (req, res) => {
   const { email } = req.body;
   try {
     const otpRecord = await sendPasswordResetOTP(email);
@@ -15,7 +16,7 @@ router.post("/forgot-password", async (req, res) => {
 });
 
 // Route to reset password
-router.post("/reset-password", async (req, res) => {
+router.post("/reset-password", resetPasswordValidator, async (req, res) => {
     const { email, newPassword, confirmPassword, otp } = req.body;
   
     if (newPassword !== confirmPassword) {
