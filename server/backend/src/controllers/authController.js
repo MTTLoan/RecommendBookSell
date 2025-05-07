@@ -49,13 +49,11 @@ export const loginController = async (req, res) => {
     let user = await User.findOne({ email: email });
 
     if (!user) {
-      if (!user) {
-        return res.status(400).json({
-          success: false,
-          error_server: false,
-          msg: "Username or Email not exists!",
-        });
-      }
+      return res.status(400).json({
+        success: false,
+        error_server: false,
+        msg: "Tên tài khoản hoặc email không tồn tại!",
+      });
     }
 
     // check verify account
@@ -65,7 +63,7 @@ export const loginController = async (req, res) => {
         error_server: false,
         verified: false,
         email: user.email,
-        msg: "Email hasn't been verified yet. Check your inbox!",
+        msg: "Email chưa được xác thực. Vui lòng kiểm tra hộp thư của bạn!",
       });
     }
 
@@ -75,7 +73,7 @@ export const loginController = async (req, res) => {
       return res.status(400).json({
         success: false,
         error_server: false,
-        msg: "Password is invalid!",
+        msg: "Mật khẩu không chính xác!",
       });
     }
 
@@ -96,7 +94,7 @@ export const loginController = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      msg: "User logged in!",
+      msg: "Đăng nhập thành công!",
       user_id: user.id,
       token: token,
       user: user,
@@ -107,7 +105,7 @@ export const loginController = async (req, res) => {
     return res.status(500).json({
       success: false,
       error_server: true,
-      msg: "Server Error!",
+      msg: "Lỗi máy chủ!",
     });
   }
 };
@@ -116,16 +114,21 @@ export const logoutController = async (req, res) => {
   try {
     // Vì dùng JWT, không cần xóa token ở server
     // Client sẽ tự xóa token ở phía client
-    res.status(200).json({ message: "Đăng xuất thành công" });
+    const user = await User.findById(req.user.id);
+
+    // Nếu không tìm thấy người dùng
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        msg: "Người dùng không tồn tại hoặc đã đăng xuất.",
+      });
+    }
+
+    res.status(200).json({ message: "Đăng xuất thành công!" });
   } catch (error) {
-    throw new Error("Đăng xuất thất bại");
+    throw new Error("Đăng xuất thất bại!");
   }
 };
-
-// Google login controller
-import { OAuth2Client } from "google-auth-library";
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-const JWT_SECRET = process.env.JWT_SECRET;
 
 export const loginWithGoogle = async (req, res) => {
   const { email, idToken } = req.body;
@@ -144,7 +147,7 @@ export const loginWithGoogle = async (req, res) => {
         payloadEmail: payload.email,
         requestEmail: email,
       });
-      return res.status(401).json({ message: "Email không trùng khớp" });
+      return res.status(401).json({ message: "Email không trùng khớp!" });
     }
 
     let user = await User.findOne({ email });
@@ -156,9 +159,9 @@ export const loginWithGoogle = async (req, res) => {
         googleId: payload.sub,
       });
       await user.save();
-      console.log("Created new user:", user);
+      console.log("Tạo người dùng mới:", user);
     } else {
-      console.log("Found existing user:", user);
+      console.log("Tìm thấy người dùng:", user);
     }
 
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
@@ -174,7 +177,7 @@ export const loginWithGoogle = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Google login error:", err);
-    res.status(401).json({ message: "Xác thực Google thất bại" });
+    console.error("Lỗi đăng nhập Google:", err);
+    res.status(401).json({ message: "Xác thực Google thất bại!" });
   }
 };

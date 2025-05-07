@@ -2,20 +2,19 @@ import User from "../models/User.js";
 import { sendOTP, verifyOTP, deleteOTP } from "../controllers/OTPController.js";
 import { hashData } from "../util/hashData.js";
 
-
 const sendPasswordResetOTP = async (email) => {
   try {
     // check if an account exists
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
-      throw Error("No account found for the provided email.");
+      throw Error("Không tìm thấy tài khoản nào với email đã cung cấp.");
     }
 
     const otpDetails = {
       email,
-      subject: "BOOKPROJECT: Password Reset",
-      message: "Reset your password with the code below.",
-      duration: 15,  // 15 minutes duration for OTP
+      subject: "BOOKPROJECT: Đặt Lại Mật Khẩu",
+      message: "Đặt lại mật khẩu của bạn bằng mã OTP bên dưới.",
+      duration: 15, // 15 phút hiệu lực cho OTP
     };
 
     const createOTP = await sendOTP(otpDetails);
@@ -29,7 +28,7 @@ const verifyPasswordResetOTP = async ({ email, otp }) => {
   try {
     const validOTP = await verifyOTP({ email, otp });
     if (!validOTP) {
-      throw Error("Invalid OTP. Check your email for the correct code.");
+      throw Error("Mã OTP không hợp lệ. Vui lòng kiểm tra email của bạn.");
     }
     return true;
   } catch (error) {
@@ -42,7 +41,7 @@ const resetPassword = async ({ email, newPassword, otp }) => {
     // verify OTP first
     const isOTPValid = await verifyPasswordResetOTP({ email, otp });
     if (!isOTPValid) {
-      throw Error("OTP verification failed.");
+      throw Error("Xác thực OTP thất bại.");
     }
 
     // hash the new password
@@ -54,7 +53,7 @@ const resetPassword = async ({ email, newPassword, otp }) => {
     // delete OTP record after successful reset
     await deleteOTP(email);
 
-    return { message: "Password successfully reset." };
+    return { message: "Mật khẩu đã được đặt lại thành công." };
   } catch (error) {
     throw error;
   }
