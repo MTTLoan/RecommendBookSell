@@ -1,4 +1,5 @@
 package com.example.app.models;
+
 import java.util.List;
 
 public class Order {
@@ -7,26 +8,24 @@ public class Order {
     private String orderDate;
     private double totalAmount;
     private String status;
-    private String shippingAddressWard;
-    private String shippingAddressDistrict;
-    private String shippingAddressProvince;
-    private String shippingAddress;
+    private Integer shippingAddressWardCode;
+    private Integer shippingAddressDistrictCode;
+    private Integer shippingAddressProvinceCode;
+    private String shippingDetailedAddress;
     private List<OrderItem> items;
     private String userFullName; // Lấy từ bảng User
     private String userPhoneNumber; // Lấy từ bảng User
 
-    public Order(int id, int userId, String orderDate, double totalAmount, String status,
-                 String shippingAddressWard, String shippingAddressDistrict, String shippingAddressProvince,
-                 String shippingAddress, List<OrderItem> items, String userFullName, String userPhoneNumber) {
+    public Order(int id, int userId, String orderDate, double totalAmount, String status, Integer shippingAddressWardCode, Integer shippingAddressDistrictCode, Integer shippingAddressProvinceCode, String shippingDetailedAddress, List<OrderItem> items, String userFullName, String userPhoneNumber) {
         this.id = id;
         this.userId = userId;
         this.orderDate = orderDate;
         this.totalAmount = totalAmount;
         this.status = status;
-        this.shippingAddressWard = shippingAddressWard;
-        this.shippingAddressDistrict = shippingAddressDistrict;
-        this.shippingAddressProvince = shippingAddressProvince;
-        this.shippingAddress = shippingAddress;
+        this.shippingAddressWardCode = shippingAddressWardCode;
+        this.shippingAddressDistrictCode = shippingAddressDistrictCode;
+        this.shippingAddressProvinceCode = shippingAddressProvinceCode;
+        this.shippingDetailedAddress = shippingDetailedAddress;
         this.items = items;
         this.userFullName = userFullName;
         this.userPhoneNumber = userPhoneNumber;
@@ -52,20 +51,20 @@ public class Order {
         return status;
     }
 
-    public String getShippingAddressWard() {
-        return shippingAddressWard;
+    public Integer getShippingAddressWardCode() {
+        return shippingAddressWardCode;
     }
 
-    public String getShippingAddressDistrict() {
-        return shippingAddressDistrict;
+    public Integer getShippingAddressDistrictCode() {
+        return shippingAddressDistrictCode;
     }
 
-    public String getShippingAddressProvince() {
-        return shippingAddressProvince;
+    public Integer getShippingAddressProvinceCode() {
+        return shippingAddressProvinceCode;
     }
 
-    public String getShippingAddress() {
-        return shippingAddress;
+    public String getShippingDetailedAddress() {
+        return shippingDetailedAddress;
     }
 
     public List<OrderItem> getItems() {
@@ -78,5 +77,53 @@ public class Order {
 
     public String getUserPhoneNumber() {
         return userPhoneNumber;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public void setOrderDate(String orderDate) {
+        this.orderDate = orderDate;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setShippingAddressWardCode(Integer shippingAddressWardCode) {
+        this.shippingAddressWardCode = shippingAddressWardCode;
+    }
+
+    public void setShippingAddressDistrictCode(Integer shippingAddressDistrictCode) {
+        this.shippingAddressDistrictCode = shippingAddressDistrictCode;
+    }
+
+    public void setShippingAddressProvinceCode(Integer shippingAddressProvinceCode) {
+        this.shippingAddressProvinceCode = shippingAddressProvinceCode;
+    }
+
+    public void setShippingDetailedAddress(String shippingDetailedAddress) {
+        this.shippingDetailedAddress = shippingDetailedAddress;
+    }
+
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
+    }
+
+    public void setUserFullName(String userFullName) {
+        this.userFullName = userFullName;
+    }
+
+    public void setUserPhoneNumber(String userPhoneNumber) {
+        this.userPhoneNumber = userPhoneNumber;
     }
 }

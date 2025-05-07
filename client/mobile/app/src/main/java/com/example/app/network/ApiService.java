@@ -30,16 +30,16 @@ public interface ApiService {
     }
 
     public class UserLoginRequest {
-        private final String username;
+        private final String email;
         private final String password;
 
         public UserLoginRequest(String email, String password) {
-            this.username = email;
+            this.email = email;
             this.password = password;
         }
 
         // Getter (nếu cần)
-        public String getEmail() { return username; }
+        public String getEmail() { return email; }
         public String getPassword() { return password; }
     }
 
@@ -47,7 +47,7 @@ public interface ApiService {
     @GET("api/notifications")
     Call<List<Notification>> getNotifications();
 
-    @POST("/api/auth/login")
+    @POST("api/auth/login")
     @Headers("Content-Type: application/json")
     Call<User> login(@Body UserLoginRequest request);
 

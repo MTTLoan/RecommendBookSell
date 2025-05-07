@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:background="@drawable/bg_white"
+    android:layout_marginBottom="8dp">
+
+    <!-- Trạng thái đơn hàng -->
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chờ xác nhận"
+        android:textSize="15sp"
+        android:fontFamily="@font/roboto_semibold"
+        android:textColor="#A60303"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- RecyclerView để hiển thị danh sách sách trong đơn hàng -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvOrderItems"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/tvStatus"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Ngày đặt hàng -->
+    <TextView
+        android:id="@+id/tvOrderDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ngày đặt hàng: 01/01/2025"
+        android:textSize="14sp"
+        android:fontFamily="@font/roboto_bold"
+        android:textColor="#3FBF48"
+        android:background="@drawable/bg_ecfff4"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="10dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/tvTotalAmount"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Tổng tiền -->
+    <TextView
+        android:id="@+id/tvTotalAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tổng tiền: 1.000.000 VNĐ"
+        android:textSize = "14sp"
+        android:fontFamily="@font/roboto_semibold"
+        android:textColor="@color/black"
+        app:layout_constraintTop_toBottomOf="@id/rvOrderItems"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Nút "Hủy đơn hàng" cho trạng thái "Đang đóng gói" -->
+    <Button
+        android:id="@+id/btnCancelOrder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hủy đơn hàng"
+        android:visibility="gone"
+        android:background="@drawable/button_black_border"
+        android:textColor="#8A8A8A"
+        android:textSize="14sp"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="0dp"
+        app:layout_constraintTop_toBottomOf="@id/tvOrderDate"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- Nút "Đã nhận được hàng" cho trạng thái "Chờ giao hàng" -->
+    <Button
+        android:id="@+id/btnReceived"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Đã nhận được hàng"
+        android:visibility="gone"
+        android:background="@drawable/button_black_border"
+        android:textColor="#8A8A8A"
+        android:textSize="14sp"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="0dp"
+        app:layout_constraintTop_toBottomOf="@id/tvOrderDate"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- Nút "Trả hàng/Hoàn tiền" cho trạng thái "Đã giao hàng" -->
+    <Button
+        android:id="@+id/btnReturn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Trả hàng/Hoàn tiền"
+        android:visibility="gone"
+        android:background="@drawable/button_black_border"
+        android:textColor="#8A8A8A"
+        android:textSize="14sp"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="0dp"
+        app:layout_constraintTop_toBottomOf="@id/tvOrderDate"
+        app:layout_constraintEnd_toStartOf="@id/btnRate"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp" />
+
+    <!-- Nút "Đánh giá" cho trạng thái "Đã giao hàng" -->
+    <Button
+        android:id="@+id/btnRate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Đánh giá"
+        android:visibility="gone"
+        android:background="@drawable/button_red_border"
+        android:textColor="#A60303"
+        android:textSize="14sp"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="0dp"
+        app:layout_constraintTop_toBottomOf="@id/tvOrderDate"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
