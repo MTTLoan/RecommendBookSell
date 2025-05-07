@@ -1,9 +1,5 @@
 import express from "express";
 import { sendPasswordResetOTP, resetPassword } from "../controllers/forgotPasswordController.js";
-import {
-  registerValidator,
-  loginValidator,
-} from "../middleware/userMiddleware.js";
 
 const router = express.Router();
 
