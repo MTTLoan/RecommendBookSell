@@ -41,12 +41,14 @@ export const registerController = async (req, res) => {
 };
 
 export const loginController = async (req, res) => {
-  let { email, password } = req.body;
-
+  let { identifier, password } = req.body; // `identifier` có thể là username hoặc email
   password = password.trim();
 
   try {
-    let user = await User.findOne({ email: email });
+    // Tìm người dùng bằng username hoặc email
+    let user = await User.findOne({
+      $or: [{ username: identifier }, { email: identifier }],
+    });
 
     if (!user) {
       return res.status(400).json({
@@ -56,7 +58,7 @@ export const loginController = async (req, res) => {
       });
     }
 
-    // check verify account
+    // Kiểm tra xem tài khoản đã được xác thực chưa
     if (!user.verified) {
       return res.status(400).json({
         success: false,
@@ -67,6 +69,7 @@ export const loginController = async (req, res) => {
       });
     }
 
+    // Kiểm tra mật khẩu
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -77,7 +80,7 @@ export const loginController = async (req, res) => {
       });
     }
 
-    // lưu token đăng nhập thành công
+    // Tạo payload cho JWT
     const payload = {
       user: {
         id: user.id,
@@ -85,12 +88,14 @@ export const loginController = async (req, res) => {
       },
     };
 
-    await user.save();
-
-    // tạo token
+    // Tạo token
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
+
+    // Lưu token vào trường `token` trong cơ sở dữ liệu
+    user.token = token;
+    await user.save();
 
     return res.status(200).json({
       success: true,
@@ -112,11 +117,8 @@ export const loginController = async (req, res) => {
 
 export const logoutController = async (req, res) => {
   try {
-    // Vì dùng JWT, không cần xóa token ở server
-    // Client sẽ tự xóa token ở phía client
     const user = await User.findById(req.user.id);
 
-    // Nếu không tìm thấy người dùng
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -126,7 +128,11 @@ export const logoutController = async (req, res) => {
 
     res.status(200).json({ message: "Đăng xuất thành công!" });
   } catch (error) {
-    throw new Error("Đăng xuất thất bại!");
+    console.error(error.message);
+    res.status(500).json({
+      success: false,
+      msg: "Đăng xuất thất bại! Lỗi server.",
+    });
   }
 };
 
