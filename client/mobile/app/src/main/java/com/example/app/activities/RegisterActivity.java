@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -12,6 +13,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.app.R;
+import androidx.fragment.app.FragmentManager;
+import com.example.app.fragments.OtpFragment;
 import com.example.app.models.User;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
@@ -84,12 +87,17 @@ public class RegisterActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         User user = response.body();
                         String token = user.getToken();
+                        String email = user.getEmail() != null ? user.getEmail() : etEmail.getText().toString().trim(); // Lấy email từ đối tượng User
+                        Log.d(TAG, "Email passed to OTP: " + email);
+
                         if (token != null) {
                             Log.d(TAG, "Token received: " + token);
                             AuthUtils.saveToken(RegisterActivity.this, token);
                             Toast.makeText(RegisterActivity.this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
-                            finish();
+
+                            // Sau khi đăng ký thành công, chuyển sang màn hình xác nhận OTP
+                            showOtpFragment(email);
+
                         } else {
                             Log.d(TAG, "Token is null");
                             Toast.makeText(RegisterActivity.this, "Không nhận được token", Toast.LENGTH_SHORT).show();
@@ -140,6 +148,21 @@ public class RegisterActivity extends AppCompatActivity {
         setupPasswordToggle(etPassword, R.drawable.visibility_24px, R.drawable.visibility_off_24px);
         setupPasswordToggle(etConfirmPassword, R.drawable.visibility_24px, R.drawable.visibility_off_24px);
 
+    }
+
+    private void showOtpFragment(String email) {
+        Log.d(TAG, "showOtpFragment with email: " + email);
+
+        OtpFragment otpFragment = OtpFragment.newInstance(email, "Đăng ký", "register");
+
+        // Hiện FrameLayout chứa OTP Fragment
+        findViewById(R.id.otp_fragment).setVisibility(android.view.View.VISIBLE);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.otp_fragment, otpFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     private void setupPasswordToggle(EditText editText, int iconShow, int iconHide) {

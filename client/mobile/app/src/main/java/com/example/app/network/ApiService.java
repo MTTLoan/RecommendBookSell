@@ -68,14 +68,109 @@ public interface ApiService {
         }
     }
 
+    public class OtpRequest {
+        private String email;
+        private String otp;
+
+        public OtpRequest(String email, String otp) {
+            this.email = email;
+            this.otp = otp;
+        }
+    }
+
+    public class ResendOtpRequest {
+        private String email;
+
+        public ResendOtpRequest(String email) {
+            this.email = email;
+        }
+    }
+
+    public class OtpResponse {
+        private boolean success;
+        private String message;
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    // Forgot Password
+    public class ForgotPasswordRequest {
+        private String email;
+
+        public ForgotPasswordRequest(String email) {
+            this.email = email;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+    }
+
+    // Reset Password
+    public class ResetPasswordRequest {
+        private String email;
+        private String newPassword;
+        private String confirmPassword;
+        private String otp;
+
+        public ResetPasswordRequest(String email, String newPassword, String confirmPassword, String otp) {
+            this.email = email;
+            this.newPassword = newPassword;
+            this.confirmPassword = confirmPassword;
+            this.otp = otp;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getNewPassword() {
+            return newPassword;
+        }
+
+        public String getConfirmPassword() {
+            return confirmPassword;
+        }
+
+        public String getOtp() {
+            return otp;
+        }
+    }
+
     @GET("api/notifications")
     Call<List<Notification>> getNotifications();
 
+    // Login
     @POST("/api/auth/login")
     @Headers("Content-Type: application/json")
     Call<User> login(@Body UserLoginRequest request);
 
-
     @POST("/api/auth/login/google")
     Call<User> loginWithGoogle(@Body UserLoginRequest request);
+
+    // Verify Email for Registration
+    @Headers("Content-Type: application/json")
+    @POST("/api/verify_email/verify")
+    Call<OtpResponse> verifyOtp(@Body OtpRequest request);
+
+    // Resend OTP
+    @POST("/api/resend-otp")
+    Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
+
+    // Forgot Password
+    @Headers("Content-Type: application/json")
+    @POST("/api/forgot_password/forgot-password")
+    Call<OtpResponse> forgotPassword(@Body ForgotPasswordRequest request);
+
+    @Headers("Content-Type: application/json")
+    @POST("/api/forgot_password/reset-password")
+    Call<OtpResponse> resetPassword(@Body ResetPasswordRequest request);
+
+
 }
