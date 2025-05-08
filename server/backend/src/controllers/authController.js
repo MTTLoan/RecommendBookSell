@@ -217,6 +217,7 @@ export const googleAuth = async (req, res) => {
     return res.status(500).json({
       success: false,
       msg: "Lỗi máy chủ khi đăng nhập Google!",
+
     });
   }
 };
