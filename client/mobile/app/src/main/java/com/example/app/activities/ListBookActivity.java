@@ -64,6 +64,7 @@ public class ListBookActivity extends AppCompatActivity {
         // Setup adapter (null for category list if not filtering)
         listBookAdapter = new BookAdapter(this, bookList, new ArrayList<>()); // or pass null if unused
 
+        listBookRecyclerView.setHasFixedSize(true);
         // Set layout manager and adapter
         listBookRecyclerView.setLayoutManager(new GridLayoutManager(this, 2)); // 2 columns
         listBookRecyclerView.setAdapter(listBookAdapter);

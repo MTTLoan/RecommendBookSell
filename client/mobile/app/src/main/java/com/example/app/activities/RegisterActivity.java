@@ -11,16 +11,22 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.app.R;
+
 import androidx.fragment.app.FragmentManager;
+
 import com.example.app.fragments.OTPFragmentRegister;
 import com.example.app.models.User;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

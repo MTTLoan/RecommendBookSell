@@ -9,6 +9,7 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
 
@@ -144,6 +145,21 @@ public interface ApiService {
         }
     }
 
+    // Logout Response Class
+    class LogoutResponse {
+        private boolean success;
+        private String message;
+        private String msg;
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getMessage() {
+            return message != null ? message : msg;
+        }
+    }
+
     @GET("api/notifications")
     Call<List<Notification>> getNotifications();
 
@@ -160,4 +176,7 @@ public interface ApiService {
 
     @POST("/api/resend-otp")
     Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
+
+    @POST("api/logout")
+    Call<LogoutResponse> logout(@Header("Authorization") String token);
 }

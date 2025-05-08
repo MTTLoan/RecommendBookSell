@@ -117,6 +117,8 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, EmailResetPasswordActivity.class));
         });
 
+
+
         // Cài đặt toggle hiển thị mật khẩu
         setupPasswordToggle(etPassword, R.drawable.visibility_24px, R.drawable.visibility_off_24px);
     }

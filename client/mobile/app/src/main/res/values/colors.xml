@@ -25,4 +25,5 @@
     <color name="green_success">#00C853</color>
     <color name="red_error">#D32F2F</color>
     <color name="search_background_focused">#FFFFFF</color>
+    <color name="sub">#7F7F7F</color>
 </resources>
