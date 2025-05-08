@@ -177,6 +177,6 @@ public interface ApiService {
     @POST("/api/resend-otp")
     Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
 
-    @POST("api/logout")
+    @POST("api/auth/logout")
     Call<LogoutResponse> logout(@Header("Authorization") String token);
 }
