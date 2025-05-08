@@ -19,6 +19,7 @@ public class Book implements Parcelable {
     private String createdAt;
     private String author;
 
+
     public Book(int id, String name, String description, List<Image> images, double price,
                 double averageRating, int ratingCount, int stockQuantity, int categoryId,
                 String createdAt, String author) {
