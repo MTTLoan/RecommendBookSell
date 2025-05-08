@@ -66,11 +66,6 @@ public class HomeActivity extends AppCompatActivity {
         recommendationsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         bestDealsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
-        // Initialize category list
-        categoryList = new ArrayList<>();
-        categoryList.add(new Category(1, "Sách thiếu nhi", "Các cuốn sách dành cho thiếu nhi, giúp phát triển tư duy và khả năng sáng tạo."));
-        categoryList.add(new Category(2, "Sách văn học", "Các tác phẩm văn học nổi tiếng và ý nghĩa."));
-        categoryList.add(new Category(3, "Sách khoa học", "Sách khám phá khoa học dành cho mọi lứa tuổi."));
 
         // Initialize book list with multiple books
         bookList = new ArrayList<>();
