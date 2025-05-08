@@ -19,7 +19,15 @@
         <activity
             android:name=".activities.HomeActivity"
             android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
+        <activity
+            android:name=".activities.ListBookActivity"
+            android:exported="true">
         </activity>
 
         <activity
@@ -29,15 +37,13 @@
         <activity
             android:name=".activities.SearchActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+
         </activity>
 
         <activity
             android:name=".activities.LoginActivity"
-            android:exported="true"></activity>
+            android:exported="true">
+        </activity>
         <activity
             android:name=".activities.CongratulationActivity"
             android:exported="true"></activity>
