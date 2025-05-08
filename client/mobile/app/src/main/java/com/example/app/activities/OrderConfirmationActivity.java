@@ -1,6 +1,7 @@
 package com.example.app.activities;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -10,6 +11,7 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -39,9 +41,6 @@ public class OrderConfirmationActivity extends AppCompatActivity {
     private RadioButton rbFastShipping, rbEconomyShipping;
     private Order order;
 
-    // Biến lưu chi phí giao hàng
-    private double shippingCost = 15000; // Mặc định: Tiết kiệm
-
     // Dữ liệu từ API
     private List<String> provinceNames = new ArrayList<>();
     private List<Integer> provinceCodes = new ArrayList<>();
@@ -51,6 +50,9 @@ public class OrderConfirmationActivity extends AppCompatActivity {
     private List<Integer> wardCodes = new ArrayList<>();
     private HashMap<String, Integer> provinceMap = new HashMap<>();
     private HashMap<String, Integer> districtMap = new HashMap<>();
+
+    // Biến chi phí giao hàng
+    private double shippingCost = 15000; // Mặc định: Tiết kiệm
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,14 +98,11 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         OrderConfirmItemAdapter adapter = new OrderConfirmItemAdapter(order.getItems());
         rvOrderItems.setAdapter(adapter);
 
-        // Hiển thị tổng giá trị (bao gồm chi phí giao hàng mặc định)
+        // Hiển thị tổng giá trị ban đầu
         updateTotalPrice();
 
         // Lấy danh sách tỉnh/thành phố từ API
         fetchProvinces();
-
-        // Chọn mặc định "Tiết kiệm"
-        rbEconomyShipping.setChecked(true);
 
         // Xử lý khi chọn tỉnh/thành phố
         spinnerProvince.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -131,7 +130,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        // Xử lý thay đổi lựa chọn hình thức giao hàng
+        // Xử lý khi chọn hình thức giao hàng
         rgShippingMethods.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.rb_fast_shipping) {
                 shippingCost = 20000; // Nhanh
@@ -141,8 +140,11 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             updateTotalPrice();
         });
 
+        // Chọn mặc định "Tiết kiệm"
+        rbEconomyShipping.setChecked(true);
+
         // Xử lý nút Đặt hàng
-        btnPlaceOrder.setOnClickListener(v -> placeOrder());
+        btnPlaceOrder.setOnClickListener(v -> showConfirmationDialog());
     }
 
     private void fetchProvinces() {
@@ -310,12 +312,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void updateTotalPrice() {
-        double totalPrice = order.getTotalAmount() + shippingCost;
-        tvTotalAmount.setText(String.format("Tổng: %,d VNĐ", (int) totalPrice));
-    }
-
-    private void placeOrder() {
+    private void showConfirmationDialog() {
         // Lấy dữ liệu đã chỉnh sửa
         String newFullName = etUserFullName.getText().toString().trim();
         String newPhoneNumber = etUserPhoneNumber.getText().toString().trim();
@@ -336,13 +333,52 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             return;
         }
 
-        // Cập nhật order với dữ liệu mới
+        // Chuẩn bị thông tin hiển thị trên dialog
+        String fullAddress = newDetailedAddress + ", " + newWard + ", " + newDistrict + ", " + newProvince;
+        double finalTotal = order.getTotalAmount() + shippingCost;
+        String shippingMethod = rbFastShipping.isChecked() ? "Nhanh (20.000 VNĐ)" : "Tiết kiệm (15.000 VNĐ)";
+
+        // Tạo dialog với layout tùy chỉnh
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_order_confirmation, null);
+        builder.setView(dialogView);
+
+        // Tạo dialog
+        AlertDialog dialog = builder.create();
+
+        // Xử lý nút Trang chủ
+        Button btnHome = dialogView.findViewById(R.id.btn_dialog_home);
+        btnHome.setOnClickListener(v -> {
+            // Quay về Trang chủ (ví dụ: MainActivity)
+            dialog.dismiss();
+            finish(); // Đóng Activity hiện tại
+            // Thêm Intent nếu cần: startActivity(new Intent(this, MainActivity.class));
+        });
+
+        // Xử lý nút Đơn mua
+        Button btnOrders = dialogView.findViewById(R.id.btn_dialog_orders);
+        btnOrders.setOnClickListener(v -> {
+            // Chuyển đến màn hình Đơn mua (ví dụ: OrderHistoryActivity)
+            dialog.dismiss();
+            finish(); // Đóng Activity hiện tại
+            // Thêm Intent nếu cần: startActivity(new Intent(this, OrderHistoryActivity.class));
+        });
+
+        // Hiển thị dialog
+        dialog.setCancelable(false); // Không cho phép đóng dialog bằng nút Back
+        dialog.show();
+
+        // Cập nhật order với dữ liệu mới (sau khi xác nhận)
         order.setUserFullName(newFullName);
         order.setUserPhoneNumber(newPhoneNumber);
-        order.setShippingDetailedAddress(newDetailedAddress + ", " + newWard + ", " + newDistrict + ", " + newProvince);
-        order.setTotalAmount(order.getTotalAmount() + shippingCost); // Cập nhật tổng giá
+        order.setShippingDetailedAddress(fullAddress);
 
-        Toast.makeText(this, "Đặt hàng thành công với địa chỉ mới!", Toast.LENGTH_SHORT).show();
-        finish();
+        // Gửi tổng giá bao gồm chi phí giao hàng
+        Toast.makeText(this, "Đặt hàng thành công với tổng giá: " + String.format("%,d VNĐ", (int) finalTotal), Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateTotalPrice() {
+        double totalPrice = order.getTotalAmount() + shippingCost;
+        tvTotalAmount.setText(String.format("Tổng: %,d VNĐ", (int) totalPrice));
     }
 }
