@@ -32,10 +32,10 @@ public class HomeActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private Runnable autoSlideRunnable;
 
-    private RecyclerView recommendationsRecyclerView, studentDealsRecyclerView;
+    private RecyclerView recommendationsRecyclerView, economicDealsRecyclerView;
     private RecyclerView bestDealsRecyclerView;
     private BookAdapter recommendationsAdapter;
-    private BookAdapter bestDealsAdapter, studentDealsAdapter;
+    private BookAdapter bestDealsAdapter, economicDealsAdapter;
     private List<Book> bookList;
     private List<Category> categoryList;
 
@@ -64,12 +64,12 @@ public class HomeActivity extends AppCompatActivity {
         // Initialize RecyclerViews
         recommendationsRecyclerView = findViewById(R.id.recommendationsRecyclerView);
         bestDealsRecyclerView = findViewById(R.id.bestDealsRecyclerView);
-        studentDealsRecyclerView = findViewById(R.id.studentDealsRecyclerView);
+        economicDealsRecyclerView = findViewById(R.id.economicDealsRecyclerView);
 
         // Setup layout managers
         recommendationsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         bestDealsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        studentDealsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        economicDealsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
         // Initialize category list
         categoryList = new ArrayList<>();
@@ -81,19 +81,19 @@ public class HomeActivity extends AppCompatActivity {
         bookList = new ArrayList<>();
         List<Book.Image> images1 = new ArrayList<>();
         images1.add(new Book.Image("https://salt.tikicdn.com/ts/product/73/24/11/1d84888511d73e6f5da2057115dcc4d8.png", "1d84888511d73e6f5da2057115dcc4d8.png"));
-        bookList.add(new Book(1, "Cùng con trưởng thành - Mình không thích bị cô lập", "Lời nói đầu   Bé mới tầm 1 tuổi đã cần đọc sách chưa?   Bố mẹ muốn cho bé tiếp xúc sớm với sách được chứ?   Bé còn nhỏ quá, sợ cầm sách thì xé mất!   Bé mới ít tuổi thế đã nhận thức được gì chưa mà đọc sách?   Đúng là trẻ nhỏ chưa cần “đọc” sách, mà các con cần được “chơi” với sách như là một món đồ chơi giàu tính tương tác. Sách cho lứa tuổi dưới 3 thường phải đảm bảo các tiêu chí: giấy dày để trẻ khó xé hay cắn hỏng, hình ảnh rất to rõ và thường ít màu để phù hợp với khả năng tiếp thu của trẻ, có hiệu ứng tương tác như lật giở-sờ chạm… để trẻ được vận động tay chân với sách, in bằng màu tốt và phủ bóng để đảm bảo an toàn nếu trẻ lỡ cắn hay liếm sách, nội dung thật gần gũi với nhu cầu và tâm lý lứa tuổi để bố mẹ dễ nói chuyện thủ thỉ với trẻ nhằm tăng cường giao tiếp thân mật…", images1, 28000.0, 3.5, 2, 10, 1, "2025-04-28 02:27:21", "Tô Bảo"));
+        bookList.add(new Book(1, "Cùng con trưởng thành - Mình không thích bị cô lập", "Lời nói đầu   Bé mới tầm 1 tuổi đã cần đọc sách chưa?   Bố mẹ muốn cho bé tiếp xúc sớm với sách được chứ?   Bé còn nhỏ quá, sợ cầm sách thì xé mất!   Bé mới ít tuổi thế đã nhận thức được gì chưa mà đọc sách?   Đúng là trẻ nhỏ chưa cần “đọc” sách, mà các con cần được “chơi” với sách như là một món đồ chơi giàu tính tương tác. Sách cho lứa tuổi dưới 3 thường phải đảm bảo các tiêu chí: giấy dày để trẻ khó xé hay cắn hỏng, hình ảnh rất to rõ và thường ít màu để phù hợp với khả năng tiếp thu của trẻ, có hiệu ứng tương tác như lật giở-sờ chạm… để trẻ được vận động tay chân với sách, in bằng màu tốt và phủ bóng để đảm bảo an toàn nếu trẻ lỡ cắn hay liếm sách, nội dung thật gần gũi với nhu cầu và tâm lý lứa tuổi để bố mẹ dễ nói chuyện thủ thỉ với trẻ nhằm tăng cường giao tiếp thân mật…", images1, 28000.0, 3.5, 2, 10, 2, "2025-04-28 02:27:21", "Tô Bảo"));
 
         List<Book.Image> images2 = new ArrayList<>();
         images2.add(new Book.Image("https://salt.tikicdn.com/ts/product/5b/21/12/3d905ef72b7de07171761e4b1819543c.jpg", "789abc123def456ghi789jkl.png"));
-        bookList.add(new Book(2, "Rèn luyện Kỹ Năng Sống dành cho học sinh - 25 thói quen tốt để thành công", "Rèn Luyện Kĩ Năng Sống Dành Cho Học Sinh - 25 Thói Quen Tốt Để Thành Công   Giới thiệu tác phẩm   - Hãy động não, thay đổi cách suy nghĩ, bạn có thể là một học sinh thiên tài!   - Hãy để thói quen tốt chiến thắng thói quen xấu để trở thành một người thành công!   Dành tặng tất cả những trẻ em mơ ước trở thành thiên tài   Lười biếng, mất vệ sinh, làm việc chậm chạp lề mề… Các bạn nhỏ có phải có những thói quen khiến người khác bực mình? Đừng coi thường sự ảnh hưởng của thói quen xấu này nhé! Chúng giống như chiếc kẹo cao su, khi đã dính vào người sẽ rất khó dứt ra đấy. Bắt đầu từ bây giờ, hãy học cách coi thói quen tốt như bạn thân của mình và loại bỏ thói quen xấu đi, các bạn nhé! ", images2, 35000.0, 4.0, 5, 15, 1, "2025-04-29 10:15:30", "Nguyễn Nhật Ánh"));
+        bookList.add(new Book(2, "Rèn luyện Kỹ Năng Sống dành cho học sinh - 25 thói quen tốt để thành công", "Rèn Luyện Kĩ Năng Sống Dành Cho Học Sinh - 25 Thói Quen Tốt Để Thành Công   Giới thiệu tác phẩm   - Hãy động não, thay đổi cách suy nghĩ, bạn có thể là một học sinh thiên tài!   - Hãy để thói quen tốt chiến thắng thói quen xấu để trở thành một người thành công!   Dành tặng tất cả những trẻ em mơ ước trở thành thiên tài   Lười biếng, mất vệ sinh, làm việc chậm chạp lề mề… Các bạn nhỏ có phải có những thói quen khiến người khác bực mình? Đừng coi thường sự ảnh hưởng của thói quen xấu này nhé! Chúng giống như chiếc kẹo cao su, khi đã dính vào người sẽ rất khó dứt ra đấy. Bắt đầu từ bây giờ, hãy học cách coi thói quen tốt như bạn thân của mình và loại bỏ thói quen xấu đi, các bạn nhé! ", images2, 35000.0, 4.0, 5, 15, 2, "2025-04-29 10:15:30", "Nguyễn Nhật Ánh"));
 
         List<Book.Image> images3 = new ArrayList<>();
         images3.add(new Book.Image("https://salt.tikicdn.com/ts/product/16/72/77/dff96564663b63ba96b2c74b60261dcd.jpg", "345mno678pqr901stu234vwx.png"));
-        bookList.add(new Book(3, "Xứ Sở Miên Man", "\"Xứ Sở Miên Man   Giới thiệu tác giả     Jun Phạm , tên thật là Phạm Duy Thuận, không chỉ được biết đến là một ca sĩ, diễn viên tài năng mà còn là một nhà văn trẻ đầy triển vọng. Anh từng là thành viên của nhóm nhạc 365daband, một trong những nhóm nhạc nổi tiếng nhất Việt Nam. Tuy nhiên, bên cạnh đam mê ca hát, Jun Phạm còn có một tình yêu sâu sắc với văn chương.   Jun Phạm bắt đầu con đường văn chương từ rất sớm. Anh thường xuyên chia sẻ những suy nghĩ, cảm xúc của mình trên trang cá nhân và nhận được sự ủng hộ nhiệt tình từ người hâm mộ. Chính điều này đã thôi thúc anh cho ra đời những cuốn sách của mình.", images3, 45000.0, 4.5, 10, 20, 2, "2025-04-30 14:20:45", "Nhật Sơn"));
+        bookList.add(new Book(3, "Xứ Sở Miên Man", "Xứ Sở Miên Man   Giới thiệu tác giả     Jun Phạm , tên thật là Phạm Duy Thuận, không chỉ được biết đến là một ca sĩ, diễn viên tài năng mà còn là một nhà văn trẻ đầy triển vọng. Anh từng là thành viên của nhóm nhạc 365daband, một trong những nhóm nhạc nổi tiếng nhất Việt Nam. Tuy nhiên, bên cạnh đam mê ca hát, Jun Phạm còn có một tình yêu sâu sắc với văn chương.   Jun Phạm bắt đầu con đường văn chương từ rất sớm. Anh thường xuyên chia sẻ những suy nghĩ, cảm xúc của mình trên trang cá nhân và nhận được sự ủng hộ nhiệt tình từ người hâm mộ. Chính điều này đã thôi thúc anh cho ra đời những cuốn sách của mình.", images3, 45000.0, 4.5, 10, 20, 2, "2025-04-30 14:20:45", "Nhật Sơn"));
 
         List<Book.Image> images4 = new ArrayList<>();
         images4.add(new Book.Image("https://salt.tikicdn.com/ts/product/56/bc/59/f63f4561ee47a86e1843e671fc6355e5.jpg", "123yz456abc789def012ghi.png"));
-        bookList.add(new Book(4, "Tuổi Thơ Dữ Dội - Tập 2", "“Tuổi Thơ Dữ Dội” là một câu chuyện hay, cảm động viết về tuổi thơ. Sách dày 404 trang mà người đọc không bao giờ muốn ngừng lại, bị lôi cuốn vì những nhân vật ngây thơ có, khôn ranh có, anh hùng có, vì những sự việc khi thì ly kỳ, khi thì hài hước, khi thì gây xúc động đến ứa nước mắ \\\"Tuổi Thơ Dữ Dội” không phải chỉ là một câu chuyện cổ tích, mà là một câu chuyện có thật ở trần gian, ở đó, những con người tuổi nhỏ đã tham gia vào cuộc kháng chiến chống xâm lược bảo vệ Tổ quốc với một chuỗi những chiến công đầy ắp li kì và hấp dẫn.", images4, 52000.0, 4.2, 8, 12, 1, "2025-05-01 09:30:00", "Mai Anh"));
+        bookList.add(new Book(4, "Tuổi Thơ Dữ Dội - Tập 2", "“Tuổi Thơ Dữ Dội” là một câu chuyện hay, cảm động viết về tuổi thơ. Sách dày 404 trang mà người đọc không bao giờ muốn ngừng lại, bị lôi cuốn vì những nhân vật ngây thơ có, khôn ranh có, anh hùng có, vì những sự việc khi thì ly kỳ, khi thì hài hước, khi thì gây xúc động đến ứa nước mắ \\\"Tuổi Thơ Dữ Dội” không phải chỉ là một câu chuyện cổ tích, mà là một câu chuyện có thật ở trần gian, ở đó, những con người tuổi nhỏ đã tham gia vào cuộc kháng chiến chống xâm lược bảo vệ Tổ quốc với một chuỗi những chiến công đầy ắp li kì và hấp dẫn.", images4, 52000.0, 4.2, 8, 12, 2, "2025-05-01 09:30:00", "Mai Anh"));
 
         List<Book.Image> images5 = new ArrayList<>();
         images5.add(new Book.Image("https://salt.tikicdn.com/ts/product/0f/f9/70/e273b6980de4f6f550329aafe91578d8.jpg", "567jkl890mno123pqr456stu.png"));
@@ -111,7 +111,7 @@ public class HomeActivity extends AppCompatActivity {
                 3.5,
                 2,
                 10,
-                1,
+                2,
                 "2025-04-28 02:27:21",
                 "Nguyễn Nhật Ánh"
         ));
@@ -146,7 +146,7 @@ public class HomeActivity extends AppCompatActivity {
                 4.5,
                 10,
                 20,
-                2,
+                1,
                 "2025-04-30 14:20:45",
                 "Tô Bảo"
         ));
@@ -163,7 +163,7 @@ public class HomeActivity extends AppCompatActivity {
                 4.2,
                 8,
                 12,
-                2,
+                3,
                 "2025-05-01 09:30:00",
                 "Nguyễn Sơn"
         ));
@@ -186,25 +186,24 @@ public class HomeActivity extends AppCompatActivity {
         ));
 
         // Filter books for recommendations (all books for "Đề xuất dành riêng cho bạn")
-        List<Book> recommendedBooks = new ArrayList<>(bookList);
+        List<Book> recommendedBooks = bookList.stream().filter(book -> book.getCategoryId() == 1).collect(Collectors.toList());
 
         // Filter books for "Best Deals" (e.g., top 3 books by sold count from category 2 - "Sách văn học")
         List<Book> bestDealsBooks = bookList.stream()
                 .filter(book -> book.getCategoryId() == 2) // Filter by category ID 2
 //                .sorted(Comparator.comparingInt(Book::getSold).reversed()) // Sort by sold count descending
-                .limit(3) // Take top 3
+//                .limit(3) // Take top 3
                 .collect(Collectors.toList());
 
-        // Filter books for "Student Deals" (e.g., top 3 books by sold count from category 1 - "Sách thiếu nhi")
-        List<Book> studentDealsBooks = bookList.stream()
-                .filter(book -> book.getCategoryId() == 3) // Filter by category ID 1
-//                .sorted(Comparator.comparingInt(Book::getSold).reversed()) // Sort by sold count descending
+        // Filter books for "economic Deals" (e.g., top 3 books by sold count from category 1 - "Sách thiếu nhi")
+        List<Book> economicDealsBooks = bookList.stream()
+                .filter(book -> book.getCategoryId() == 3)
                 .collect(Collectors.toList());
 
         // Set up click listeners for category titles
         findViewById(R.id.recommendationsTitle).setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, ListBookActivity.class);
-            intent.putExtra("category_id", 0); // 0 for "Đề xuất dành riêng cho bạn" (all books)
+            intent.putExtra("category_id", 1); // 0 for "Đề xuất dành riêng cho bạn" (all books)
             intent.putExtra("category_name", "Đề xuất dành riêng cho bạn");
             startActivity(intent);
         });
@@ -216,9 +215,9 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        findViewById(R.id.studentDealsTitle).setOnClickListener(v -> {
+        findViewById(R.id.economicDealsTitle).setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, ListBookActivity.class);
-            intent.putExtra("category_id", 1); // Corrected to category ID 1 for "Sách thiếu nhi"
+            intent.putExtra("category_id", 3); // Corrected to category ID 1 for "Sách thiếu nhi"
             intent.putExtra("category_name", "Sách thiếu nhi");
             startActivity(intent);
         });
@@ -226,10 +225,10 @@ public class HomeActivity extends AppCompatActivity {
         // Setup adapters with filtered lists
         recommendationsAdapter = new BookAdapter(this, recommendedBooks, categoryList);
         bestDealsAdapter = new BookAdapter(this, bestDealsBooks, categoryList);
-        studentDealsAdapter = new BookAdapter(this, studentDealsBooks, categoryList);
+        economicDealsAdapter = new BookAdapter(this, economicDealsBooks, categoryList);
         recommendationsRecyclerView.setAdapter(recommendationsAdapter);
         bestDealsRecyclerView.setAdapter(bestDealsAdapter);
-        studentDealsRecyclerView.setAdapter(studentDealsAdapter);
+        economicDealsRecyclerView.setAdapter(economicDealsAdapter);
     }
 
     private void startAutoSlide() {

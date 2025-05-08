@@ -99,10 +99,10 @@
 
             <!-- Tiêu đề best deals -->
             <TextView
-                android:id="@+id/studentDealsTitle"
+                android:id="@+id/economicDealsTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sách thiếu nhi"
+                android:text="Sách kinh tế"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:clickable="true"
@@ -115,14 +115,14 @@
 
             <!-- RecyclerView best deals -->
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/studentDealsRecyclerView"
+                android:id="@+id/economicDealsRecyclerView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
                 android:layout_marginStart="12dp"
                 android:layout_marginEnd="12dp"
                 android:layout_marginTop="12dp"
-                app:layout_constraintTop_toBottomOf="@id/studentDealsTitle"
+                app:layout_constraintTop_toBottomOf="@id/economicDealsTitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
