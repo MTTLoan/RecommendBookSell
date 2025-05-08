@@ -57,15 +57,13 @@ public class InforUserActivity extends AppCompatActivity {
 
         // Set click listeners
         tvEditPersonalInfoLabel.setOnClickListener(v -> {
-            Toast.makeText(this, "Chuyển đến màn hình sửa thông tin cá nhân", Toast.LENGTH_SHORT).show();
-            // Intent intent = new Intent(this, EditPersonalInfoActivity.class);
-            // startActivity(intent);
+             Intent intent = new Intent(InforUserActivity.this, PersonalInfoActivity.class);
+             startActivity(intent);
         });
 
         tvChangePasswordLabel.setOnClickListener(v -> {
-            Toast.makeText(this, "Chuyển đến màn hình đổi mật khẩu", Toast.LENGTH_SHORT).show();
-            // Intent intent = new Intent(this, ChangePasswordActivity.class);
-            // startActivity(intent);
+             Intent intent = new Intent(InforUserActivity.this, ChangePasswordActivity.class);
+             startActivity(intent);
         });
 
         tvLogOut.setOnClickListener(v -> {
