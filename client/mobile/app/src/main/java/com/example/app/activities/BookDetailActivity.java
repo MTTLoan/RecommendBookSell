@@ -40,7 +40,6 @@ public class BookDetailActivity extends AppCompatActivity {
     private ImageButton btnIncrease, btnDecrease;
     private Button btnAddToCart;
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +49,16 @@ public class BookDetailActivity extends AppCompatActivity {
         // Set up RecyclerView for header
         HeaderController.setupHeader(this);
         findViewById(R.id.ivReturn).setOnClickListener(v -> onBackPressed());
-        loadDummyData();
+
+        // Retrieve the Book object from Intent
+        Book book = getIntent().getParcelableExtra("book");
+        if (book != null) {
+            loadBookData(book);
+        } else {
+            Toast.makeText(this, "Không tìm thấy thông tin sách", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         tvQuantity = findViewById(R.id.tvQuantity);
         btnIncrease = findViewById(R.id.btnIncrease);
@@ -119,14 +127,9 @@ public class BookDetailActivity extends AppCompatActivity {
         isDescriptionExpanded = !isDescriptionExpanded;
     }
 
-    private void loadDummyData() {
-        // Tạo danh sách ảnh
-        List<Book.Image> imageList = new ArrayList<>();
-        imageList.add(new Book.Image("https://via.placeholder.com/180x278.png?text=Sách+1", "Ảnh 1"));
-        imageList.add(new Book.Image("https://via.placeholder.com/180x278.png?text=Sách+2", "Ảnh 2"));
-        imageList.add(new Book.Image("https://via.placeholder.com/180x278.png?text=Sách+3", "Ảnh 3"));
-
-        // Khởi tạo adapter hình ảnh
+    private void loadBookData(Book book) {
+        // Load book images
+        List<Book.Image> imageList = book.getImages();
         BookImageAdapter imageAdapter = new BookImageAdapter(this, imageList);
         imageViewPager.setAdapter(imageAdapter);
 
@@ -134,23 +137,23 @@ public class BookDetailActivity extends AppCompatActivity {
                 (tab, position) -> tab.setText(String.valueOf(position + 1))
         ).attach();
 
-        // Thông tin sách giả lập
-        txtBookName.setText("Chuyện Cổ Tích Thế Giới");
-        txtAuthor.setText("Tác giả: Nguyễn Nhật Ánh");
-        txtRating.setText("★ 4.5/5");
-        tvPrice.setText("132,000đ");
-        tvDescription.setText("Chuyện con mèo dạy hải âu bay là kiệt tác dành cho thiếu nhi của nhà văn Chi Lê nổi tiếng Luis Sepúlveda...");
-        tvToggle.setVisibility(View.VISIBLE);
+        // Load book details
+        txtBookName.setText(book.getName());
+        txtAuthor.setText("Tác giả: " + book.getAuthor());
+        txtRating.setText(String.format("★ %.1f/5", book.getAverageRating()));
+        tvPrice.setText(String.format("%,.0fđ", book.getPrice()));
+        tvDescription.setText(book.getDescription());
+        tvToggle.setVisibility(book.getDescription().length() > 100 ? View.VISIBLE : View.GONE);
 
-        // Đánh giá tổng thể
-        tvRating.setText("4.5/5");
-        tvNumberReview.setText("(100 đánh giá)");
+        // Load overall rating and review count
+        tvRating.setText(String.format("%.1f/5", book.getAverageRating()));
+        tvNumberReview.setText(String.format("(%d đánh giá)", book.getRatingCount()));
 
-        // Danh sách đánh giá
+        // Simulate reviews for this book (in a real app, fetch via API using book.getId())
         List<Review> reviews = new ArrayList<>();
-        reviews.add(new Review(1, 1, 1, 4.8f, "Rất hay, con tôi rất thích!", "2024-05-01"));
-        reviews.add(new Review(2, 2, 2, 4.0f, "Minh họa đẹp, giấy tốt.", "2024-05-02"));
-        reviews.add(new Review(3, 3, 3, 4.5f, "Câu chuyện hấp dẫn và dễ hiểu cho trẻ nhỏ.", "2024-05-03"));
+        reviews.add(new Review(1, book.getId(), 1, 4.8f, "Rất hay, con tôi rất thích!", "2024-05-01"));
+        reviews.add(new Review(2, book.getId(), 2, 4.0f, "Minh họa đẹp, giấy tốt.", "2024-05-02"));
+        reviews.add(new Review(3, book.getId(), 3, 4.5f, "Câu chuyện hấp dẫn và dễ hiểu cho trẻ nhỏ.", "2024-05-03"));
 
         DisplayReviewAdapter reviewAdapter = new DisplayReviewAdapter(reviews);
         reviewRecyclerView.setLayoutManager(new LinearLayoutManager(this));
