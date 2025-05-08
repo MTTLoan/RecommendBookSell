@@ -1,21 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<!--    <com.etebarian.meowbottomnavigation.MeowBottomNavigation-->
-<!--        android:id="@+id/bottom_navigation"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        app:mbn_backgroundBottomColor="@android:color/white"-->
-<!--        app:mbn_circleColor="#2196F3"-->
-<!--        app:mbn_selectedIconColor="#2196F3"-->
-<!--        app:mbn_defaultIconColor="#B0BEC5"-->
-<!--        app:mbn_countBackgroundColor="#FF5722"-->
-<!--        app:mbn_countTextColor="@android:color/white"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent" />-->
+    <View
+        android:id="@+id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#daf5e1" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <View
+        android:id="@+id/bottomGreenBar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:background="#3fbf48" />
+
+    <com.nafis.bottomnavigation.NafisBottomNavigation
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0dp"
+        android:gravity="center"
+        android:paddingTop="12dp"
+        android:paddingBottom="20dp"
+        app:mbn_backgroundBottomColor="#3fbf48"
+        app:mbn_circleColor="#3fbf48"
+        app:mbn_countBackgroundColor="#ff6f00"
+        app:mbn_countTextColor="#ffffff"
+        app:mbn_countTypeface="fonts/SourceSansPro-Regular.ttf"
+        app:mbn_defaultIconColor="#daf5e1"
+        app:mbn_rippleColor="@android:color/transparent"
+        app:mbn_selectedIconColor="#ffffff"
+        app:mbn_shadowColor="@android:color/transparent"/>
+    />
+
+</RelativeLayout>
