@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,9 +40,21 @@ public class InforUserActivity extends AppCompatActivity {
         prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
         apiService = RetrofitClient.getApiService();
 
+        // Debug: Check if token exists
+        String token = prefs.getString("jwt_token", null);
+        if (token == null) {
+            Toast.makeText(this, "Token không tồn tại. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        } else {
+            Log.d("InforUserActivity", "Token retrieved: " + token);
+            Toast.makeText(this, "Token found: " + token.substring(0, 10) + "...", Toast.LENGTH_LONG).show();
+        }
+
         // Set click listeners
         tvEditPersonalInfoLabel.setOnClickListener(v -> {
-            // Navigate to Edit Personal Info screen
             Toast.makeText(this, "Chuyển đến màn hình sửa thông tin cá nhân", Toast.LENGTH_SHORT).show();
             // Replace with Intent to EditPersonalInfoActivity
             // Intent intent = new Intent(this, EditPersonalInfoActivity.class);
@@ -49,7 +62,6 @@ public class InforUserActivity extends AppCompatActivity {
         });
 
         tvChangePasswordLabel.setOnClickListener(v -> {
-            // Navigate to Change Password screen
             Toast.makeText(this, "Chuyển đến màn hình đổi mật khẩu", Toast.LENGTH_SHORT).show();
             // Replace with Intent to ChangePasswordActivity
             // Intent intent = new Intent(this, ChangePasswordActivity.class);
@@ -57,7 +69,6 @@ public class InforUserActivity extends AppCompatActivity {
         });
 
         tvLogOut.setOnClickListener(v -> {
-            // Show confirmation dialog before logout
             new android.app.AlertDialog.Builder(this)
                     .setTitle("Xác nhận")
                     .setMessage("Bạn có chắc muốn đăng xuất?")
@@ -68,10 +79,18 @@ public class InforUserActivity extends AppCompatActivity {
     }
 
     private void logout() {
+        // Ensure prefs is initialized (though it should already be from onCreate)
+        if (prefs == null) {
+            prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        }
+
         // Get JWT token from SharedPreferences
         String token = prefs.getString("jwt_token", null);
         if (token == null) {
-            Toast.makeText(this, "Token không tồn tại", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Token không tồn tại. Vui lòng đăng nhập lại.", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
             return;
         }
 
