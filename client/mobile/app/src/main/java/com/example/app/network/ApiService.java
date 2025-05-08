@@ -159,6 +159,27 @@ public interface ApiService {
         }
     }
 
+    class GoogleAuthRequest {
+        @SerializedName("googleId")
+        private String googleId;
+
+        @SerializedName("email")
+        private String email;
+
+        @SerializedName("fullName")
+        private String fullName;
+
+        @SerializedName("photoUrl")
+        private String photoUrl;
+
+        public GoogleAuthRequest(String googleId, String email, String fullName, String photoUrl) {
+            this.googleId = googleId;
+            this.email = email;
+            this.fullName = fullName;
+            this.photoUrl = photoUrl;
+        }
+    }
+
     @POST("/api/auth/logout")
     Call<LogoutResponse> logout(@Header("Authorization") String token);
 
@@ -169,9 +190,9 @@ public interface ApiService {
     @Headers("Content-Type: application/json")
     Call<User> login(@Body UserLoginRequest request);
 
-    @POST("/api/auth/login/google")
-    Call<User> loginWithGoogle(@Body UserLoginRequest request);
-
+    @POST("/api/auth/googleauth")
+    @Headers("Content-Type: application/json")
+    Call<User> loginWithGoogle(@Body GoogleAuthRequest request);
     @Headers("Content-Type: application/json")
     @POST("/api/verify_email/verify")
     Call<OtpResponse> verifyOtp(@Body OtpRequest request);
