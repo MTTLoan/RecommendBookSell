@@ -10,7 +10,7 @@ public class User {
     private String email;
     private String phoneNumber;
     private String role;
-    private String token; // Thêm trường token
+    private String token;
 
     public String getId() {
         return id;

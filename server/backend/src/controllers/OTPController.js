@@ -25,7 +25,7 @@ const verifyOTP = async ({ email, otp }) => {
     const hashedOTP = matchedOTPRecord.otp;
     const validOTP = await verifyHashedData(otp, hashedOTP);
 
-    return validOTP;
+    return true;
   } catch (error) {
     throw error;
   }

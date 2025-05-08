@@ -54,9 +54,9 @@ public class OrderActivity extends AppCompatActivity {
                 "2024-12-10 22:30:48", // order_date
                 1536000, // total_amount
                 "Chờ giao hàng", // status
-                "Phường Linh Tây", // shipping_address_ward
-                "Quận Thủ Đức", // shipping_address_district
-                "TP.HCM", // shipping_address_province
+                28756, // shipping_address_ward
+                829, // shipping_address_district
+                83, // shipping_address_province
                 "291 Pasteur", // shipping_address
                 items,
                 "Mai Thị Thanh Loan", // user_full_name (User)
@@ -80,10 +80,10 @@ public class OrderActivity extends AppCompatActivity {
         tvOrderDate.setText(formattedDate);
         tvShippingAddress.setText(order.getUserFullName() + "\n" +
                 order.getUserPhoneNumber() + "\n" +
-                order.getShippingAddress() + ", " +
-                order.getShippingAddressWard() + ", " +
-                order.getShippingAddressDistrict() + ", " +
-                order.getShippingAddressProvince());
+                order.getShippingDetailedAddress() + ", " +
+                order.getShippingAddressWardCode() + ", " +
+                order.getShippingAddressDistrictCode() + ", " +
+                order.getShippingAddressProvinceCode());
 
         // Tính tổng tiền hàng, phí vận chuyển, thành tiền
         double totalGoods = order.getTotalAmount();
