@@ -16,6 +16,11 @@ public interface ApiService {
     @POST("auth/register")
     Call<User> register(@Body RegisterRequest request);
 
+    @POST("forgot_password/forgot-password")
+    Call<ForgotPasswordResponse> sendPasswordResetOTP(@Body ForgotPasswordRequest request);
+
+    @POST("forgot_password/reset-password")
+    Call<ResetPasswordResponse> resetPassword(@Body ResetPasswordRequest request);
 
     class RegisterRequest {
         String username, fullName, email, phoneNumber, password, confirm_password;
@@ -30,31 +35,28 @@ public interface ApiService {
         }
     }
 
-    public class UserLoginRequest {
+    class UserLoginRequest {
         @SerializedName("email")
         private String email;
 
         @SerializedName("password")
-        private String password; // Dùng cho đăng nhập thông thường
+        private String password;
 
         @SerializedName("idToken")
-        private String idToken;  // Dùng cho đăng nhập Google
+        private String idToken;
 
-        // Constructor cho đăng nhập thông thường (email, password)
         public UserLoginRequest(String email, String password, boolean isNormalLogin) {
             this.email = email;
             this.password = password;
-            this.idToken = null; // Đảm bảo idToken không được gửi
+            this.idToken = null;
         }
 
-        // Constructor cho đăng nhập Google (email, idToken)
         public UserLoginRequest(String email, String idToken) {
             this.email = email;
             this.idToken = idToken;
-            this.password = null; // Đảm bảo password không được gửi
+            this.password = null;
         }
 
-        // Getters
         public String getEmail() {
             return email;
         }
@@ -68,6 +70,80 @@ public interface ApiService {
         }
     }
 
+    class OtpRequest {
+        private String email;
+        private String otp;
+
+        public OtpRequest(String email, String otp) {
+            this.email = email;
+            this.otp = otp;
+        }
+    }
+
+    class ResendOtpRequest {
+        private String email;
+
+        public ResendOtpRequest(String email) {
+            this.email = email;
+        }
+    }
+
+    class ForgotPasswordRequest {
+        private String email;
+
+        public ForgotPasswordRequest(String email) {
+            this.email = email;
+        }
+    }
+
+    class ResetPasswordRequest {
+        private String email;
+        private String otp;
+        private String newPassword;
+        private String confirmPassword;
+
+        public ResetPasswordRequest(String email, String otp, String newPassword, String confirmPassword) {
+            this.email = email;
+            this.otp = otp;
+            this.newPassword = newPassword;
+            this.confirmPassword = confirmPassword;
+        }
+    }
+
+    class OtpResponse {
+        private boolean success;
+        private String message;
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    class ForgotPasswordResponse {
+        private String message;
+        private Object otpRecord;
+
+        public String getMessage() {
+            return message;
+        }
+
+        public Object getOtpRecord() {
+            return otpRecord;
+        }
+    }
+
+    class ResetPasswordResponse {
+        private String message;
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
     @GET("api/notifications")
     Call<List<Notification>> getNotifications();
 
@@ -75,7 +151,13 @@ public interface ApiService {
     @Headers("Content-Type: application/json")
     Call<User> login(@Body UserLoginRequest request);
 
-
     @POST("/api/auth/login/google")
     Call<User> loginWithGoogle(@Body UserLoginRequest request);
+
+    @Headers("Content-Type: application/json")
+    @POST("/api/verify_email/verify")
+    Call<OtpResponse> verifyOtp(@Body OtpRequest request);
+
+    @POST("/api/resend-otp")
+    Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
 }
