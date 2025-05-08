@@ -115,7 +115,7 @@ public class Book implements Parcelable {
             this.alt = alt;
         }
 
-        protected Image(Parcel in) {
+        public Image(Parcel in) {
             url = in.readString();
             alt = in.readString();
         }

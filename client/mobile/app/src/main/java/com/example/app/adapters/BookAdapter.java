@@ -90,4 +90,10 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
             textPrice = itemView.findViewById(R.id.textPrice);
         }
     }
+
+    public void updateList(List<Book> newBookList) {
+        bookList.clear();
+        bookList.addAll(newBookList);
+        notifyDataSetChanged();
+    }
 }

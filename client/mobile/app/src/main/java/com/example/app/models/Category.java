@@ -4,11 +4,13 @@ public class Category {
     private int id;
     private String name;
     private String description;
+    private String imageUrl;
 
-    public Category(int id, String name, String description) {
+    public Category(int id, String name, String description, String imageUrl) {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.imageUrl = imageUrl;
     }
 
     // Getter
@@ -24,7 +26,11 @@ public class Category {
         return description;
     }
 
-    // Setter (nếu cần)
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    // Setter
     public void setId(int id) {
         this.id = id;
     }
@@ -37,10 +43,13 @@ public class Category {
         this.description = description;
     }
 
-    // Optional: toString
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    // toString
     @Override
     public String toString() {
         return name;
     }
 }
-

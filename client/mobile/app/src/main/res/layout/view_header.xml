@@ -5,8 +5,7 @@
     android:background="@android:color/white"
     android:elevation="4dp"
     android:paddingStart="12dp"
-    android:paddingEnd="12dp"
-    android:paddingTop="35dp">
+    android:paddingEnd="12dp">
 
     <!-- Logo + Tên -->
     <ImageView
