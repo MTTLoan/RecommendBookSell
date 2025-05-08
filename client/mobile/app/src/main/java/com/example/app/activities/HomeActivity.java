@@ -66,6 +66,14 @@ public class HomeActivity extends AppCompatActivity {
         recommendationsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         bestDealsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
+        // Initialize category list
+        categoryList = new ArrayList<>();
+        categoryList.add(new Category(1, "Sách thiếu nhi", "Fictional books", "https://example.com/category_fiction.jpg"));
+        categoryList.add(new Category(2, "Sách văn học", "Non-fictional books", "https://example.com/category_nonfiction.jpg"));
+        categoryList.add(new Category(3, "Sách kinh tế", "Science books", "https://example.com/category_science.jpg"));
+        categoryList.add(new Category(1, "Sách thiếu nhi", "Fictional books", "https://example.com/category_fiction.jpg"));
+        categoryList.add(new Category(2, "Sách văn học", "Non-fictional books", "https://example.com/category_nonfiction.jpg"));
+        categoryList.add(new Category(3, "Sách kinh tế", "Science books", "https://example.com/category_science.jpg"));
 
         // Initialize book list with multiple books
         bookList = new ArrayList<>();

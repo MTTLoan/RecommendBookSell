@@ -33,22 +33,42 @@
             android:name=".activities.LoginActivity"
             android:exported="true">
         </activity>
-        <activity android:name=".activities.CongratulationActivity"
+
+        <activity
+            android:name=".activities.ListBookActivity"
             android:exported="true">
         </activity>
 
-        <activity android:name=".activities.EmailResetPasswordActivity"
+        <activity
+            android:name=".activities.BookDetailActivity"
+            android:exported="true"></activity>
+
+        <activity
+            android:name=".activities.SearchActivity"
             android:exported="true">
+
         </activity>
 
-        <activity android:name=".activities.ResetPasswordActivity"
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".activities.CongratulationActivity"
+            android:exported="true"></activity>
+
+        <activity
+            android:name=".activities.EmailResetPasswordActivity"
+            android:exported="true"></activity>
+
+        <activity
+            android:name=".activities.ResetPasswordActivity"
             android:exported="true">
 
-            </activity>
+        </activity>
         <activity
             android:name=".activities.RegisterActivity"
-            android:exported="true">
-        </activity>
+            android:exported="true"></activity>
         <activity
             android:name=".activities.NotificationActivity"
             android:exported="true">
@@ -60,8 +80,7 @@
         </activity>
         <activity
             android:name=".activities.OrderActivity"
-            android:exported="true">
-        </activity>
+            android:exported="true"></activity>
         <activity
             android:name=".activities.OrderHistoryActivity"
             android:exported="true">
@@ -75,8 +94,7 @@
             android:exported="true">
         </activity>
 
-
-<!--        Cấu hình Google API-->
+        <!--        Cấu hình Google API-->
         <meta-data
             android:name="com.google.android.gms.auth.api.signin.API_KEY"
             android:value="@string/google_client_id" />
