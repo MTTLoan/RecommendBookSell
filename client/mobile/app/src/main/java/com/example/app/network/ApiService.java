@@ -36,8 +36,8 @@ public interface ApiService {
     }
 
     class UserLoginRequest {
-        @SerializedName("email")
-        private String email;
+        @SerializedName("identifier")
+        private String identifier;
 
         @SerializedName("password")
         private String password;
@@ -46,19 +46,19 @@ public interface ApiService {
         private String idToken;
 
         public UserLoginRequest(String email, String password, boolean isNormalLogin) {
-            this.email = email;
+            this.identifier = email;
             this.password = password;
             this.idToken = null;
         }
 
         public UserLoginRequest(String email, String idToken) {
-            this.email = email;
+            this.identifier = email;
             this.idToken = idToken;
             this.password = null;
         }
 
-        public String getEmail() {
-            return email;
+        public String getIdentifier() {
+            return identifier;
         }
 
         public String getPassword() {

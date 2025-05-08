@@ -14,7 +14,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.app.R;
 import androidx.fragment.app.FragmentManager;
-import com.example.app.fragments.OTPFragment;
+import com.example.app.fragments.OTPFragmentRegister;
 import com.example.app.models.User;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
@@ -153,7 +153,7 @@ public class RegisterActivity extends AppCompatActivity {
     private void showOtpFragment(String email) {
         Log.d(TAG, "showOtpFragment with email: " + email);
 
-        OTPFragment otpFragment = OTPFragment.newInstance(email, "Đăng ký", "register");
+        OTPFragmentRegister otpFragment = OTPFragmentRegister.newInstance(email, "Đăng ký", "register");
 
         // Hiện FrameLayout chứa OTP Fragment
         findViewById(R.id.otp_fragment).setVisibility(android.view.View.VISIBLE);
