@@ -112,13 +112,6 @@ public class LoginActivity extends AppCompatActivity {
             });
         });
 
-        // Sự kiện "Quên mật khẩu"
-        tvForgotPassword.setOnClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class));
-        });
-
-
-
         // Cài đặt toggle hiển thị mật khẩu
         setupPasswordToggle(etPassword, R.drawable.visibility_24px, R.drawable.visibility_off_24px);
     }
