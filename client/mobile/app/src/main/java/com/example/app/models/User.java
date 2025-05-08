@@ -1,9 +1,12 @@
 package com.example.app.models;
 
+import com.google.gson.annotations.SerializedName;
+
 public class User {
     private String id;
     private String username;
     private String fullName;
+    @SerializedName("email")
     private String email;
     private String phoneNumber;
     private String role;

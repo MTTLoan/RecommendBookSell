@@ -34,7 +34,7 @@
         app:tint="@color/black" />
 
     <TextView
-        android:id="@+id/tbtnSignup"
+        android:id="@+id/tvtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="12dp"
@@ -79,7 +79,7 @@
         android:layout_width="337dp"
         android:layout_height="50dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="52dp"
         android:layout_marginEnd="24dp"
         android:background="@drawable/btn_fill"
         android:backgroundTint="@color/green"
