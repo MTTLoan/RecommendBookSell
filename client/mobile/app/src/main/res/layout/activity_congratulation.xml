@@ -38,7 +38,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="12dp"
-        android:text="@string/resetPassword"
+        android:text="Thành công"
         android:textAllCaps="true"
         android:textColor="@color/black"
         android:textSize="16sp"

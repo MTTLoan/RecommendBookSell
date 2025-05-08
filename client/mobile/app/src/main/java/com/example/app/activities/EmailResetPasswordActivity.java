@@ -52,7 +52,7 @@ public class EmailResetPasswordActivity extends AppCompatActivity {
                         // Chuyển sang OTPFragment (truyền email qua Bundle)
                         Bundle bundle = new Bundle();
                         bundle.putString("email", email);
-                        OTPFragment otpFragment = new OTPFragment();
+                        OTPFragment otpFragment = OTPFragment.newInstance(email, "Đặt lại mật khẩu", "forgot_password");
                         otpFragment.setArguments(bundle);
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.otp_fragment, otpFragment)
