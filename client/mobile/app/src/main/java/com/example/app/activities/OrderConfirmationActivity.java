@@ -352,7 +352,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         btnHome.setOnClickListener(v -> {
             // Quay về Trang chủ (ví dụ: MainActivity)
             dialog.dismiss();
-            startActivity(new Intent(OrderConfirmationActivity.this, HomeActivity.class));
+            startActivity(new Intent(OrderConfirmationActivity.this, Menu.class));
             finish(); // Đóng Activity hiện tại
             // Thêm Intent nếu cần: startActivity(new Intent(this, MainActivity.class));
         });

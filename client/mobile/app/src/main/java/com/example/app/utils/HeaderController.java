@@ -18,7 +18,7 @@ public class HeaderController {
 
         if (cartIcon != null) {
             cartIcon.setOnClickListener(v -> {
-                activity.startActivity(new Intent(activity, InforUserActivity.class));
+                activity.startActivity(new Intent(activity, CartActivity.class));
             });
         }
 
