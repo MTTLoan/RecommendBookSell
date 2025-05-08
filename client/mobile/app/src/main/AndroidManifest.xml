@@ -90,6 +90,15 @@
             android:exported="true">
         </activity>
 
+        <activity
+            android:name=".activities.Menu"
+            android:windowSoftInputMode="adjustResize">
+        </activity>
+        <activity
+            android:name=".activities.SplashActivity"
+            android:windowSoftInputMode="adjustResize">
+        </activity>
+
         <!--        Cấu hình Google API-->
         <meta-data
             android:name="com.google.android.gms.auth.api.signin.API_KEY"

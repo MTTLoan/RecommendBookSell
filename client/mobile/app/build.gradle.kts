@@ -32,6 +32,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
 }
 
@@ -60,6 +61,6 @@ dependencies {
     implementation ("io.github.chaosleung:pinview:1.4.4")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
     implementation ("androidx.appcompat:appcompat:1.6.1")
-
+    implementation ("com.github.Foysalofficial:NafisBottomNav:5.0")
 }
 

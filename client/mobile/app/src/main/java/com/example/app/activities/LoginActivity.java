@@ -90,7 +90,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         User user = response.body();
                         AuthUtils.saveToken(LoginActivity.this, user.getToken());
-                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                        startActivity(new Intent(LoginActivity.this, Menu.class));
                         finish();
                     } else {
                         try {
@@ -142,8 +142,6 @@ public class LoginActivity extends AppCompatActivity {
         tvForgotPassword.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, EmailResetPasswordActivity.class));
         });
-
-
 
         // Cài đặt toggle hiển thị mật khẩu
         tfPassword.setEndIconOnClickListener(v -> {
