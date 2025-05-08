@@ -16,8 +16,17 @@
         android:theme="@style/Theme.Book"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity android:name=".activities.HomeActivity"
+            android:exported="true">
+        </activity>
+
         <activity
-            android:name=".activities.HomeActivity"
+            android:name=".activities.BookDetailActivity"
+            android:exported="true">
+        </activity>
+
+        <activity
+            android:name=".activities.LoginActivity"
             android:exported="true">
         </activity>
 
@@ -33,39 +42,33 @@
         </activity>
 
         <activity
-            android:name=".activities.BookDetailActivity"
-            android:exported="true"></activity>
-
-        <activity
             android:name=".activities.SearchActivity"
             android:exported="true">
 
         </activity>
 
-        <activity
-            android:name=".activities.LoginActivity"
+        <activity android:name=".activities.CongratulationActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activities.CongratulationActivity"
-            android:exported="true"></activity>
 
-        <activity
-            android:name=".activities.EmailResetPasswordActivity"
-            android:exported="true"></activity>
+        <activity android:name=".activities.EmailResetPasswordActivity"
+            android:exported="true">
+
+        </activity>
 
         <activity
             android:name=".activities.ResetPasswordActivity"
             android:exported="true">
 
         </activity>
-        <activity
-            android:name=".activities.RegisterActivity"
-            android:exported="true"></activity>
+        <activity android:name=".activities.RegisterActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="true">
+        </activity>
         <activity
             android:name=".activities.NotificationActivity"
             android:exported="true">
@@ -73,16 +76,18 @@
         </activity>
         <activity
             android:name=".activities.CartActivity"
-            android:exported="true"></activity>
-        <activity
-            android:name=".activities.OrderActivity"
-            android:exported="true"></activity>
+            android:exported="true">
+        </activity>
+        <activity android:name=".activities.OrderActivity"
+            android:exported="true">
+        </activity>
         <activity
             android:name=".activities.OrderHistoryActivity"
-            android:exported="true"></activity>
-        <activity
-            android:name=".activities.OrderConfirmationActivity"
-            android:exported="true"></activity>
+            android:exported="true">
+        </activity>
+        <activity android:name=".activities.OrderConfirmationActivity"
+            android:exported="true">
+        </activity>
 
         <!--        Cấu hình Google API-->
         <meta-data
