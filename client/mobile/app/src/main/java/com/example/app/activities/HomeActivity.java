@@ -1,5 +1,6 @@
 package com.example.app.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -167,6 +168,32 @@ public class HomeActivity extends AppCompatActivity {
                 "2025-05-02 16:45:10",
                 "Nguyễn Nhật Ánh"
         ));
+
+        // Filter books for recommendations (all books for "Đề xuất dành riêng cho bạn")
+        List<Book> recommendedBooks = new ArrayList<>(bookList);
+
+        // Filter books for "Sách văn học" (categoryId = 2)
+        List<Book> literatureBooks = new ArrayList<>();
+        for (Book book : bookList) {
+            if (book.getCategoryId() == 2) {
+                literatureBooks.add(book);
+            }
+        }
+
+        // Set up click listeners for category titles
+        findViewById(R.id.recommendationsTitle).setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, ListBookActivity.class);
+            intent.putExtra("category_id", 0); // 0 for "Đề xuất dành riêng cho bạn" (all books)
+            intent.putExtra("category_name", "Đề xuất dành riêng cho bạn");
+            startActivity(intent);
+        });
+
+        findViewById(R.id.bestDealsTitle).setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, ListBookActivity.class);
+            intent.putExtra("category_id", 2); // Category ID for "Sách văn học"
+            intent.putExtra("category_name", "Sách văn học");
+            startActivity(intent);
+        });
 
         // Setup adapters
         recommendationsAdapter = new BookAdapter(this, bookList, categoryList);
