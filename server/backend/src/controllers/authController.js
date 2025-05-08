@@ -150,54 +150,74 @@ export const logoutController = async (req, res) => {
   }
 };
 
-export const loginWithGoogle = async (req, res) => {
-  const { email, idToken } = req.body;
-  console.log("Received request:", { email, idToken });
+export const googleAuth = async (req, res) => {
+  let { googleId, email, fullName, photoUrl } = req.body;
+
+  googleId = googleId.trim();
+  email = email.trim();
+  fullName = fullName.trim();
+  photoUrl = photoUrl.trim();
 
   try {
-    const ticket = await client.verifyIdToken({
-      idToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    console.log("Token payload:", payload);
+    let isNewAccount = false;
+    // Tìm người dùng bằng googleId hoặc email
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
 
-    if (payload.email !== email) {
-      console.log("Email mismatch:", {
-        payloadEmail: payload.email,
-        requestEmail: email,
-      });
-      return res.status(401).json({ message: "Email không trùng khớp!" });
-    }
-
-    let user = await User.findOne({ email });
     if (!user) {
+      // Kiểm tra email trùng lặp
+      const emailExists = await User.findOne({ email });
+      if (emailExists) {
+        return res.status(400).json({
+          success: false,
+          msg: "Email đã được sử dụng bởi tài khoản khác!",
+        });
+      }
+
+      // Tạo người dùng mới
       user = new User({
+        googleId,
         email,
-        fullName: payload.name,
-        avatar: payload.picture,
-        googleId: payload.sub,
+        fullName,
+        photoUrl,
+        provider: "google",
+        verified: true,
+        role: "user",
       });
+      isNewAccount = true;
       await user.save();
-      console.log("Tạo người dùng mới:", user);
-    } else {
-      console.log("Tìm thấy người dùng:", user);
     }
 
-    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
-      expiresIn: "7d",
+    // Tạo payload cho JWT
+    const payload = {
+      user: {
+        id: user.id,
+        role: user.role,
+      },
+    };
+
+    // Tạo JWT token
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
     });
 
-    res.json({
-      user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        token,
-      },
+    // Lưu token vào user
+    user.token = token;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      msg: "Đăng nhập Google thành công!",
+      isNewAccount,
+      token,
+      user_id: user.id,
+      user,
     });
   } catch (err) {
-    console.error("Lỗi đăng nhập Google:", err);
-    res.status(401).json({ message: "Xác thực Google thất bại!" });
+    console.error("Lỗi đăng nhập Google:", err.message);
+    return res.status(500).json({
+      success: false,
+      msg: "Lỗi máy chủ khi đăng nhập Google!",
+    });
   }
 };
+
