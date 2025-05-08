@@ -150,54 +150,72 @@ export const logoutController = async (req, res) => {
   }
 };
 
-export const loginWithGoogle = async (req, res) => {
-  const { email, idToken } = req.body;
-  console.log("Received request:", { email, idToken });
+// Google Auth
+export const loginWithGoogle = async (req, res, next) => {
+  let { google_id, email, full_name, photo_url } = req.body;
+
+  google_id = google_id.trim();
+  email = email.trim();
+  full_name = full_name.trim();
+  photo_url = photo_url.trim();
 
   try {
-    const ticket = await client.verifyIdToken({
-      idToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    console.log("Token payload:", payload);
+    let isNewAccount = false;
+    let user = await Users.findOne({ google_id: google_id });
 
-    if (payload.email !== email) {
-      console.log("Email mismatch:", {
-        payloadEmail: payload.email,
-        requestEmail: email,
-      });
-      return res.status(401).json({ message: "Email không trùng khớp!" });
-    }
-
-    let user = await User.findOne({ email });
     if (!user) {
-      user = new User({
-        email,
-        fullName: payload.name,
-        avatar: payload.picture,
-        googleId: payload.sub,
-      });
+      // chưa tồn tại, tạo user
+      user = new Users();
+
+      user.google_id = google_id;
+      user.email = email;
+      user.full_name = full_name;
+      user.photo_url = photo_url;
+      user.provider = "google";
+      user.verified = true;
+
+      isNewAccount = true;
+
       await user.save();
-      console.log("Tạo người dùng mới:", user);
-    } else {
-      console.log("Tìm thấy người dùng:", user);
     }
 
-    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    // đã tồn tại user
 
-    res.json({
+    const payload = {
       user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        token,
+        id: user.id,
       },
-    });
+    };
+
+    jwt.sign(
+      payload,
+      process.env.jwtUserSecret,
+      {
+        expiresIn: 360000,
+      },
+      (err, token) => {
+        if (err) throw err;
+
+        user.token = token;
+
+        return res.status(200).json({
+          success: true,
+          msg: "Login Google Successfully!",
+          isNewAccount: isNewAccount,
+          token: token,
+          user_id: user.id,
+          user: user,
+        });
+      }
+    );
+
+    await user.save();
   } catch (err) {
-    console.error("Lỗi đăng nhập Google:", err);
-    res.status(401).json({ message: "Xác thực Google thất bại!" });
+    console.log(err.message);
+
+    return res.status(500).json({
+      success: false,
+      msg: "Google Login Server Error!",
+    });
   }
 };

@@ -62,5 +62,9 @@ dependencies {
     annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
     implementation ("androidx.appcompat:appcompat:1.6.1")
     implementation ("com.github.Foysalofficial:NafisBottomNav:5.0")
+    implementation ("com.google.android.gms:play-services-auth:20.7.0")
+    implementation ("androidx.credentials:credentials:1.2.2")
+    implementation ("androidx.credentials:credentials-play-services-auth:1.2.2")
+    implementation ("com.google.api-client:google-api-client:2.2.0")
 }
 

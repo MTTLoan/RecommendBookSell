@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.app.CategoryAdapter;
+import com.example.app.adapters.CategoryAdapter;
 import com.example.app.R;
 import com.example.app.adapters.BookAdapter;
 import com.example.app.models.Book;
@@ -94,9 +94,9 @@ public class SearchFragment extends Fragment {
 
         // Category RecyclerView
         categoryRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        categoryAdapter = new CategoryAdapter(categoryList, category -> {
-            Toast.makeText(getContext(), "Selected: " + category.getName(), Toast.LENGTH_SHORT).show();
-        });
+//        categoryAdapter = new CategoryAdapter(categoryList, category -> {
+//            Toast.makeText(getContext(), "Selected: " + category.getName(), Toast.LENGTH_SHORT).show();
+//        });
         categoryRecyclerView.setAdapter(categoryAdapter);
     }
 
