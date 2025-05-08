@@ -1,5 +1,6 @@
 package com.example.app.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -351,6 +352,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         btnHome.setOnClickListener(v -> {
             // Quay về Trang chủ (ví dụ: MainActivity)
             dialog.dismiss();
+            startActivity(new Intent(OrderConfirmationActivity.this, HomeActivity.class));
             finish(); // Đóng Activity hiện tại
             // Thêm Intent nếu cần: startActivity(new Intent(this, MainActivity.class));
         });
@@ -360,6 +362,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         btnOrders.setOnClickListener(v -> {
             // Chuyển đến màn hình Đơn mua (ví dụ: OrderHistoryActivity)
             dialog.dismiss();
+            startActivity(new Intent(OrderConfirmationActivity.this, OrderHistoryActivity.class));
             finish(); // Đóng Activity hiện tại
             // Thêm Intent nếu cần: startActivity(new Intent(this, OrderHistoryActivity.class));
         });
