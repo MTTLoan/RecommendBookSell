@@ -147,18 +147,20 @@ public interface ApiService {
 
     // Logout Response Class
     class LogoutResponse {
-        private boolean success;
         private String message;
         private String msg;
-
-        public boolean isSuccess() {
-            return success;
-        }
 
         public String getMessage() {
             return message != null ? message : msg;
         }
+
+        public boolean isSuccess() {
+            return (message != null && message.contains("thành công")) || (msg != null && msg.contains("thành công"));
+        }
     }
+
+    @POST("/api/auth/logout")
+    Call<LogoutResponse> logout(@Header("Authorization") String token);
 
     @GET("api/notifications")
     Call<List<Notification>> getNotifications();
@@ -177,6 +179,4 @@ public interface ApiService {
     @POST("/api/resend-otp")
     Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
 
-    @POST("api/auth/logout")
-    Call<LogoutResponse> logout(@Header("Authorization") String token);
 }

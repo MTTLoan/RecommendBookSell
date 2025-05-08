@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.app.R;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
+import com.example.app.utils.AuthUtils;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -20,10 +21,11 @@ import retrofit2.Response;
 
 public class InforUserActivity extends AppCompatActivity {
 
+    private static final String TAG = "InforUserActivity";
+
     private TextView tvEditPersonalInfoLabel;
     private TextView tvChangePasswordLabel;
     private TextView tvLogOut;
-    private SharedPreferences prefs;
     private ApiService apiService;
 
     @Override
@@ -36,34 +38,32 @@ public class InforUserActivity extends AppCompatActivity {
         tvChangePasswordLabel = findViewById(R.id.tvChangePasswordLabel);
         tvLogOut = findViewById(R.id.tvlogOut);
 
-        // Initialize SharedPreferences and ApiService
-        prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        // Initialize ApiService
         apiService = RetrofitClient.getApiService();
 
-        // Debug: Check if token exists
-        String token = prefs.getString("jwt_token", null);
+        // Check token using AuthUtils
+        String token = AuthUtils.getToken(this);
         if (token == null) {
+            Log.e(TAG, "Token not found in SharedPreferences");
             Toast.makeText(this, "Token không tồn tại. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
             Intent intent = new Intent(this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
             return;
         } else {
-            Log.d("InforUserActivity", "Token retrieved: " + token);
-            Toast.makeText(this, "Token found: " + token.substring(0, 10) + "...", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "Token retrieved: " + token.substring(0, 10) + "...");
         }
 
         // Set click listeners
         tvEditPersonalInfoLabel.setOnClickListener(v -> {
             Toast.makeText(this, "Chuyển đến màn hình sửa thông tin cá nhân", Toast.LENGTH_SHORT).show();
-            // Replace with Intent to EditPersonalInfoActivity
             // Intent intent = new Intent(this, EditPersonalInfoActivity.class);
             // startActivity(intent);
         });
 
         tvChangePasswordLabel.setOnClickListener(v -> {
             Toast.makeText(this, "Chuyển đến màn hình đổi mật khẩu", Toast.LENGTH_SHORT).show();
-            // Replace with Intent to ChangePasswordActivity
             // Intent intent = new Intent(this, ChangePasswordActivity.class);
             // startActivity(intent);
         });
@@ -72,60 +72,48 @@ public class InforUserActivity extends AppCompatActivity {
             new android.app.AlertDialog.Builder(this)
                     .setTitle("Xác nhận")
                     .setMessage("Bạn có chắc muốn đăng xuất?")
-                    .setPositiveButton("Có", (dialog, which) -> logout())
+                    .setPositiveButton("Có", (dialog, which) -> logout(token))
                     .setNegativeButton("Không", null)
                     .show();
         });
     }
 
-    private void logout() {
-        // Ensure prefs is initialized (though it should already be from onCreate)
-        if (prefs == null) {
-            prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
-        }
-
-        // Get JWT token from SharedPreferences
-        String token = prefs.getString("jwt_token", null);
-        if (token == null) {
-            Toast.makeText(this, "Token không tồn tại. Vui lòng đăng nhập lại.", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-            return;
-        }
-
-        // Show loading dialog
+    private void logout(String token) {
         ProgressDialog dialog = new ProgressDialog(this);
         dialog.setMessage("Đang đăng xuất...");
         dialog.setCancelable(false);
         dialog.show();
 
-        // Call logout API
-        Call<ApiService.LogoutResponse> call = apiService.logout("Bearer " + token);
+        Call<ApiService.LogoutResponse> call = apiService.logout(token);
+        Log.d(TAG, "Logout request URL: " + call.request().url());
         call.enqueue(new Callback<ApiService.LogoutResponse>() {
             @Override
             public void onResponse(Call<ApiService.LogoutResponse> call, Response<ApiService.LogoutResponse> response) {
                 dialog.dismiss();
                 if (response.isSuccessful() && response.body() != null) {
                     ApiService.LogoutResponse logoutResponse = response.body();
+                    Log.d(TAG, "Logout response body: " + new String(response.body().toString())); // Note: This might not show JSON
+                    Log.d(TAG, "Logout response - success: " + logoutResponse.isSuccess());
+                    Log.d(TAG, "Logout response - message: " + logoutResponse.getMessage());
                     Toast.makeText(InforUserActivity.this, logoutResponse.getMessage(), Toast.LENGTH_SHORT).show();
 
                     if (logoutResponse.isSuccess()) {
-                        // Clear token and navigate to LoginActivity
-                        SharedPreferences.Editor editor = prefs.edit();
-                        editor.remove("jwt_token");
-                        editor.apply();
-
+                        AuthUtils.clearToken(InforUserActivity.this);
                         Intent intent = new Intent(InforUserActivity.this, LoginActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         finish();
+                    } else {
+                        Log.w(TAG, "Logout not successful despite message: " + logoutResponse.getMessage());
+                        Toast.makeText(InforUserActivity.this, "Đăng xuất không thành công", Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                        Log.e(TAG, "Logout failed: " + errorBody);
                         Toast.makeText(InforUserActivity.this, "Đăng xuất thất bại: " + errorBody, Toast.LENGTH_LONG).show();
                     } catch (Exception e) {
+                        Log.e(TAG, "Error parsing logout response: " + e.getMessage());
                         Toast.makeText(InforUserActivity.this, "Đăng xuất thất bại", Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -134,6 +122,7 @@ public class InforUserActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiService.LogoutResponse> call, Throwable t) {
                 dialog.dismiss();
+                Log.e(TAG, "Logout API call failed: " + t.getMessage());
                 Toast.makeText(InforUserActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
