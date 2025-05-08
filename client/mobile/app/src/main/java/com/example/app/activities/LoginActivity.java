@@ -143,6 +143,8 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, EmailResetPasswordActivity.class));
         });
 
+
+
         // Cài đặt toggle hiển thị mật khẩu
         tfPassword.setEndIconOnClickListener(v -> {
             if (tfPassword.getEditText().getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {

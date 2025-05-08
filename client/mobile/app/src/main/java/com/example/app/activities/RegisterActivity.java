@@ -12,10 +12,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
-import com.example.app.R;
+import com.example.app.R;                        
 import androidx.fragment.app.FragmentManager;
+
 import com.example.app.fragments.OTPFragmentRegister;
 import com.example.app.models.User;
 import com.example.app.network.ApiService;
@@ -26,6 +28,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

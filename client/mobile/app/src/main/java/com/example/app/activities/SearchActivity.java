@@ -83,7 +83,7 @@ public class SearchActivity extends AppCompatActivity {
         List<Book.Image> images2 = new ArrayList<>();
         images2.add(new Book.Image("https://salt.tikicdn.com/ts/product/12/34/56/789abc123def456ghi789jkl.png", "789abc123def456ghi789jkl.png"));
         bookList.add(new Book(2, "Bé tập làm quen với toán học", "Sách giúp trẻ làm quen với các khái niệm toán học cơ bản qua hình ảnh sinh động.", images2, 35000.0, 4.0, 5, 15, 1, "2025-04-29 10:15:30", "Nguyễn Nhật Ánh"));
-        
+
     }
 
     private void setupRecyclerViews() {
