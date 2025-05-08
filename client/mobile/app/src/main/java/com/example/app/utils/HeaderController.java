@@ -6,6 +6,7 @@ import android.widget.ImageView;
 import android.content.Intent;
 
 import com.example.app.activities.CartActivity;
+import com.example.app.activities.InforUserActivity;
 import com.example.app.activities.NotificationActivity;
 import com.example.app.R;
 

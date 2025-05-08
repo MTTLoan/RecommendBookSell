@@ -147,18 +147,41 @@ public interface ApiService {
 
     // Logout Response Class
     class LogoutResponse {
-        private boolean success;
         private String message;
         private String msg;
-
-        public boolean isSuccess() {
-            return success;
-        }
 
         public String getMessage() {
             return message != null ? message : msg;
         }
+
+        public boolean isSuccess() {
+            return (message != null && message.contains("thành công")) || (msg != null && msg.contains("thành công"));
+        }
     }
+
+    class GoogleAuthRequest {
+        @SerializedName("googleId")
+        private String googleId;
+
+        @SerializedName("email")
+        private String email;
+
+        @SerializedName("fullName")
+        private String fullName;
+
+        @SerializedName("photoUrl")
+        private String photoUrl;
+
+        public GoogleAuthRequest(String googleId, String email, String fullName, String photoUrl) {
+            this.googleId = googleId;
+            this.email = email;
+            this.fullName = fullName;
+            this.photoUrl = photoUrl;
+        }
+    }
+
+    @POST("/api/auth/logout")
+    Call<LogoutResponse> logout(@Header("Authorization") String token);
 
     @GET("api/notifications")
     Call<List<Notification>> getNotifications();
@@ -167,9 +190,9 @@ public interface ApiService {
     @Headers("Content-Type: application/json")
     Call<User> login(@Body UserLoginRequest request);
 
-    @POST("/api/auth/login/google")
-    Call<User> loginWithGoogle(@Body UserLoginRequest request);
-
+    @POST("/api/auth/googleauth")
+    @Headers("Content-Type: application/json")
+    Call<User> loginWithGoogle(@Body GoogleAuthRequest request);
     @Headers("Content-Type: application/json")
     @POST("/api/verify_email/verify")
     Call<OtpResponse> verifyOtp(@Body OtpRequest request);
@@ -177,6 +200,4 @@ public interface ApiService {
     @POST("/api/resend-otp")
     Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
 
-    @POST("api/auth/logout")
-    Call<LogoutResponse> logout(@Header("Authorization") String token);
 }

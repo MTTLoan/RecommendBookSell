@@ -1,11 +1,10 @@
 package com.example.app.activities;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +14,13 @@ import com.example.app.models.User;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -23,14 +29,16 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
-
     private static final String TAG = "LoginActivity";
+    private static final int RC_SIGN_IN = 9001;
 
     private TextInputLayout tfEmail, tfPassword;
     private TextView tvForgotPassword, tvSignUp;
-    private Button btnLogin;
+    private android.widget.Button btnLogin;
+    private SignInButton signInButton;
     private ImageView ivReturn;
     private ApiService apiService;
+    private GoogleSignInClient mGoogleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +51,24 @@ public class LoginActivity extends AppCompatActivity {
         tvForgotPassword = findViewById(R.id.tvforgotPassword);
         tvSignUp = findViewById(R.id.tbtnSignup);
         btnLogin = findViewById(R.id.btnLogin);
+        signInButton = findViewById(R.id.sign_in_button);
         ivReturn = findViewById(R.id.ivReturn);
 
         // Khởi tạo ApiService
         apiService = RetrofitClient.getApiService();
+
+        // Cấu hình Google Sign-In
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestId()
+                .requestEmail()
+                .requestProfile()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        // Kiểm tra yêu cầu đăng xuất từ Menu
+        if (getIntent().getBooleanExtra("logout", false)) {
+            signOutGoogle();
+        }
 
         // Sự kiện nhấn nút "Quay lại"
         ivReturn.setOnClickListener(v -> finish());
@@ -111,7 +133,7 @@ public class LoginActivity extends AppCompatActivity {
                                     }
                                 }
                             } else if (errorObj.has("msg")) {
-                                // Lỗi từ controller (ví dụ: tài khoản không tồn tại, mật khẩu sai)
+                                // Lỗi từ controller
                                 String msg = errorObj.getString("msg");
                                 if (msg.contains("Tên tài khoản hoặc email")) {
                                     tfEmail.setError(msg);
@@ -143,6 +165,9 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, EmailResetPasswordActivity.class));
         });
 
+        // Sự kiện đăng nhập Google
+        signInButton.setOnClickListener(v -> signInWithGoogle());
+
         // Cài đặt toggle hiển thị mật khẩu
         tfPassword.setEndIconOnClickListener(v -> {
             if (tfPassword.getEditText().getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
@@ -154,5 +179,109 @@ public class LoginActivity extends AppCompatActivity {
             }
             tfPassword.getEditText().setSelection(tfPassword.getEditText().length());
         });
+    }
+
+    private void signInWithGoogle() {
+        // Đảm bảo đăng xuất trước để hiển thị Account Picker
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            Log.d(TAG, "Pre-sign-in sign-out completed");
+            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+            startActivityForResult(signInIntent, RC_SIGN_IN);
+        });
+    }
+
+    private void signOutGoogle() {
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            Log.d(TAG, "Google Sign-Out completed");
+            Toast.makeText(LoginActivity.this, "Đã đăng xuất Google", Toast.LENGTH_SHORT).show();
+            AuthUtils.clearToken(LoginActivity.this);
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                handleGoogleSignInResult(account);
+            } catch (ApiException e) {
+                Log.w(TAG, "Google sign in failed, status code: " + e.getStatusCode(), e);
+                Toast.makeText(this, "Đăng nhập Google thất bại: " + e.getStatusCode(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void handleGoogleSignInResult(GoogleSignInAccount account) {
+        if (account != null) {
+            String googleId = account.getId();
+            String email = account.getEmail();
+            String fullName = account.getDisplayName();
+            String photoUrl = account.getPhotoUrl() != null ? account.getPhotoUrl().toString() : "";
+
+            // Log dữ liệu gửi đi
+            Log.d(TAG, "Google Sign-In Data: googleId=" + googleId + ", email=" + email + ", fullName=" + fullName + ", photoUrl=" + photoUrl);
+
+            // Kiểm tra dữ liệu hợp lệ
+            if (googleId == null || googleId.isEmpty() || email == null || email.isEmpty()) {
+                Log.e(TAG, "Invalid Google Sign-In data: googleId or email is null/empty");
+                Toast.makeText(this, "Dữ liệu Google không hợp lệ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Gọi API googleauth
+            ApiService.GoogleAuthRequest request = new ApiService.GoogleAuthRequest(googleId, email, fullName, photoUrl);
+            Call<User> call = apiService.loginWithGoogle(request);
+            call.enqueue(new Callback<User>() {
+                @Override
+                public void onResponse(Call<User> call, Response<User> response) {
+                    Log.d(TAG, "Google Auth Request URL: " + call.request().url());
+                    Log.d(TAG, "Google Auth Response Code: " + response.code());
+
+                    if (response.isSuccessful() && response.body() != null) {
+                        User user = response.body();
+                        AuthUtils.saveToken(LoginActivity.this, user.getToken());
+                        Toast.makeText(LoginActivity.this, "Đăng nhập Google thành công!", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(LoginActivity.this, Menu.class));
+                        finish();
+                    } else {
+                        String errorMessage = "Đăng nhập Google thất bại";
+                        if (response.code() == 404) {
+                            errorMessage = "Không tìm thấy endpoint /api/auth/googleauth. Vui lòng kiểm tra server.";
+                            Log.e(TAG, "Google Auth Error: Endpoint not found");
+                        } else {
+                            try {
+                                String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                                Log.e(TAG, "Google Auth Error: " + errorBody);
+                                if (errorBody.contains("<!DOCTYPE html")) {
+                                    errorMessage = "Server trả về HTML thay vì JSON. Kiểm tra cấu hình endpoint.";
+                                } else {
+                                    JSONObject errorObj = new JSONObject(errorBody);
+                                    errorMessage = errorObj.optString("msg", "Đăng nhập Google thất bại");
+                                    String errorDetail = errorObj.optString("error", "");
+                                    if (!errorDetail.isEmpty()) {
+                                        errorMessage += " (" + errorDetail + ")";
+                                    }
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error parsing Google Auth response: " + e.getMessage());
+                            }
+                        }
+                        Toast.makeText(LoginActivity.this, "Lỗi: " + errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<User> call, Throwable t) {
+                    Log.e(TAG, "Google Auth API call failed: " + t.getMessage());
+                    Toast.makeText(LoginActivity.this, "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        } else {
+            Log.e(TAG, "GoogleSignInAccount is null");
+            Toast.makeText(this, "Không lấy được thông tin tài khoản Google", Toast.LENGTH_SHORT).show();
+        }
     }
 }

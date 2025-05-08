@@ -150,72 +150,75 @@ export const logoutController = async (req, res) => {
   }
 };
 
-// Google Auth
-export const loginWithGoogle = async (req, res, next) => {
-  let { google_id, email, full_name, photo_url } = req.body;
+export const googleAuth = async (req, res) => {
+  let { googleId, email, fullName, photoUrl } = req.body;
 
-  google_id = google_id.trim();
+  googleId = googleId.trim();
   email = email.trim();
-  full_name = full_name.trim();
-  photo_url = photo_url.trim();
+  fullName = fullName.trim();
+  photoUrl = photoUrl.trim();
 
   try {
     let isNewAccount = false;
-    let user = await Users.findOne({ google_id: google_id });
+    // Tìm người dùng bằng googleId hoặc email
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
 
     if (!user) {
-      // chưa tồn tại, tạo user
-      user = new Users();
+      // Kiểm tra email trùng lặp
+      const emailExists = await User.findOne({ email });
+      if (emailExists) {
+        return res.status(400).json({
+          success: false,
+          msg: "Email đã được sử dụng bởi tài khoản khác!",
+        });
+      }
 
-      user.google_id = google_id;
-      user.email = email;
-      user.full_name = full_name;
-      user.photo_url = photo_url;
-      user.provider = "google";
-      user.verified = true;
-
+      // Tạo người dùng mới
+      user = new User({
+        googleId,
+        email,
+        fullName,
+        photoUrl,
+        provider: "google",
+        verified: true,
+        role: "user",
+      });
       isNewAccount = true;
-
       await user.save();
     }
 
-    // đã tồn tại user
-
+    // Tạo payload cho JWT
     const payload = {
       user: {
         id: user.id,
+        role: user.role,
       },
     };
 
-    jwt.sign(
-      payload,
-      process.env.jwtUserSecret,
-      {
-        expiresIn: 360000,
-      },
-      (err, token) => {
-        if (err) throw err;
+    // Tạo JWT token
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
-        user.token = token;
-
-        return res.status(200).json({
-          success: true,
-          msg: "Login Google Successfully!",
-          isNewAccount: isNewAccount,
-          token: token,
-          user_id: user.id,
-          user: user,
-        });
-      }
-    );
-
+    // Lưu token vào user
+    user.token = token;
     await user.save();
-  } catch (err) {
-    console.log(err.message);
 
+    return res.status(200).json({
+      success: true,
+      msg: "Đăng nhập Google thành công!",
+      isNewAccount,
+      token,
+      user_id: user.id,
+      user,
+    });
+  } catch (err) {
+    console.error("Lỗi đăng nhập Google:", err.message);
     return res.status(500).json({
       success: false,
-      msg: "Google Login Server Error!",
+      msg: "Lỗi máy chủ khi đăng nhập Google!",
+
     });
   }
 };
+
