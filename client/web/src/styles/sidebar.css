@@ -1,0 +1,62 @@
+.sidebar {
+    width: 240px;
+    background-color: #ffffff;
+    padding: 16px;
+    height: 100vh;
+    border-right: 1px solid #eee;
+    box-sizing: border-box;
+  }
+  
+  .logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  
+  .logo img {
+    width: 100%; /* full width sidebar */
+    max-width: 120px; /* optional limit */
+    height: auto;
+    object-fit: contain;
+  }
+  
+  .logo h2 {
+    margin-top: 12px;
+    font-size: 20px;
+    color: #28a745;
+  }
+  
+  .section {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 24px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  
+  .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    color: #d1d1d1;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .nav-link:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .nav-link.active {
+    background-color: #ecccf4;
+    color: #3bfb48;
+  }
+  
+  .nav-link .material-symbols-outlined {
+    font-size: 20px;
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+  

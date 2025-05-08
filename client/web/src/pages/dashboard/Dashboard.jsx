@@ -1,31 +1,32 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../../components/common/Navbar';
-import Sidebar from '../../components/common/Sidebar';
-import { isAuthenticated, logout } from '../../services/authService';
-import '../../styles/auth.css';
+import Sidebar from '../../components/layout/Sidebar';
+import Navbar from '../../components/layout/Navbar';
+import Breadcrumb from '../../components/common/Breadcrumb';
+import RevenueChart from '../../components/dashboard/RevenueChart';
+import OverviewWidgets from '../../components/dashboard/OverviewWidgets';
+import TopProductsTable from '../../components/dashboard/TopProductsTable';
+import dashboardService from '../../services/dashboardService';
+import { useEffect, useState } from 'react';
+import '../../styles/dashboard.css';
 
-const Dashboard = () => {
-  const navigate = useNavigate();
+export default function Dashboard() {
+  const [statistics, setStatistics] = useState(null);
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      navigate('/auth/login');
-    }
-  }, [navigate]);
-
-  const user = JSON.parse(sessionStorage.getItem('user')) || {};
+    dashboardService.getDashboardData().then(setStatistics);
+  }, []);
 
   return (
-    <div className="dashboard-layout">
-      <Navbar user={user} onLogout={logout} />
+    <div className="dashboard-container">
       <Sidebar />
-      <main className="dashboard-content">
-        <h1>Chào mừng, {user.fullName || 'Người dùng'}!</h1>
-        {/* Nội dung dashboard */}
-      </main>
+      <div className="main-content">
+        <Navbar />
+        <Breadcrumb title="Tổng quan" paths={['Tổng quan']} />
+        <div className="dashboard-content">
+          <RevenueChart />
+          <OverviewWidgets />
+          <TopProductsTable />
+        </div>
+      </div>
     </div>
   );
-};
-
-export default Dashboard;
+}
