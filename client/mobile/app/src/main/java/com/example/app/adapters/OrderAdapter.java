@@ -1,5 +1,6 @@
 package com.example.app.adapters;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.app.R;
+import com.example.app.activities.OrderActivity;
 import com.example.app.models.Order;
 import java.util.List;
 import java.util.Locale;
@@ -62,6 +64,12 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 // Không có nút
                 break;
         }
+
+        // Sự kiện nhấn vào đơn hàng để chuyển sang OrderActivity
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(holder.itemView.getContext(), OrderActivity.class);
+            holder.itemView.getContext().startActivity(intent);
+        });
     }
 
     @Override
@@ -76,7 +84,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvOrderDate = itemView.findViewById(R.id.tvOrderDate);
+            tvOrderDate = itemView.findViewById(com.example.app.R.id.tvOrderDate);
             tvTotalAmount = itemView.findViewById(R.id.tvTotalAmount);
             tvStatus = itemView.findViewById(R.id.tvStatus);
             rvOrderItems = itemView.findViewById(R.id.rvOrderItems);

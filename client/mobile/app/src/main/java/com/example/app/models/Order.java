@@ -1,8 +1,9 @@
 package com.example.app.models;
 
 import java.util.List;
+import java.io.Serializable;
 
-public class Order {
+public class Order implements Serializable {
     private int id;
     private int userId;
     private String orderDate;
@@ -13,8 +14,8 @@ public class Order {
     private Integer shippingAddressProvinceCode;
     private String shippingDetailedAddress;
     private List<OrderItem> items;
-    private String userFullName; // Lấy từ bảng User
-    private String userPhoneNumber; // Lấy từ bảng User
+    private String userFullName;
+    private String userPhoneNumber;
 
     public Order(int id, int userId, String orderDate, double totalAmount, String status, Integer shippingAddressWardCode, Integer shippingAddressDistrictCode, Integer shippingAddressProvinceCode, String shippingDetailedAddress, List<OrderItem> items, String userFullName, String userPhoneNumber) {
         this.id = id;

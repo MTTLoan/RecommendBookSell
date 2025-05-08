@@ -12,49 +12,50 @@ import com.example.app.models.OrderItem;
 import com.squareup.picasso.Picasso;
 import java.util.List;
 
-public class OrderConfirmItemAdapter extends RecyclerView.Adapter<OrderConfirmItemAdapter.OrderConfirmItemViewHolder> {
-    private List<OrderItem> items;
+public class OrderConfirmItemAdapter extends RecyclerView.Adapter<OrderConfirmItemAdapter.OrderItemViewHolder> {
 
-    public OrderConfirmItemAdapter(List<OrderItem> items) {
-        this.items = items;
+    private List<OrderItem> orderItems;
+
+    public OrderConfirmItemAdapter(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
     }
 
     @NonNull
     @Override
-    public OrderConfirmItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public OrderItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_order_confirmation, parent, false);
-        return new OrderConfirmItemViewHolder(view);
+        return new OrderItemViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull OrderConfirmItemViewHolder holder, int position) {
-        OrderItem item = items.get(position);
+    public void onBindViewHolder(@NonNull OrderItemViewHolder holder, int position) {
+        OrderItem item = orderItems.get(position);
         holder.tvBookName.setText(item.getBookName());
-        holder.tvQuantity.setText("x" + item.getQuantity());
-        holder.tvPrice.setText(String.format("%,d VNĐ", (int) (item.getUnitPrice() * item.getQuantity())));
+        holder.tvQuantity.setText("SL: " + item.getQuantity());
+        holder.tvPrice.setText(String.format("%,d VNĐ", (int) item.getUnitPrice()));
+        Picasso.get().load(item.getImageUrl()).into(holder.ivBookImage);
 
-        // Tải ảnh sách từ imageUrl bằng Picasso
-        Picasso.get()
-                .load(item.getImageUrl())
-                .placeholder(R.drawable.placeholder_book) // Ảnh placeholder nếu lỗi
-                .into(holder.ivBookImage);
+        // Thêm contentDescription cho mục
+        holder.itemView.setContentDescription(
+                "Sản phẩm: " + item.getBookName() + ", Số lượng: " + item.getQuantity() + ", Giá: " + String.format("%,d VNĐ", (int) item.getUnitPrice())
+        );
     }
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return orderItems != null ? orderItems.size() : 0;
     }
 
-    static class OrderConfirmItemViewHolder extends RecyclerView.ViewHolder {
-        TextView tvBookName, tvQuantity, tvPrice;
+    static class OrderItemViewHolder extends RecyclerView.ViewHolder {
         ImageView ivBookImage;
+        TextView tvBookName, tvQuantity, tvPrice;
 
-        public OrderConfirmItemViewHolder(@NonNull View itemView) {
+        public OrderItemViewHolder(@NonNull View itemView) {
             super(itemView);
+            ivBookImage = itemView.findViewById(R.id.iv_book_image);
             tvBookName = itemView.findViewById(R.id.tv_book_name);
             tvQuantity = itemView.findViewById(R.id.tv_quantity);
             tvPrice = itemView.findViewById(R.id.tv_price);
-            ivBookImage = itemView.findViewById(R.id.iv_book_image);
         }
     }
 }

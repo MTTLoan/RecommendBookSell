@@ -22,4 +22,6 @@
     <color name="txt_subtitle">#454545</color>
     <color name="dark_green">#007537</color>
     <color name="light_dark">#DEDEDE</color>
+    <color name="green_success">#00C853</color>
+    <color name="red_error">#D32F2F</color>
 </resources>

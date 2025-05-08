@@ -7,10 +7,13 @@ import { sendVerificationOTPEmail } from "./email_verificationController.js";
 export const registerController = async (req, res) => {
   const { username, fullName, email, phoneNumber, password } = req.body;
   try {
-    let user = await userService.User.findOne({ username });
-    if (user)
+    // Kiểm tra xem username đã tồn tại chưa
+    let user = await User.findOne({ username });
+    if (user) {
       return res.status(400).json({ message: "Tên tài khoản đã tồn tại" });
+    }
 
+    // Tạo người dùng mới
     user = new User({
       username,
       fullName,
@@ -21,65 +24,77 @@ export const registerController = async (req, res) => {
     });
     await user.save();
 
-    // gửi otp xác nhận tài khoản
+    // Gửi OTP xác nhận tài khoản
     await sendVerificationOTPEmail(email);
 
+    // Tạo token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
+    // Lưu token vào trường `token` trong cơ sở dữ liệu
+    user.token = token;
+    await user.save();
+
+    // Trả về phản hồi
     res.status(201).json({
+      success: true,
+      msg: "Đăng ký thành công!",
       token,
-      user: user,
+      user,
     });
   } catch (error) {
-    // throw new Error("Đăng ký thất bại");
-    throw new Error("Đăng ký thất bại: " + error.message);
+    console.error("Lỗi đăng ký:", error.message);
+    res.status(500).json({
+      success: false,
+      msg: "Đăng ký thất bại! Lỗi server.",
+    });
   }
 };
 
 export const loginController = async (req, res) => {
-  let { email, password } = req.body;
-
+  let { identifier, password } = req.body; // `identifier` có thể là username hoặc email
   password = password.trim();
 
   try {
-    let user = await User.findOne({ email: email });
+    // Tìm người dùng bằng username hoặc email
+    let user = await User.findOne({
+      $or: [{ username: identifier }, { email: identifier }],
+    });
 
     if (!user) {
-      if (!user) {
-        return res.status(400).json({
-          success: false,
-          error_server: false,
-          msg: "Username or Email not exists!",
-        });
-      }
+      return res.status(400).json({
+        success: false,
+        error_server: false,
+        msg: "Tên tài khoản hoặc email không tồn tại!",
+      });
     }
 
-    // check verify account
+    // Kiểm tra xem tài khoản đã được xác thực chưa
     if (!user.verified) {
       return res.status(400).json({
         success: false,
         error_server: false,
         verified: false,
         email: user.email,
-        msg: "Email hasn't been verified yet. Check your inbox!",
+        msg: "Email chưa được xác thực. Vui lòng kiểm tra hộp thư của bạn!",
       });
     }
 
+    // Kiểm tra mật khẩu
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(400).json({
         success: false,
         error_server: false,
-        msg: "Password is invalid!",
+        msg: "Mật khẩu không chính xác!",
       });
     }
 
-    // lưu token đăng nhập thành công
+    // Tạo payload cho JWT
     const payload = {
       user: {
         id: user.id,
@@ -87,16 +102,18 @@ export const loginController = async (req, res) => {
       },
     };
 
-    await user.save();
-
-    // tạo token
+    // Tạo token
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
+    // Lưu token vào trường `token` trong cơ sở dữ liệu
+    user.token = token;
+    await user.save();
+
     return res.status(200).json({
       success: true,
-      msg: "User logged in!",
+      msg: "Đăng nhập thành công!",
       user_id: user.id,
       token: token,
       user: user,
@@ -107,71 +124,80 @@ export const loginController = async (req, res) => {
     return res.status(500).json({
       success: false,
       error_server: true,
-      msg: "Server Error!",
+      msg: "Lỗi máy chủ!",
     });
   }
 };
 
 export const logoutController = async (req, res) => {
   try {
-    // Vì dùng JWT, không cần xóa token ở server
-    // Client sẽ tự xóa token ở phía client
-    res.status(200).json({ message: "Đăng xuất thành công" });
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        msg: "Người dùng không tồn tại hoặc đã đăng xuất.",
+      });
+    }
+
+    res.status(200).json({ message: "Đăng xuất thành công!" });
   } catch (error) {
-    throw new Error("Đăng xuất thất bại");
+    console.error(error.message);
+    res.status(500).json({
+      success: false,
+      msg: "Đăng xuất thất bại! Lỗi server.",
+    });
   }
 };
 
-// Google login controller
-import { OAuth2Client } from 'google-auth-library';
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-const JWT_SECRET = process.env.JWT_SECRET;
-
 export const loginWithGoogle = async (req, res) => {
   const { email, idToken } = req.body;
-  console.log('Received request:', { email, idToken });
+  console.log("Received request:", { email, idToken });
 
   try {
-      const ticket = await client.verifyIdToken({
-          idToken,
-          audience: process.env.GOOGLE_CLIENT_ID,
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    console.log("Token payload:", payload);
+
+    if (payload.email !== email) {
+      console.log("Email mismatch:", {
+        payloadEmail: payload.email,
+        requestEmail: email,
       });
-      const payload = ticket.getPayload();
-      console.log('Token payload:', payload);
+      return res.status(401).json({ message: "Email không trùng khớp!" });
+    }
 
-      if (payload.email !== email) {
-          console.log('Email mismatch:', { payloadEmail: payload.email, requestEmail: email });
-          return res.status(401).json({ message: 'Email không trùng khớp' });
-      }
-
-      let user = await User.findOne({ email });
-      if (!user) {
-          user = new User({
-              email,
-              fullName: payload.name,
-              avatar: payload.picture,
-              googleId: payload.sub,
-          });
-          await user.save();
-          console.log('Created new user:', user);
-      } else {
-          console.log('Found existing user:', user);
-      }
-
-      const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
-          expiresIn: '7d',
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = new User({
+        email,
+        fullName: payload.name,
+        avatar: payload.picture,
+        googleId: payload.sub,
       });
+      await user.save();
+      console.log("Tạo người dùng mới:", user);
+    } else {
+      console.log("Tìm thấy người dùng:", user);
+    }
 
-      res.json({
-          user: {
-              id: user._id,
-              fullName: user.fullName,
-              email: user.email,
-              token,
-          },
-      });
+    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.json({
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        token,
+      },
+    });
   } catch (err) {
-      console.error('Google login error:', err);
-      res.status(401).json({ message: 'Xác thực Google thất bại' });
+    console.error("Lỗi đăng nhập Google:", err);
+    res.status(401).json({ message: "Xác thực Google thất bại!" });
   }
 };

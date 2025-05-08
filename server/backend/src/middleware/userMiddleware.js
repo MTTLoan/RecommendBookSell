@@ -176,14 +176,17 @@ export const registerValidator = validate({
 
 // Validator cho đăng |nhập
 export const loginValidator = validate({
-  email: emailSchema,
+  identifier: {
+    notEmpty: { errorMessage: "Tên tài khoản hoặc email là bắt buộc" },
+    isString: { errorMessage: "Tên tài khoản hoặc email phải là chuỗi" },
+    trim: true,
+  },
   password: {
     notEmpty: { errorMessage: "Mật khẩu là bắt buộc" },
     isString: { errorMessage: "Mật khẩu phải là chuỗi" },
     trim: true,
   },
 });
-
 
 // Validator quên mật khẩu
 export const forgotPasswordRequestValidator = validate({
@@ -201,5 +204,4 @@ export const resetPasswordValidator = validate({
     },
   },
   newPassword: passwordSchema,
-  },);
-
+});

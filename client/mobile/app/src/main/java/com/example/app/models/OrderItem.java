@@ -1,10 +1,11 @@
 package com.example.app.models;
 
-public class OrderItem {
+import java.io.Serializable;
+
+public class OrderItem implements Serializable {
     private int bookId;
     private int quantity;
     private double unitPrice;
-    // Thông tin sách sẽ được lấy từ bảng Books
     private String bookName;
     private String imageUrl;
 

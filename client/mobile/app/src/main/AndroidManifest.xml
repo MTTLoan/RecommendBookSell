@@ -56,19 +56,24 @@
             android:exported="true">
 
         </activity>
-        <!--        <activity-->
-        <!--            android:name=".activities.ReviewActivity"-->
-        <!--            android:exported="true">-->
-        <!--        </activity>-->
         <activity
             android:name=".activities.CartActivity"
-            android:exported="true"></activity>
+            android:exported="true">
+        </activity>
         <activity
             android:name=".activities.OrderActivity"
             android:exported="true">
         </activity>
-
-
+        <activity
+            android:name=".activities.OrderHistoryActivity"
+            android:exported="true">
+        </activity>
+        <activity android:name=".activities.OrderConfirmationActivity"
+            android:exported="true">
+        </activity>
+        <activity android:name=".activities.HomeActivity"
+            android:exported="true">
+        </activity>
         <!--        Cấu hình Google API-->
         <meta-data
             android:name="com.google.android.gms.auth.api.signin.API_KEY"
