@@ -15,7 +15,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.app.R;
+import com.example.app.activities.ChangePasswordActivity;
 import com.example.app.activities.LoginActivity;
+import com.example.app.activities.PersonalInfoActivity;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
@@ -62,15 +64,13 @@ public class InforUserFragment extends Fragment {
 
         // Set click listeners
         tvEditPersonalInfoLabel.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Chuyển đến màn hình sửa thông tin cá nhân", Toast.LENGTH_SHORT).show();
-            // Intent intent = new Intent(requireContext(), EditPersonalInfoActivity.class);
-            // startActivity(intent);
+             Intent intent = new Intent(requireContext(), PersonalInfoActivity.class);
+             startActivity(intent);
         });
 
         tvChangePasswordLabel.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Chuyển đến màn hình đổi mật khẩu", Toast.LENGTH_SHORT).show();
-            // Intent intent = new Intent(requireContext(), ChangePasswordActivity.class);
-            // startActivity(intent);
+             Intent intent = new Intent(requireContext(), ChangePasswordActivity.class);
+             startActivity(intent);
         });
 
         tvLogOut.setOnClickListener(v -> {

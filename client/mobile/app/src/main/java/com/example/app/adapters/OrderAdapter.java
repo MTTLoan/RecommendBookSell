@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.app.R;
 import com.example.app.activities.OrderActivity;
+import com.example.app.activities.ReviewActivity;
 import com.example.app.models.Order;
 import java.util.List;
 import java.util.Locale;
@@ -58,6 +59,11 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             case "Đã giao":
                 holder.btnReturn.setVisibility(View.VISIBLE);
                 holder.btnRate.setVisibility(View.VISIBLE);
+                holder.btnRate.setOnClickListener(v -> {
+                    Intent intent = new Intent(holder.itemView.getContext(), ReviewActivity.class);
+                    intent.putExtra("order", order);
+                    holder.itemView.getContext().startActivity(intent);
+                });
                 break;
             case "Trả hàng":
             case "Đã hủy":
@@ -70,6 +76,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             Intent intent = new Intent(holder.itemView.getContext(), OrderActivity.class);
             holder.itemView.getContext().startActivity(intent);
         });
+
     }
 
     @Override
