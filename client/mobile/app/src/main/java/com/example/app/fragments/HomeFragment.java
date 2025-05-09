@@ -48,7 +48,7 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.activity_home, container, false);
 
         // Set up RecyclerView for header
-        HeaderController.setupHeader(requireActivity());
+        HeaderController.setupHeader(view, requireActivity());
 
         viewPager2 = view.findViewById(R.id.bannerSlider);
         imageList = new ArrayList<>();
