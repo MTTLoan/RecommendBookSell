@@ -162,29 +162,45 @@ export const googleAuth = async (req, res) => {
     let isNewAccount = false;
     // Tìm người dùng bằng googleId hoặc email
     let user = await User.findOne({ $or: [{ googleId }, { email }] });
-
+    
     if (!user) {
-      // Kiểm tra email trùng lặp
-      const emailExists = await User.findOne({ email });
-      if (emailExists) {
-        return res.status(400).json({
-          success: false,
-          msg: "Email đã được sử dụng bởi tài khoản khác!",
-        });
-      }
+      // Generate a unique username
+      let username;
+      let usernameExists;
+      let attempts = 0;
+      do {
+        username = email.split("@")[0] + Math.random().toString(36).slice(-4);
+        usernameExists = await User.findOne({ username });
+        attempts++;
+        if (attempts > 5) {
+          throw new Error("Không thể tạo tên người dùng duy nhất");
+        }
+      } while (usernameExists);
 
-      // Tạo người dùng mới
-      user = new User({
+      // Log user creation data
+      const userData = {
         googleId,
         email,
         fullName,
         photoUrl,
-        provider: "google",
+        username,
+        phoneNumber: "0000000000", // Temporary placeholder
+        password: Math.random().toString(36).slice(-8), // Temporary password
         verified: true,
         role: "user",
-      });
-      isNewAccount = true;
+      };
+      console.log("Tạo người dùng mới:", userData);
+
+      // Create a new user
+      user = new User(userData);
+
       await user.save();
+      isNewAccount = true;
+    } else if (user.googleId && user.googleId !== googleId) {
+      return res.status(400).json({
+        success: false,
+        msg: "Email đã được liên kết với một tài khoản Google khác!",
+      });
     }
 
     // Tạo payload cho JWT
@@ -206,7 +222,9 @@ export const googleAuth = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      msg: "Đăng nhập Google thành công!",
+      msg: isNewAccount
+        ? "Tạo tài khoản Google thành công!"
+        : "Đăng nhập Google thành công!",
       isNewAccount,
       token,
       user_id: user.id,
@@ -220,4 +238,3 @@ export const googleAuth = async (req, res) => {
     });
   }
 };
-
