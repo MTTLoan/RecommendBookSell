@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.app.R;
 import com.example.app.adapters.ReviewAdapter;
 import com.example.app.models.Book;
+import com.example.app.models.Image;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,7 @@ public class ReviewActivity extends AppCompatActivity {
         reviewAdapter = new ReviewAdapter(this, bookList);
         recyclerReviews.setAdapter(reviewAdapter);
 
-        // Tải dữ liệu sách ảo (không có đánh giá)
+//        // Tải dữ liệu sách ảo (không có đánh giá)
         loadFakeBooks();
 
         // Log để kiểm tra dữ liệu
@@ -82,12 +83,12 @@ public class ReviewActivity extends AppCompatActivity {
     // Tải dữ liệu sách ảo (không có đánh giá)
     private void loadFakeBooks() {
         // Tạo danh sách ảnh cho sách 1
-        List<Book.Image> images1 = new ArrayList<>();
-        images1.add(new Book.Image("https://example.com/image1.jpg", "Image 1 alt"));
+        List<Image> images1 = new ArrayList<>();
+        images1.add(new Image("https://example.com/image1.jpg", "Image 1 alt"));
 
         // Tạo danh sách ảnh cho sách 2
-        List<Book.Image> images2 = new ArrayList<>();
-        images2.add(new Book.Image("https://example.com/image2.jpg", "Image 2 alt"));
+        List<Image> images2 = new ArrayList<>();
+        images2.add(new Image("https://example.com/image2.jpg", "Image 2 alt"));
 
         // Thêm sách vào danh sách
         bookList.add(new Book(

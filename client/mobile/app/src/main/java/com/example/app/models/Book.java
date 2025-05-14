@@ -2,7 +2,13 @@ package com.example.app.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,19 +16,19 @@ public class Book implements Parcelable {
     private int id;
     private String name;
     private String description;
+    @SerializedName("images")
     private List<Image> images;
     private double price;
     private double averageRating;
     private int ratingCount;
     private int stockQuantity;
     private int categoryId;
-    private String createdAt;
+    private LocalDateTime createdAt;
     private String author;
-
 
     public Book(int id, String name, String description, List<Image> images, double price,
                 double averageRating, int ratingCount, int stockQuantity, int categoryId,
-                String createdAt, String author) {
+                LocalDateTime createdAt, String author) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -47,7 +53,8 @@ public class Book implements Parcelable {
         ratingCount = in.readInt();
         stockQuantity = in.readInt();
         categoryId = in.readInt();
-        createdAt = in.readString();
+        String createdAtStr = in.readString();
+        createdAt = createdAtStr != null ? LocalDateTime.parse(createdAtStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
         author = in.readString();
     }
 
@@ -79,73 +86,57 @@ public class Book implements Parcelable {
         dest.writeInt(ratingCount);
         dest.writeInt(stockQuantity);
         dest.writeInt(categoryId);
-        dest.writeString(createdAt);
+        dest.writeString(createdAt != null ? createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null);
         dest.writeString(author);
     }
 
     // Getters
     public int getId() { return id; }
-
     public String getName() { return name; }
-
     public String getDescription() { return description; }
-
     public List<Image> getImages() { return images; }
-
     public double getPrice() { return price; }
-
     public double getAverageRating() { return averageRating; }
-
     public int getRatingCount() { return ratingCount; }
-
     public int getStockQuantity() { return stockQuantity; }
-
     public int getCategoryId() { return categoryId; }
-
-    public String getCreatedAt() { return createdAt; }
-
+    public LocalDateTime getCreatedAt() { return createdAt; }
     public String getAuthor() { return author; }
 
-    // Inner class Image implements Parcelable
-    public static class Image implements Parcelable {
-        private String url;
-        private String alt;
+    // Setters
+    public void setId(int id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setDescription(String description) { this.description = description; }
+    public void setImages(List<Image> images) { this.images = images; }
+    public void setPrice(double price) { this.price = price; }
+    public void setAverageRating(double averageRating) { this.averageRating = averageRating; }
+    public void setRatingCount(int ratingCount) { this.ratingCount = ratingCount; }
+    public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
+    public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setAuthor(String author) { this.author = author; }
 
-        public Image(String url, String alt) {
-            this.url = url;
-            this.alt = alt;
-        }
-
-        public Image(Parcel in) {
-            url = in.readString();
-            alt = in.readString();
-        }
-
-        public static final Creator<Image> CREATOR = new Creator<Image>() {
-            @Override
-            public Image createFromParcel(Parcel in) {
-                return new Image(in);
-            }
-
-            @Override
-            public Image[] newArray(int size) {
-                return new Image[size];
-            }
-        };
+    // Custom TypeAdapter for LocalDateTime to handle "yyyy-MM-dd HH:mm:ss" format
+    public static class LocalDateTimeTypeAdapter extends TypeAdapter<LocalDateTime> {
+        private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(url);
-            dest.writeString(alt);
+        public void write(JsonWriter out, LocalDateTime value) throws IOException {
+            if (value == null) {
+                out.nullValue();
+            } else {
+                out.value(formatter.format(value));
+            }
         }
 
         @Override
-        public int describeContents() {
-            return 0;
+        public LocalDateTime read(JsonReader in) throws IOException {
+            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            String dateStr = in.nextString();
+            return LocalDateTime.parse(dateStr, formatter);
         }
-
-        public String getUrl() { return url; }
-
-        public String getAlt() { return alt; }
     }
 }

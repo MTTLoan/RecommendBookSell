@@ -17,6 +17,8 @@ import com.example.app.models.Cart;
 import com.example.app.models.Order;
 import com.example.app.models.OrderItem;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -100,25 +102,32 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                     orderItems.add(new OrderItem(
                             Integer.parseInt(cart.getId()),
                             cart.getQuantity(),
-                            cart.getPrice(),
-                            cart.getTitle(),
-                            cart.getImageUrl()
+                            cart.getPrice()
                     ));
                     totalAmount += cart.getPrice() * cart.getQuantity();
                 }
 
                 // Tạo đối tượng Order với mã địa chỉ hợp lệ
+                // DateTimeFormatter for parsing "yyyy-MM-dd HH:mm:ss"
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                LocalDateTime orderDate = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
+                LocalDateTime createdAt = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
+                LocalDateTime updatedAt = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
+
                 Order order = new Order(
                         1, // id (giả lập)
                         1, // userId (giả lập)
-                        "2025-05-08", // orderDate (giả lập)
+                        orderDate, // orderDate
                         totalAmount,
                         "PENDING", // status
-                        26124, // shippingAddressWardCode (Phường Linh Trung)
-                        774,   // shippingAddressDistrictCode (Quận Thủ Đức)
-                        79,    // shippingAddressProvinceCode (TP. Hồ Chí Minh)
-                        "37 đường số 8", // shippingDetailedAddress (giả lập)
+                        79, // shippingProvince (TP. Hồ Chí Minh)
+                        774, // shippingDistrict (Quận Thủ Đức)
+                        26124, // shippingWard (Phường Linh Trung)
+                        "37 đường số 8", // shippingDetail (giả lập)
                         orderItems,
+                        createdAt,
+                        updatedAt,
                         "Mai Thị Thanh Loan", // userFullName (giả lập)
                         "0123456789" // userPhoneNumber (giả lập)
                 );

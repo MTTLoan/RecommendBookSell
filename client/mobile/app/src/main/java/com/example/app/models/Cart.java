@@ -1,69 +1,78 @@
 package com.example.app.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "Carts")
 public class Cart {
-    private String id;
-    private String imageUrl;
-    private String title;
-    private double price;
-    private int quantity;
-    private boolean selected;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    private int userId;
+
+    @JsonProperty("items")
+    @Column(columnDefinition = "json")
+    private List<CartItem> items = new ArrayList<>();
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     // Constructor
-    public Cart(String id, String imageUrl, String title, double price, int quantity, boolean selected) {
+    public Cart() {
+    }
+
+    public Cart(int id, int userId, List<CartItem> items, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
-        this.imageUrl = imageUrl;
-        this.title = title;
-        this.price = price;
-        this.quantity = quantity;
-        this.selected = selected;
+        this.userId = userId;
+        this.items = items != null ? items : new ArrayList<>();
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     // Getters and Setters
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
-    public String getTitle() {
-        return title;
+    public List<CartItem> getItems() {
+        return items;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setItems(List<CartItem> items) {
+        this.items = items != null ? items : new ArrayList<>();
     }
 
-    public double getPrice() {
-        return price;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public int getQuantity() {
-        return quantity;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
