@@ -15,6 +15,8 @@ import com.example.app.models.Order;
 import com.example.app.models.OrderItem;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -45,46 +47,44 @@ public class OrderActivity extends AppCompatActivity {
 
         // Tạo dữ liệu giả theo ví dụ đơn hàng
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem(106, 3, 156000, "Cùng con trưởng thành - Mình không thích bị cô lập - Bài học về sự dũng cảm - Dạy trẻ chống lại bạo lực tinh thần - Tránh xa tổn thương", "https://salt.tikicdn.com/ts/product/73/24/11/1d84888511d73e6f5da2057115dcc4d8.png"));
-        items.add(new OrderItem(9, 2, 299000, "Chuyện Con Mèo Dạy Hải Âu Bay", "https://salt.tikicdn.com/ts/product/f2/01/28/35b7bf7dcaf02091c69fbbd4f9bb929f.jpg"));
-        items.add(new OrderItem(240, 2, 235000, "Những Con Mèo Sau Bức Tường Hoa", "https://salt.tikicdn.com/ts/product/75/96/cf/8be7ccb29bb999c9b9aed8e65c75b291.jpg"));
+        items.add(new OrderItem(106, 3, 156000));
+        items.add(new OrderItem(9, 2, 299000));
+        items.add(new OrderItem(240, 2, 235000));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        LocalDateTime orderDate = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
+        LocalDateTime createdAt = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
+        LocalDateTime updatedAt = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
 
         Order order = new Order(
-                1, // id
-                1, // user_id
-                "2024-12-10 22:30:48", // order_date
-                1536000, // total_amount
-                "Chờ giao hàng", // status
-                28756, // shipping_address_ward
-                829, // shipping_address_district
-                83, // shipping_address_province
-                "291 Pasteur", // shipping_address
+                1, // id (giả lập)
+                1, // userId (giả lập)
+                orderDate, // orderDate
+                1536000,
+                "PENDING", // status
+                79, // shippingProvince (TP. Hồ Chí Minh)
+                774, // shippingDistrict (Quận Thủ Đức)
+                26124, // shippingWard (Phường Linh Trung)
+                "37 đường số 8", // shippingDetail (giả lập)
                 items,
-                "Mai Thị Thanh Loan", // user_full_name (User)
-                "0123 456 789" // user_phone_number (User)
+                createdAt,
+                updatedAt,
+                "Mai Thị Thanh Loan", // userFullName (giả lập)
+                "0123456789" // userPhoneNumber (giả lập)
         );
-
-        // Định dạng ngày giờ
-        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-        String formattedDate = "";
-        try {
-            formattedDate = outputFormat.format(inputFormat.parse(order.getOrderDate()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         // Gán dữ liệu vào view
         tvTitle.setText("THÔNG TIN ĐƠN HÀNG");
         tvStatus.setText("Trạng thái: " + (order.getStatus().equals("completed") ? "Hoàn thành" : order.getStatus()));
         tvOrderCode.setText(String.valueOf(order.getId()));
-        tvOrderDate.setText(formattedDate);
+        tvOrderDate.setText(order.getOrderDate().format(formatter));
         tvShippingAddress.setText(order.getUserFullName() + "\n" +
                 order.getUserPhoneNumber() + "\n" +
-                order.getShippingDetailedAddress() + ", " +
-                order.getShippingAddressWardCode() + ", " +
-                order.getShippingAddressDistrictCode() + ", " +
-                order.getShippingAddressProvinceCode());
+                order.getShippingDetail() + ", " +
+                order.getShippingWard() + ", " +
+                order.getShippingDistrict() + ", " +
+                order.getShippingProvince());
 
         // Tính tổng tiền hàng, phí vận chuyển, thành tiền
         double totalGoods = order.getTotalAmount();

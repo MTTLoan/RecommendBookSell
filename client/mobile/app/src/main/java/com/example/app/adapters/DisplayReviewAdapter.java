@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.app.R;
 import com.example.app.models.Review;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class DisplayReviewAdapter extends RecyclerView.Adapter<DisplayReviewAdapter.ReviewViewHolder> {
@@ -32,7 +33,9 @@ public class DisplayReviewAdapter extends RecyclerView.Adapter<DisplayReviewAdap
     public void onBindViewHolder(@NonNull ReviewViewHolder holder, int position) {
         Review review = reviewList.get(position);
         holder.tvUsername.setText("Người dùng #" + review.getUserId());
-        holder.tvCreatedAt.setText(review.getCreatedAt());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String formattedDate = review.getCreatedAt().format(formatter);
+        holder.tvCreatedAt.setText(formattedDate);
         holder.tvRatingLabel.setText(String.format("%.1f/5", review.getRating()));
         holder.tvReviewDescription.setText(review.getComment());
     }

@@ -12,15 +12,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.app.R;
 import com.example.app.models.Book;
+import com.example.app.models.Image;
 
 import java.util.List;
 
 public class BookImageAdapter extends RecyclerView.Adapter<BookImageAdapter.ImageViewHolder> {
 
     private Context context;
-    private List<Book.Image> images;
+    private List<Image> images;
 
-    public BookImageAdapter(Context context, List<Book.Image> images) {
+    public BookImageAdapter(Context context, List<Image> images) {
         this.context = context;
         this.images = images;
     }
@@ -34,7 +35,7 @@ public class BookImageAdapter extends RecyclerView.Adapter<BookImageAdapter.Imag
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
-        Book.Image image = images.get(position);
+        Image image = images.get(position);
         Glide.with(context)
                 .load(image.getUrl())
                 .error(R.drawable.placeholder_book) // ảnh mặc định khi lỗi

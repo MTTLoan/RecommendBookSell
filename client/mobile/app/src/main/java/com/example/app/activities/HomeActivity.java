@@ -13,10 +13,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.app.models.Book;
-import com.example.app.models.Book.Image;
+import com.example.app.models.Image;
 import com.example.app.adapters.BannerAdapter;
 import com.example.app.adapters.BookAdapter;
 import com.example.app.models.Category;
+import com.example.app.models.Image;
 import com.example.app.utils.HeaderController;
 
 import java.util.ArrayList;
@@ -79,29 +80,29 @@ public class HomeActivity extends AppCompatActivity {
 
         // Sample book data (increased to test scrolling)
         bookList = new ArrayList<>();
-        List<Book.Image> images1 = new ArrayList<>();
-        images1.add(new Book.Image("https://salt.tikicdn.com/ts/product/73/24/11/1d84888511d73e6f5da2057115dcc4d8.png", "1d84888511d73e6f5da2057115dcc4d8.png"));
+        List<Image> images1 = new ArrayList<>();
+        images1.add(new Image("https://salt.tikicdn.com/ts/product/73/24/11/1d84888511d73e6f5da2057115dcc4d8.png", "1d84888511d73e6f5da2057115dcc4d8.png"));
         bookList.add(new Book(1, "Cùng con trưởng thành - Mình không thích bị cô lập", "Lời nói đầu   Bé mới tầm 1 tuổi đã cần đọc sách chưa?   Bố mẹ muốn cho bé tiếp xúc sớm với sách được chứ?   Bé còn nhỏ quá, sợ cầm sách thì xé mất!   Bé mới ít tuổi thế đã nhận thức được gì chưa mà đọc sách?   Đúng là trẻ nhỏ chưa cần “đọc” sách, mà các con cần được “chơi” với sách như là một món đồ chơi giàu tính tương tác. Sách cho lứa tuổi dưới 3 thường phải đảm bảo các tiêu chí: giấy dày để trẻ khó xé hay cắn hỏng, hình ảnh rất to rõ và thường ít màu để phù hợp với khả năng tiếp thu của trẻ, có hiệu ứng tương tác như lật giở-sờ chạm… để trẻ được vận động tay chân với sách, in bằng màu tốt và phủ bóng để đảm bảo an toàn nếu trẻ lỡ cắn hay liếm sách, nội dung thật gần gũi với nhu cầu và tâm lý lứa tuổi để bố mẹ dễ nói chuyện thủ thỉ với trẻ nhằm tăng cường giao tiếp thân mật…", images1, 28000.0, 3.5, 2, 10, 2, "2025-04-28 02:27:21", "Tô Bảo"));
 
-        List<Book.Image> images2 = new ArrayList<>();
-        images2.add(new Book.Image("https://salt.tikicdn.com/ts/product/5b/21/12/3d905ef72b7de07171761e4b1819543c.jpg", "789abc123def456ghi789jkl.png"));
+        List<Image> images2 = new ArrayList<>();
+        images2.add(new Image("https://salt.tikicdn.com/ts/product/5b/21/12/3d905ef72b7de07171761e4b1819543c.jpg", "789abc123def456ghi789jkl.png"));
         bookList.add(new Book(2, "Rèn luyện Kỹ Năng Sống dành cho học sinh - 25 thói quen tốt để thành công", "Rèn Luyện Kĩ Năng Sống Dành Cho Học Sinh - 25 Thói Quen Tốt Để Thành Công   Giới thiệu tác phẩm   - Hãy động não, thay đổi cách suy nghĩ, bạn có thể là một học sinh thiên tài!   - Hãy để thói quen tốt chiến thắng thói quen xấu để trở thành một người thành công!   Dành tặng tất cả những trẻ em mơ ước trở thành thiên tài   Lười biếng, mất vệ sinh, làm việc chậm chạp lề mề… Các bạn nhỏ có phải có những thói quen khiến người khác bực mình? Đừng coi thường sự ảnh hưởng của thói quen xấu này nhé! Chúng giống như chiếc kẹo cao su, khi đã dính vào người sẽ rất khó dứt ra đấy. Bắt đầu từ bây giờ, hãy học cách coi thói quen tốt như bạn thân của mình và loại bỏ thói quen xấu đi, các bạn nhé! ", images2, 35000.0, 4.0, 5, 15, 2, "2025-04-29 10:15:30", "Nguyễn Nhật Ánh"));
 
-        List<Book.Image> images3 = new ArrayList<>();
-        images3.add(new Book.Image("https://salt.tikicdn.com/ts/product/16/72/77/dff96564663b63ba96b2c74b60261dcd.jpg", "345mno678pqr901stu234vwx.png"));
+        List<Image> images3 = new ArrayList<>();
+        images3.add(new Image("https://salt.tikicdn.com/ts/product/16/72/77/dff96564663b63ba96b2c74b60261dcd.jpg", "345mno678pqr901stu234vwx.png"));
         bookList.add(new Book(3, "Xứ Sở Miên Man", "Xứ Sở Miên Man   Giới thiệu tác giả     Jun Phạm , tên thật là Phạm Duy Thuận, không chỉ được biết đến là một ca sĩ, diễn viên tài năng mà còn là một nhà văn trẻ đầy triển vọng. Anh từng là thành viên của nhóm nhạc 365daband, một trong những nhóm nhạc nổi tiếng nhất Việt Nam. Tuy nhiên, bên cạnh đam mê ca hát, Jun Phạm còn có một tình yêu sâu sắc với văn chương.   Jun Phạm bắt đầu con đường văn chương từ rất sớm. Anh thường xuyên chia sẻ những suy nghĩ, cảm xúc của mình trên trang cá nhân và nhận được sự ủng hộ nhiệt tình từ người hâm mộ. Chính điều này đã thôi thúc anh cho ra đời những cuốn sách của mình.", images3, 45000.0, 4.5, 10, 20, 2, "2025-04-30 14:20:45", "Nhật Sơn"));
 
-        List<Book.Image> images4 = new ArrayList<>();
-        images4.add(new Book.Image("https://salt.tikicdn.com/ts/product/56/bc/59/f63f4561ee47a86e1843e671fc6355e5.jpg", "123yz456abc789def012ghi.png"));
+        List<Image> images4 = new ArrayList<>();
+        images4.add(new Image("https://salt.tikicdn.com/ts/product/56/bc/59/f63f4561ee47a86e1843e671fc6355e5.jpg", "123yz456abc789def012ghi.png"));
         bookList.add(new Book(4, "Tuổi Thơ Dữ Dội - Tập 2", "“Tuổi Thơ Dữ Dội” là một câu chuyện hay, cảm động viết về tuổi thơ. Sách dày 404 trang mà người đọc không bao giờ muốn ngừng lại, bị lôi cuốn vì những nhân vật ngây thơ có, khôn ranh có, anh hùng có, vì những sự việc khi thì ly kỳ, khi thì hài hước, khi thì gây xúc động đến ứa nước mắ \\\"Tuổi Thơ Dữ Dội” không phải chỉ là một câu chuyện cổ tích, mà là một câu chuyện có thật ở trần gian, ở đó, những con người tuổi nhỏ đã tham gia vào cuộc kháng chiến chống xâm lược bảo vệ Tổ quốc với một chuỗi những chiến công đầy ắp li kì và hấp dẫn.", images4, 52000.0, 4.2, 8, 12, 2, "2025-05-01 09:30:00", "Mai Anh"));
 
-        List<Book.Image> images5 = new ArrayList<>();
-        images5.add(new Book.Image("https://salt.tikicdn.com/ts/product/0f/f9/70/e273b6980de4f6f550329aafe91578d8.jpg", "567jkl890mno123pqr456stu.png"));
+        List<Image> images5 = new ArrayList<>();
+        images5.add(new Image("https://salt.tikicdn.com/ts/product/0f/f9/70/e273b6980de4f6f550329aafe91578d8.jpg", "567jkl890mno123pqr456stu.png"));
         bookList.add(new Book(5, "Búp Sen Xanh", "Câu chuyện khoa học về vòng tuần hoàn của nước...", images5, 30000.0, 3.8, 3, 18, 3, "2025-05-02 16:45:10", "Sơn Tùng"));
 
         // Book 1
-        List<Book.Image> images6 = new ArrayList<>();
-        images6.add(new Book.Image("https://salt.tikicdn.com/ts/product/f2/01/28/35b7bf7dcaf02091c69fbbd4f9bb929f.jpg",
+        List<Image> images6 = new ArrayList<>();
+        images6.add(new Image("https://salt.tikicdn.com/ts/product/f2/01/28/35b7bf7dcaf02091c69fbbd4f9bb929f.jpg",
                 "1d84888511d73e6f5da2057115dcc4d8.png"));
         bookList.add(new Book(
                 1,
@@ -117,8 +118,8 @@ public class HomeActivity extends AppCompatActivity {
         ));
 
         // Book 2
-        List<Book.Image> images7 = new ArrayList<>();
-        images7.add(new Book.Image("https://salt.tikicdn.com/ts/product/75/96/cf/8be7ccb29bb999c9b9aed8e65c75b291.jpg",
+        List<Image> images7 = new ArrayList<>();
+        images7.add(new Image("https://salt.tikicdn.com/ts/product/75/96/cf/8be7ccb29bb999c9b9aed8e65c75b291.jpg",
                 "789abc123def456ghi789jkl.png"));
         bookList.add(new Book(
                 2,
@@ -135,8 +136,8 @@ public class HomeActivity extends AppCompatActivity {
         ));
 
         // Book 3
-        List<Book.Image> images8 = new ArrayList<>();
-        images8.add(new Book.Image("https://salt.tikicdn.com/ts/product/a7/24/37/42434f74d352fade0090a0d3790b0e9b.jpg",
+        List<Image> images8 = new ArrayList<>();
+        images8.add(new Image("https://salt.tikicdn.com/ts/product/a7/24/37/42434f74d352fade0090a0d3790b0e9b.jpg",
                 "345mno678pqr901stu234vwx.png"));
         bookList.add(new Book(
                 3,
@@ -152,8 +153,8 @@ public class HomeActivity extends AppCompatActivity {
         ));
 
         // Book 4
-        List<Book.Image> images9 = new ArrayList<>();
-        images9.add(new Book.Image("https://salt.tikicdn.com/ts/product/e7/da/4a/8e75769f26664050a3f60fa150efb0f4.jpg",
+        List<Image> images9 = new ArrayList<>();
+        images9.add(new Image("https://salt.tikicdn.com/ts/product/e7/da/4a/8e75769f26664050a3f60fa150efb0f4.jpg",
                 "123yz456abc789def012ghi.png"));
         bookList.add(new Book(
                 4,
@@ -169,8 +170,8 @@ public class HomeActivity extends AppCompatActivity {
         ));
 
         // Book 5
-        List<Book.Image> images10 = new ArrayList<>();
-        images10.add(new Book.Image("https://salt.tikicdn.com/ts/product/67/77/6e/915e36b7629c4792218f19b57a8868e4.jpg",
+        List<Image> images10 = new ArrayList<>();
+        images10.add(new Image("https://salt.tikicdn.com/ts/product/67/77/6e/915e36b7629c4792218f19b57a8868e4.jpg",
                 "567jkl890mno123pqr456stu.png"));
         bookList.add(new Book(
                 5,

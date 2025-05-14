@@ -18,11 +18,14 @@ import com.example.app.R;
 import com.example.app.adapters.BookImageAdapter;
 import com.example.app.adapters.DisplayReviewAdapter;
 import com.example.app.models.Book;
+import com.example.app.models.Image;
 import com.example.app.models.Review;
 import com.example.app.utils.HeaderController;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -130,7 +133,7 @@ public class BookDetailActivity extends AppCompatActivity {
 
     private void loadBookData(Book book) {
         // Load book images
-        List<Book.Image> imageList = book.getImages();
+        List<Image> imageList = book.getImages();
         BookImageAdapter imageAdapter = new BookImageAdapter(this, imageList);
         imageViewPager.setAdapter(imageAdapter);
 
@@ -152,9 +155,11 @@ public class BookDetailActivity extends AppCompatActivity {
 
         // Simulate reviews for this book (in a real app, fetch via API using book.getId())
         List<Review> reviews = new ArrayList<>();
-        reviews.add(new Review(1, book.getId(), 1, 4.8f, "Rất hay, con tôi rất thích!", "2024-05-01"));
-        reviews.add(new Review(2, book.getId(), 2, 4.0f, "Minh họa đẹp, giấy tốt.", "2024-05-02"));
-        reviews.add(new Review(3, book.getId(), 3, 4.5f, "Câu chuyện hấp dẫn và dễ hiểu cho trẻ nhỏ.", "2024-05-03"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        reviews.add(new Review(1, book.getId(), 1, 4, "Rất hay, con tôi rất thích!", LocalDateTime.parse("2024-05-01 12:00:00", formatter)));
+        reviews.add(new Review(2, book.getId(), 2, 5, "Minh họa đẹp, giấy tốt.", LocalDateTime.parse("2024-05-02 12:00:00", formatter)));
+        reviews.add(new Review(3, book.getId(), 3, 5, "Câu chuyện hấp dẫn và dễ hiểu cho trẻ nhỏ.", LocalDateTime.parse("2024-05-03 12:00:00", formatter)));
 
         DisplayReviewAdapter reviewAdapter = new DisplayReviewAdapter(reviews);
         reviewRecyclerView.setLayoutManager(new LinearLayoutManager(this));
