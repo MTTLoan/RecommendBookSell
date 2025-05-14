@@ -24,7 +24,8 @@ app.use("/api/otp", otpRoutes);
 app.use("/api/verify_email", verifyEmailRoutes);
 
 // forgotPassword routes
-app.use("/api/forgot_password", forgotPasswordRoutes); 
+app.use("/api/forgot_password", forgotPasswordRoutes);
+
 
 app.use(errorHandler);
 

@@ -205,3 +205,27 @@ export const resetPasswordValidator = validate({
   },
   newPassword: passwordSchema,
 });
+
+// Validator cho thay đổi mật khẩu
+export const changePasswordValidator = validate({
+  email: emailSchema,
+  oldPassword: {
+    notEmpty: { errorMessage: "Mật khẩu cũ là bắt buộc" },
+    isString: { errorMessage: "Mật khẩu cũ phải là chuỗi" },
+    trim: true,
+  },
+  newPassword: passwordSchema,
+  confirmPassword: {
+    notEmpty: { errorMessage: "Xác nhận mật khẩu là bắt buộc" },
+    isString: { errorMessage: "Xác nhận mật khẩu phải là chuỗi" },
+    trim: true,
+    custom: {
+      options: (value, { req }) => {
+        if (value !== req.body.newPassword) {
+          throw new Error("Xác nhận mật khẩu không khớp với mật khẩu mới");
+        }
+        return true;
+      },
+    },
+  },
+});

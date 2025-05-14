@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { userService } from "../services/userService.js";
 import { sendVerificationOTPEmail } from "./email_verificationController.js";
+import { hashData, verifyHashedData } from "../util/hashData.js";
 
 export const registerController = async (req, res) => {
   const { username, fullName, email, phoneNumber, password } = req.body;
@@ -150,7 +151,7 @@ export const logoutController = async (req, res) => {
   }
 };
 
-export const googleAuth = async (req, res) => {
+export const googleAuthController = async (req, res) => {
   let { googleId, email, fullName, photoUrl } = req.body;
 
   googleId = googleId.trim();
@@ -239,3 +240,58 @@ export const googleAuth = async (req, res) => {
     });
   }
 };
+
+export const changePasswordController = async ({ email, oldPassword, newPassword }) => {
+  try {
+    // Tìm người dùng theo email
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw Error("Không tìm thấy tài khoản nào với email đã cung cấp.");
+    }
+
+    // Kiểm tra mật khẩu cũ
+    const isValid = await verifyHashedData(oldPassword, user.password);
+    if (!isValid) {
+      throw Error("Mật khẩu cũ không đúng.");
+    }
+
+    // Hash mật khẩu mới
+    const hashedPassword = await hashData(newPassword);
+
+    // Cập nhật mật mới
+    await User.updateOne({ email }, { password: hashedPassword });
+
+    return { message: "Mật khẩu đã được thay đổi thành công." };
+  } catch (error) {
+    throw error;
+  }
+  
+};
+
+const getProfileController = async (req, res) => {
+  try {
+    // Fetch user by ID from JWT payload (req.user._id set by authMiddleware)
+    const user = await User.findById(req.user._id).select("username fullName email phoneNumber role verified photoUrl");
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy tài khoản." });
+    }
+
+    return res.status(200).json({
+      message: "Lấy thông tin hồ sơ thành công.",
+      user: {
+        username: user.username,
+        fullName: user.fullName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        verified: user.verified,
+        photoUrl: user.photoUrl || "",
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Lỗi server." });
+  }
+};
+
+
+
