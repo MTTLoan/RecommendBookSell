@@ -180,6 +180,30 @@ public interface ApiService {
         }
     }
 
+    // Class mới cho đổi mật khẩu
+    class ChangePasswordRequest {
+        private String email;
+        private String oldPassword;
+        private String newPassword;
+        private String confirmPassword;
+
+        public ChangePasswordRequest(String email, String oldPassword, String newPassword, String confirmPassword) {
+            this.email = email;
+            this.oldPassword = oldPassword;
+            this.newPassword = newPassword;
+            this.confirmPassword = confirmPassword;
+        }
+    }
+
+    // Class mới cho phản hồi đổi mật khẩu
+    class ChangePasswordResponse {
+        private String message;
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
     @POST("/api/auth/logout")
     Call<LogoutResponse> logout(@Header("Authorization") String token);
 
@@ -199,5 +223,12 @@ public interface ApiService {
 
     @POST("/api/resend-otp")
     Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
+
+    // Endpoint mới cho đổi mật khẩu
+    @POST("/api/auth/change-password")
+    Call<ChangePasswordResponse> changePassword(@Body ChangePasswordRequest request);
+
+    @GET("api/user/profile")
+    Call<User> getUserProfile(String token);
 
 }

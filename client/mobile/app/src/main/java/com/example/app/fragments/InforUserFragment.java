@@ -38,7 +38,7 @@ public class InforUserFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_inforuser, container, false);
+        View view = inflater.inflate(R.layout.activity_infor_user, container, false);
 
         // Initialize views
         tvEditPersonalInfoLabel = view.findViewById(R.id.tvEditPersonalInfoLabel);

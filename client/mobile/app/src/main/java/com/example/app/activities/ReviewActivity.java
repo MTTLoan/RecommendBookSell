@@ -37,8 +37,8 @@ public class ReviewActivity extends AppCompatActivity {
         reviewAdapter = new ReviewAdapter(this, bookList);
         recyclerReviews.setAdapter(reviewAdapter);
 
-//        // Tải dữ liệu sách ảo (không có đánh giá)
-//        loadFakeBooks();
+        // Tải dữ liệu sách ảo (không có đánh giá)
+        loadFakeBooks();
 
         // Log để kiểm tra dữ liệu
         Log.d("ReviewActivity", "bookList size: " + bookList.size());

@@ -2,7 +2,6 @@ package com.example.app.activities;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -10,7 +9,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.app.R;
+import com.example.app.models.User;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
@@ -31,7 +32,7 @@ public class InforUserActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_inforuser);
+        setContentView(R.layout.activity_infor_user);
 
         // Initialize views
         tvEditPersonalInfoLabel = findViewById(R.id.tvEditPersonalInfoLabel);
@@ -54,6 +55,9 @@ public class InforUserActivity extends AppCompatActivity {
         } else {
             Log.d(TAG, "Token retrieved: " + token.substring(0, 10) + "...");
         }
+
+        // Fetch user profile
+        fetchUserProfile(token);
 
         // Set click listeners
         tvEditPersonalInfoLabel.setOnClickListener(v -> {
@@ -122,6 +126,58 @@ public class InforUserActivity extends AppCompatActivity {
                 dialog.dismiss();
                 Log.e(TAG, "Logout API call failed: " + t.getMessage());
                 Toast.makeText(InforUserActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void fetchUserProfile(String token) {
+        Call<User> call = apiService.getUserProfile(token);
+        Log.d(TAG, "Profile request URL: " + call.request().url());
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    User user = response.body();
+                    Log.d(TAG, "Profile fetched: email=" + user.getEmail());
+
+                    // Update UI
+                    tvName.setText(user.getUsername() != null ? user.getUsername() : "N/A");
+                    tvEmail.setText(user.getEmail() != null ? user.getEmail() : "N/A");
+
+                    // Load avatar with Glide
+                    String photoUrl = user.getPhotoUrl();
+                    if (photoUrl != null && !photoUrl.isEmpty()) {
+                        Glide.with(InforUserActivity.this)
+                                .load(photoUrl)
+                                .placeholder(R.drawable.avt)
+                                .error(R.drawable.avt)
+                                .into(ivAvatar);
+                    } else {
+                        ivAvatar.setImageResource(R.drawable.avt);
+                    }
+                } else {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                        Log.e(TAG, "Profile fetch failed: " + errorBody);
+                        Toast.makeText(InforUserActivity.this, "Không thể lấy thông tin hồ sơ: " + errorBody, Toast.LENGTH_LONG).show();
+                        if (response.code() == 401 || response.code() == 403) {
+                            AuthUtils.clearToken(InforUserActivity.this);
+                            Intent intent = new Intent(InforUserActivity.this, LoginActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
+                            finish();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error parsing profile response: " + e.getMessage());
+                        Toast.makeText(InforUserActivity.this, "Không thể lấy thông tin hồ sơ", Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.e(TAG, "Profile API call failed: " + t.getMessage());
+                Toast.makeText(InforUserActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
