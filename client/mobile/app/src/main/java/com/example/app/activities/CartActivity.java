@@ -46,10 +46,10 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
 
         // Initialize cart list with mock data
         cartList = new ArrayList<>();
-        cartList.add(new Cart("1", "https://salt.tikicdn.com/ts/product/73/24/11/1d84888511d73e6f5da2057115dcc4d8.png", "Cùng con trưởng thành - Mình không thích bị cô lập - Bài học về sự dũng cảm - Dạy trẻ chống lại bạo lực tinh thần - Tránh xa tổn thương", 250000, 1, true));
-        cartList.add(new Cart("2", "https://salt.tikicdn.com/ts/product/f2/01/28/35b7bf7dcaf02091c69fbbd4f9bb929f.jpg", "Chuyện Con Mèo Dạy Hải Âu Bay", 250000, 1, true));
-        cartList.add(new Cart("3", "https://salt.tikicdn.com/ts/product/75/96/cf/8be7ccb29bb999c9b9aed8e65c75b291.jpg", "Những Con Mèo Sau Bức Tường Hoa", 250000, 1, false));
-        cartList.add(new Cart("4", "https://salt.tikicdn.com/ts/product/18/08/cb/f09cdf8650d2f2a3f397ef968a312783.jpg", "Bộ ba phép thuật - Úm ba la ánh sáng hiện ra", 150000, 1, false));
+//        cartList.add(new Cart("1", "https://salt.tikicdn.com/ts/product/73/24/11/1d84888511d73e6f5da2057115dcc4d8.png", "Cùng con trưởng thành - Mình không thích bị cô lập - Bài học về sự dũng cảm - Dạy trẻ chống lại bạo lực tinh thần - Tránh xa tổn thương", 250000, 1, true));
+//        cartList.add(new Cart("2", "https://salt.tikicdn.com/ts/product/f2/01/28/35b7bf7dcaf02091c69fbbd4f9bb929f.jpg", "Chuyện Con Mèo Dạy Hải Âu Bay", 250000, 1, true));
+//        cartList.add(new Cart("3", "https://salt.tikicdn.com/ts/product/75/96/cf/8be7ccb29bb999c9b9aed8e65c75b291.jpg", "Những Con Mèo Sau Bức Tường Hoa", 250000, 1, false));
+//        cartList.add(new Cart("4", "https://salt.tikicdn.com/ts/product/18/08/cb/f09cdf8650d2f2a3f397ef968a312783.jpg", "Bộ ba phép thuật - Úm ba la ánh sáng hiện ra", 150000, 1, false));
 
         // Setup RecyclerView
         rvCartItems.setLayoutManager(new LinearLayoutManager(this));
@@ -68,10 +68,10 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             boolean hasSelectedItems = false;
             while (iterator.hasNext()) {
                 Cart item = iterator.next();
-                if (item.isSelected()) {
-                    iterator.remove();
-                    hasSelectedItems = true;
-                }
+//                if (item.isSelected()) {
+//                    iterator.remove();
+//                    hasSelectedItems = true;
+//                }
             }
 
             if (!hasSelectedItems) {
@@ -87,9 +87,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         btnCheckout.setOnClickListener(v -> {
             List<Cart> selectedItems = new ArrayList<>();
             for (Cart item : cartList) {
-                if (item.isSelected()) {
-                    selectedItems.add(item);
-                }
+//                if (item.isSelected()) {
+//                    selectedItems.add(item);
+//                }
             }
 
             if (selectedItems.isEmpty()) {
@@ -99,12 +99,12 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                 List<OrderItem> orderItems = new ArrayList<>();
                 double totalAmount = 0;
                 for (Cart cart : selectedItems) {
-                    orderItems.add(new OrderItem(
-                            Integer.parseInt(cart.getId()),
-                            cart.getQuantity(),
-                            cart.getPrice()
-                    ));
-                    totalAmount += cart.getPrice() * cart.getQuantity();
+//                    orderItems.add(new OrderItem(
+//                            Integer.parseInt(cart.getId()),
+//                            cart.getQuantity(),
+//                            cart.getPrice()
+//                    ));
+//                    totalAmount += cart.getPrice() * cart.getQuantity();
                 }
 
                 // Tạo đối tượng Order với mã địa chỉ hợp lệ
@@ -136,7 +136,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                 try {
                     Intent intent = new Intent(CartActivity.this, OrderConfirmationActivity.class);
                     Bundle bundle = new Bundle();
-                    bundle.putSerializable("order", order);
+//                    bundle.putSerializable("order", order);
                     intent.putExtras(bundle);
                     startActivity(intent);
 
@@ -144,9 +144,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                     Iterator<Cart> iterator = cartList.iterator();
                     while (iterator.hasNext()) {
                         Cart item = iterator.next();
-                        if (item.isSelected()) {
-                            iterator.remove();
-                        }
+//                        if (item.isSelected()) {
+//                            iterator.remove();
+//                        }
                     }
                     cartAdapter.notifyDataSetChanged();
                     updateTotalAmount();
@@ -166,9 +166,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     private void updateTotalAmount() {
         double total = 0;
         for (Cart item : cartList) {
-            if (item.isSelected()) {
-                total += item.getPrice() * item.getQuantity();
-            }
+//            if (item.isSelected()) {
+//                total += item.getPrice() * item.getQuantity();
+//            }
         }
         tvTotalAmount.setText(String.format("%,.0f đ", total));
     }

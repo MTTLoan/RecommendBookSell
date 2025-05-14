@@ -45,36 +45,36 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
         Cart cartItem = cartList.get(position);
 
-        // Load image using Picasso (use placeholder since it's mock data)
-        Picasso.get().load(cartItem.getImageUrl())
-                .placeholder(R.drawable.placeholder_book)
-                .into(holder.bookImage);
+//        // Load image using Picasso (use placeholder since it's mock data)
+//        Picasso.get().load(cartItem.getImageUrl())
+//                .placeholder(R.drawable.placeholder_book)
+//                .into(holder.bookImage);
 
-        holder.bookTitle.setText(cartItem.getTitle());
-        holder.price.setText(String.format("%,.0fđ", cartItem.getPrice()));
-        holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
-        holder.checkBox.setChecked(cartItem.isSelected());
+//        holder.bookTitle.setText(cartItem.getTitle());
+//        holder.price.setText(String.format("%,.0fđ", cartItem.getPrice()));
+//        holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
+//        holder.checkBox.setChecked(cartItem.isSelected());
 
         // Checkbox listener
         holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            cartItem.setSelected(isChecked);
+//            cartItem.setSelected(isChecked);
             listener.onCartChanged();
         });
 
         // Decrease quantity
         holder.decreaseButton.setOnClickListener(v -> {
-            int qty = cartItem.getQuantity();
-            if (qty > 1) {
-                cartItem.setQuantity(qty - 1);
-                holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
-                listener.onCartChanged();
-            }
+//            int qty = cartItem.getQuantity();
+//            if (qty > 1) {
+//                cartItem.setQuantity(qty - 1);
+//                holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
+//                listener.onCartChanged();
+//            }
         });
 
         // Increase quantity
         holder.increaseButton.setOnClickListener(v -> {
-            cartItem.setQuantity(cartItem.getQuantity() + 1);
-            holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
+//            cartItem.setQuantity(cartItem.getQuantity() + 1);
+//            holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
             listener.onCartChanged();
         });
     }

@@ -30,15 +30,15 @@ public class OrderConfirmItemAdapter extends RecyclerView.Adapter<OrderConfirmIt
     @Override
     public void onBindViewHolder(@NonNull OrderItemViewHolder holder, int position) {
         OrderItem item = orderItems.get(position);
-        holder.tvBookName.setText(item.getBookName());
+//        holder.tvBookName.setText(item.getBookName());
         holder.tvQuantity.setText("SL: " + item.getQuantity());
         holder.tvPrice.setText(String.format("%,d VNĐ", (int) item.getUnitPrice()));
-        Picasso.get().load(item.getImageUrl()).into(holder.ivBookImage);
+//        Picasso.get().load(item.getImageUrl()).into(holder.ivBookImage);
 
-        // Thêm contentDescription cho mục
-        holder.itemView.setContentDescription(
-                "Sản phẩm: " + item.getBookName() + ", Số lượng: " + item.getQuantity() + ", Giá: " + String.format("%,d VNĐ", (int) item.getUnitPrice())
-        );
+//        // Thêm contentDescription cho mục
+//        holder.itemView.setContentDescription(
+//                "Sản phẩm: " + item.getBookName() + ", Số lượng: " + item.getQuantity() + ", Giá: " + String.format("%,d VNĐ", (int) item.getUnitPrice())
+//        );
     }
 
     @Override
