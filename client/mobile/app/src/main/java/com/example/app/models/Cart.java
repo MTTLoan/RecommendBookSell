@@ -1,22 +1,15 @@
 package com.example.app.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "Carts")
+
 public class Cart {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     private int userId;
 
-    @JsonProperty("items")
-    @Column(columnDefinition = "json")
     private List<CartItem> items = new ArrayList<>();
 
     private LocalDateTime createdAt;

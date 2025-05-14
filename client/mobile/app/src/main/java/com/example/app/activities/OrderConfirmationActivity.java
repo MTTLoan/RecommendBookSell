@@ -87,7 +87,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             // Đặt giá trị mặc định từ Order
             etUserFullName.setText(order.getUserFullName() != null ? order.getUserFullName() : "");
             etUserPhoneNumber.setText(order.getUserPhoneNumber() != null ? order.getUserPhoneNumber() : "");
-            etDetailedAddress.setText(order.getShippingDetailedAddress() != null ? order.getShippingDetailedAddress() : "37 đường số 8");
+            etDetailedAddress.setText(order.getShippingDetail() != null ? order.getShippingDetail() : "37 đường số 8");
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi khi nhận dữ liệu đơn hàng: " + e.getMessage(), Toast.LENGTH_LONG).show();
             finish();
@@ -179,7 +179,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
                     spinnerProvince.setAdapter(provinceAdapter);
 
                     // Đặt giá trị mặc định dựa trên Order
-                    int defaultProvinceCode = order.getShippingAddressProvinceCode(); // 79 (TP. Hồ Chí Minh)
+                    int defaultProvinceCode = order.getShippingProvince(); // 79 (TP. Hồ Chí Minh)
                     int provinceIndex = provinceCodes.indexOf(defaultProvinceCode);
                     if (provinceIndex != -1) {
                         spinnerProvince.setSelection(provinceIndex);
@@ -235,7 +235,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
                     spinnerDistrict.setAdapter(districtAdapter);
 
                     // Đặt giá trị mặc định dựa trên Order
-                    int defaultDistrictCode = order.getShippingAddressDistrictCode(); // 774 (Quận Thủ Đức)
+                    int defaultDistrictCode = order.getShippingDistrict(); // 774 (Quận Thủ Đức)
                     int districtIndex = districtCodes.indexOf(defaultDistrictCode);
                     if (districtIndex != -1) {
                         spinnerDistrict.setSelection(districtIndex);
@@ -289,7 +289,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
                     spinnerWard.setAdapter(wardAdapter);
 
                     // Đặt giá trị mặc định dựa trên Order
-                    int defaultWardCode = order.getShippingAddressWardCode(); // 26124 (Phường Linh Trung)
+                    int defaultWardCode = order.getShippingWard(); // 26124 (Phường Linh Trung)
                     int wardIndex = wardCodes.indexOf(defaultWardCode);
                     if (wardIndex != -1) {
                         spinnerWard.setSelection(wardIndex);
@@ -335,7 +335,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         }
 
         // Chuẩn bị thông tin hiển thị trên dialog
-        String fullAddress = newDetailedAddress + ", " + newWard + ", " + newDistrict + ", " + newProvince;
+//        String fullAddress = newDetailedAddress + ", " + newWard + ", " + newDistrict + ", " + newProvince;
         double finalTotal = order.getTotalAmount() + shippingCost;
         String shippingMethod = rbFastShipping.isChecked() ? "Nhanh (20.000 VNĐ)" : "Tiết kiệm (15.000 VNĐ)";
 
@@ -374,7 +374,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         // Cập nhật order với dữ liệu mới (sau khi xác nhận)
         order.setUserFullName(newFullName);
         order.setUserPhoneNumber(newPhoneNumber);
-        order.setShippingDetailedAddress(fullAddress);
+//        order.getShippingDetail(fullAddress);
 
         // Gửi tổng giá bao gồm chi phí giao hàng
         Toast.makeText(this, "Đặt hàng thành công với tổng giá: " + String.format("%,d VNĐ", (int) finalTotal), Toast.LENGTH_SHORT).show();

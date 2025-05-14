@@ -31,7 +31,7 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
     @Override
     public void onBindViewHolder(@NonNull OrderItemViewHolder holder, int position) {
         OrderItem item = items.get(position);
-        holder.tvBookTitle.setText(item.getBookName());
+//        holder.tvBookTitle.setText(item.getBookName());
         holder.tvQuantity.setText(String.format(
                 holder.itemView.getContext().getString(R.string.quantity_label),
                 item.getQuantity()
@@ -41,10 +41,10 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
                 holder.itemView.getContext().getString(R.string.price_format),
                 item.getUnitPrice()
         ));
-        Picasso.get()
-                .load(item.getImageUrl())
-                .placeholder(android.R.drawable.ic_menu_gallery)
-                .into(holder.ivBookImage);
+//        Picasso.get()
+//                .load(item.getImageUrl())
+//                .placeholder(android.R.drawable.ic_menu_gallery)
+//                .into(holder.ivBookImage);
     }
 
     @Override

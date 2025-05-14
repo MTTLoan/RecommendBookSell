@@ -13,6 +13,8 @@ import com.example.app.adapters.ReviewAdapter;
 import com.example.app.models.Book;
 import com.example.app.models.Image;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,6 +91,7 @@ public class ReviewActivity extends AppCompatActivity {
         // Tạo danh sách ảnh cho sách 2
         List<Image> images2 = new ArrayList<>();
         images2.add(new Image("https://example.com/image2.jpg", "Image 2 alt"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         // Thêm sách vào danh sách
         bookList.add(new Book(
@@ -101,7 +104,7 @@ public class ReviewActivity extends AppCompatActivity {
                 10,  // ratingCount
                 50,  // stockQuantity
                 1,   // categoryId
-                "2025-04-30",
+                LocalDateTime.parse("2025-04-28 02:27:21", formatter),
                 "Carol Dweck" // author
         ));
         bookList.add(new Book(
@@ -114,7 +117,7 @@ public class ReviewActivity extends AppCompatActivity {
                 8,   // ratingCount
                 30,  // stockQuantity
                 1,   // categoryId
-                "2025-04-30",
+                LocalDateTime.parse("2025-04-28 02:27:21", formatter),
                 "Tác giả 2" // author
         ));
     }
