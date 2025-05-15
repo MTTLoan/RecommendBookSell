@@ -335,7 +335,6 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         }
 
         // Chuẩn bị thông tin hiển thị trên dialog
-//        String fullAddress = newDetailedAddress + ", " + newWard + ", " + newDistrict + ", " + newProvince;
         double finalTotal = order.getTotalAmount() + shippingCost;
         String shippingMethod = rbFastShipping.isChecked() ? "Nhanh (20.000 VNĐ)" : "Tiết kiệm (15.000 VNĐ)";
 
@@ -350,31 +349,32 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         // Xử lý nút Trang chủ
         Button btnHome = dialogView.findViewById(R.id.btn_dialog_home);
         btnHome.setOnClickListener(v -> {
-            // Quay về Trang chủ (ví dụ: MainActivity)
+            // Quay về Trang chủ
             dialog.dismiss();
-            startActivity(new Intent(OrderConfirmationActivity.this, Menu.class));
-            finish(); // Đóng Activity hiện tại
-            // Thêm Intent nếu cần: startActivity(new Intent(this, MainActivity.class));
+            Intent intent = new Intent(OrderConfirmationActivity.this, Menu.class);
+            intent.putExtra("fragment_to_show", "home");
+            startActivity(intent);
+            finish();
         });
 
         // Xử lý nút Đơn mua
         Button btnOrders = dialogView.findViewById(R.id.btn_dialog_orders);
         btnOrders.setOnClickListener(v -> {
-            // Chuyển đến màn hình Đơn mua (ví dụ: OrderHistoryActivity)
+            // Chuyển đến màn hình Đơn mua với OrderHistoryFragment
             dialog.dismiss();
-            startActivity(new Intent(OrderConfirmationActivity.this, OrderHistoryActivity.class));
-            finish(); // Đóng Activity hiện tại
-            // Thêm Intent nếu cần: startActivity(new Intent(this, OrderHistoryActivity.class));
+            Intent intent = new Intent(OrderConfirmationActivity.this, Menu.class);
+            intent.putExtra("fragment_to_show", "orders");
+            startActivity(intent);
+            finish();
         });
 
         // Hiển thị dialog
-        dialog.setCancelable(false); // Không cho phép đóng dialog bằng nút Back
+        dialog.setCancelable(false);
         dialog.show();
 
         // Cập nhật order với dữ liệu mới (sau khi xác nhận)
         order.setUserFullName(newFullName);
         order.setUserPhoneNumber(newPhoneNumber);
-//        order.getShippingDetail(fullAddress);
 
         // Gửi tổng giá bao gồm chi phí giao hàng
         Toast.makeText(this, "Đặt hàng thành công với tổng giá: " + String.format("%,d VNĐ", (int) finalTotal), Toast.LENGTH_SHORT).show();
