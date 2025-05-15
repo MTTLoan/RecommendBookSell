@@ -13,6 +13,9 @@ import com.chaos.view.PinView;
 import com.example.app.R;
 import com.example.app.activities.CongratulationActivity;
 import com.example.app.activities.ResetPasswordActivity;
+import com.example.app.models.request.OtpRequest;
+import com.example.app.models.request.ResendOtpRequest;
+import com.example.app.models.response.OtpResponse;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import retrofit2.Call;
@@ -60,10 +63,10 @@ public class OTPFragmentRegister extends Fragment {
             }
 
             ApiService apiService = RetrofitClient.getApiService();
-            Call<ApiService.OtpResponse> call = apiService.verifyOtp(new ApiService.OtpRequest(email, otp));
-            call.enqueue(new Callback<ApiService.OtpResponse>() {
+            Call<OtpResponse> call = apiService.verifyOtp(new OtpRequest(email, otp));
+            call.enqueue(new Callback<OtpResponse>() {
                 @Override
-                public void onResponse(Call<ApiService.OtpResponse> call, Response<ApiService.OtpResponse> response) {
+                public void onResponse(Call<OtpResponse> call, Response<OtpResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         Intent intent = new Intent(getContext(), CongratulationActivity.class);
                         startActivity(intent);
@@ -78,7 +81,7 @@ public class OTPFragmentRegister extends Fragment {
                 }
 
                 @Override
-                public void onFailure(Call<ApiService.OtpResponse> call, Throwable t) {
+                public void onFailure(Call<OtpResponse> call, Throwable t) {
                     Toast.makeText(getContext(), "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
@@ -90,10 +93,10 @@ public class OTPFragmentRegister extends Fragment {
         // Sự kiện nhấn "Gửi lại OTP"
         tvResendOTP.setOnClickListener(v -> {
             ApiService apiService = RetrofitClient.getApiService();
-            Call<ApiService.OtpResponse> call = apiService.resendOtp(new ApiService.ResendOtpRequest(email));
-            call.enqueue(new Callback<ApiService.OtpResponse>() {
+            Call<OtpResponse> call = apiService.resendOtp(new ResendOtpRequest(email));
+            call.enqueue(new Callback<OtpResponse>() {
                 @Override
-                public void onResponse(Call<ApiService.OtpResponse> call, Response<ApiService.OtpResponse> response) {
+                public void onResponse(Call<OtpResponse> call, Response<OtpResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         Toast.makeText(getContext(), response.body().getMessage(), Toast.LENGTH_SHORT).show();
                     } else {
@@ -107,7 +110,7 @@ public class OTPFragmentRegister extends Fragment {
                 }
 
                 @Override
-                public void onFailure(Call<ApiService.OtpResponse> call, Throwable t) {
+                public void onFailure(Call<OtpResponse> call, Throwable t) {
                     Toast.makeText(getContext(), "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });

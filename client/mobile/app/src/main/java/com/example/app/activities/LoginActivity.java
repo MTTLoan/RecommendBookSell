@@ -11,6 +11,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.app.R;
 import com.example.app.models.User;
+import com.example.app.models.request.UserLoginRequest;
+import com.example.app.models.response.GoogleAuthRequest;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
@@ -100,7 +102,7 @@ public class LoginActivity extends AppCompatActivity {
             }
 
             // Tạo request cho đăng nhập thông thường
-            ApiService.UserLoginRequest request = new ApiService.UserLoginRequest(email, password, true);
+            UserLoginRequest request = new UserLoginRequest(email, password, true);
             Log.d(TAG, "Request Body: identifier=" + email + ", password=" + password);
 
             // Gọi API đăng nhập
@@ -232,7 +234,7 @@ public class LoginActivity extends AppCompatActivity {
             }
 
             // Gọi API googleauth
-            ApiService.GoogleAuthRequest request = new ApiService.GoogleAuthRequest(googleId, email, fullName, photoUrl);
+            GoogleAuthRequest request = new GoogleAuthRequest(googleId, email, fullName, photoUrl);
             Call<User> call = apiService.loginWithGoogle(request);
             call.enqueue(new Callback<User>() {
                 @Override

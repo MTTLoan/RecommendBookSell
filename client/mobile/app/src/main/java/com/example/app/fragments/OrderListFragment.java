@@ -54,12 +54,11 @@ public class OrderListFragment extends Fragment {
         List<Order> orderList = new ArrayList<>();
 
         DateTimeFormatter formatterFull = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        DateTimeFormatter formatterShort = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         if (status.equals("Đang đóng gói")) {
             List<OrderItem> items1 = new ArrayList<>();
             items1.add(new OrderItem(1, 1, 250000));
-            LocalDateTime orderDate1 = LocalDateTime.parse("01/01/2025", formatterShort).withHour(0).withMinute(0).withSecond(0);
+            LocalDateTime orderDate1 = LocalDateTime.parse("2024-12-10 22:30:48", formatterFull);
             orderList.add(new Order(
                     12345, // id
                     1, // userId
@@ -101,7 +100,7 @@ public class OrderListFragment extends Fragment {
         } else if (status.equals("Đã giao")) {
             List<OrderItem> items3 = new ArrayList<>();
             items3.add(new OrderItem(3, 1, 150000));
-            LocalDateTime orderDate3 = LocalDateTime.parse("03/01/2025", formatterShort).withHour(0).withMinute(0).withSecond(0);
+            LocalDateTime orderDate3 = LocalDateTime.parse("2024-12-10 22:30:48", formatterFull);
             orderList.add(new Order(
                     12347, // id
                     3, // userId
@@ -121,7 +120,7 @@ public class OrderListFragment extends Fragment {
         } else if (status.equals("Trả hàng")) {
             List<OrderItem> items4 = new ArrayList<>();
             items4.add(new OrderItem(4, 1, 50000));
-            LocalDateTime orderDate4 = LocalDateTime.parse("04/01/2025", formatterShort).withHour(0).withMinute(0).withSecond(0);
+            LocalDateTime orderDate4 = LocalDateTime.parse("2024-12-10 22:30:48", formatterFull);
             orderList.add(new Order(
                     12348, // id
                     4, // userId
@@ -141,7 +140,7 @@ public class OrderListFragment extends Fragment {
         } else if (status.equals("Đã hủy")) {
             List<OrderItem> items5 = new ArrayList<>();
             items5.add(new OrderItem(5, 1, 80000));
-            LocalDateTime orderDate5 = LocalDateTime.parse("05/01/2025", formatterShort).withHour(0).withMinute(0).withSecond(0);
+            LocalDateTime orderDate5 = LocalDateTime.parse("2024-12-10 22:30:48", formatterFull);
             orderList.add(new Order(
                     12349, // id
                     5, // userId

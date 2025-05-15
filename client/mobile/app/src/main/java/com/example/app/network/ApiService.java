@@ -2,6 +2,17 @@ package com.example.app.network;
 
 import com.example.app.models.Notification;
 import com.example.app.models.User;
+import com.example.app.models.request.ForgotPasswordRequest;
+import com.example.app.models.request.OtpRequest;
+import com.example.app.models.request.RegisterRequest;
+import com.example.app.models.request.ResendOtpRequest;
+import com.example.app.models.request.ResetPasswordRequest;
+import com.example.app.models.request.UserLoginRequest;
+import com.example.app.models.response.ForgotPasswordResponse;
+import com.example.app.models.response.GoogleAuthRequest;
+import com.example.app.models.response.LogoutResponse;
+import com.example.app.models.response.OtpResponse;
+import com.example.app.models.response.ResetPasswordResponse;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
@@ -48,162 +59,5 @@ public interface ApiService {
 
     @PUT("notifications/{id}")
     Call<Notification> markAsRead(@Path("id") int id);
-    class RegisterRequest {
-        String username, fullName, email, phoneNumber, password, confirm_password;
-
-        public RegisterRequest(String username, String fullName, String email, String phoneNumber, String password, String confirm_password) {
-            this.username = username;
-            this.fullName = fullName;
-            this.email = email;
-            this.phoneNumber = phoneNumber;
-            this.password = password;
-            this.confirm_password = confirm_password;
-        }
-    }
-
-    class UserLoginRequest {
-        @SerializedName("identifier")
-        private String identifier;
-
-        @SerializedName("password")
-        private String password;
-
-        @SerializedName("idToken")
-        private String idToken;
-
-        public UserLoginRequest(String email, String password, boolean isNormalLogin) {
-            this.identifier = email;
-            this.password = password;
-            this.idToken = null;
-        }
-
-        public UserLoginRequest(String email, String idToken) {
-            this.identifier = email;
-            this.idToken = idToken;
-            this.password = null;
-        }
-
-        public String getIdentifier() {
-            return identifier;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public String getIdToken() {
-            return idToken;
-        }
-    }
-
-    class OtpRequest {
-        private String email;
-        private String otp;
-
-        public OtpRequest(String email, String otp) {
-            this.email = email;
-            this.otp = otp;
-        }
-    }
-
-    class ResendOtpRequest {
-        private String email;
-
-        public ResendOtpRequest(String email) {
-            this.email = email;
-        }
-    }
-
-    class ForgotPasswordRequest {
-        private String email;
-
-        public ForgotPasswordRequest(String email) {
-            this.email = email;
-        }
-    }
-
-    class ResetPasswordRequest {
-        private String email;
-        private String otp;
-        private String newPassword;
-        private String confirmPassword;
-
-        public ResetPasswordRequest(String email, String otp, String newPassword, String confirmPassword) {
-            this.email = email;
-            this.otp = otp;
-            this.newPassword = newPassword;
-            this.confirmPassword = confirmPassword;
-        }
-    }
-
-    class OtpResponse {
-        private boolean success;
-        private String message;
-
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-    }
-
-    class ForgotPasswordResponse {
-        private String message;
-        private Object otpRecord;
-
-        public String getMessage() {
-            return message;
-        }
-
-        public Object getOtpRecord() {
-            return otpRecord;
-        }
-    }
-
-    class ResetPasswordResponse {
-        private String message;
-
-        public String getMessage() {
-            return message;
-        }
-    }
-
-    // Logout Response Class
-    class LogoutResponse {
-        private String message;
-        private String msg;
-
-        public String getMessage() {
-            return message != null ? message : msg;
-        }
-
-        public boolean isSuccess() {
-            return (message != null && message.contains("thành công")) || (msg != null && msg.contains("thành công"));
-        }
-    }
-
-    class GoogleAuthRequest {
-        @SerializedName("googleId")
-        private String googleId;
-
-        @SerializedName("email")
-        private String email;
-
-        @SerializedName("fullName")
-        private String fullName;
-
-        @SerializedName("photoUrl")
-        private String photoUrl;
-
-        public GoogleAuthRequest(String googleId, String email, String fullName, String photoUrl) {
-            this.googleId = googleId;
-            this.email = email;
-            this.fullName = fullName;
-            this.photoUrl = photoUrl;
-        }
-    }
-
 
 }

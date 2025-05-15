@@ -12,7 +12,7 @@ const notificationSchema = new mongoose.Schema(
       required: true,
     },
     orderId: {
-      type: mongoose.Schema.Types.Mixed, // Cho phép null hoặc các giá trị khác
+      type: mongoose.Schema.Types.Mixed,
       default: null,
     },
     title: {
