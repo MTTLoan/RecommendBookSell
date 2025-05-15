@@ -23,9 +23,9 @@ const UserSchema = new mongoose.Schema(
 );
 
 // Virtual to expose _id as id for API compatibility
-UserSchema.virtual("id").get(function () {
-  return this._id;
-});
+// UserSchema.virtual("id").get(function () {
+//   return this._id;
+// });
 
 // Ensure virtuals are included in JSON output
 UserSchema.set("toJSON", { virtuals: true });

@@ -4,6 +4,7 @@ import cors from "cors";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import otpRoutes from "./routes/otp.js";
+import notificationRoutes from "./routes/notification.js";
 import verifyEmailRoutes from "./routes/verifyEmail.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import forgotPasswordRoutes from "./routes/forgotPassword.js";
@@ -24,10 +25,12 @@ app.use("/api/otp", otpRoutes);
 app.use("/api/verify_email", verifyEmailRoutes);
 
 // forgotPassword routes
-app.use("/api/forgot_password", forgotPasswordRoutes); 
+app.use("/api/forgot_password", forgotPasswordRoutes);
+
+// notification routes
+app.use("/api", notificationRoutes);
 
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-

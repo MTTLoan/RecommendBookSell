@@ -12,6 +12,9 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
     @POST("auth/register")
@@ -23,6 +26,28 @@ public interface ApiService {
     @POST("forgot_password/reset-password")
     Call<ResetPasswordResponse> resetPassword(@Body ResetPasswordRequest request);
 
+    @POST("/api/auth/logout")
+    Call<LogoutResponse> logout(@Header("Authorization") String token);
+
+    @POST("/api/auth/login")
+    @Headers("Content-Type: application/json")
+    Call<User> login(@Body UserLoginRequest request);
+
+    @POST("/api/auth/googleauth")
+    @Headers("Content-Type: application/json")
+    Call<User> loginWithGoogle(@Body GoogleAuthRequest request);
+    @Headers("Content-Type: application/json")
+    @POST("/api/verify_email/verify")
+    Call<OtpResponse> verifyOtp(@Body OtpRequest request);
+
+    @POST("/api/resend-otp")
+    Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
+
+    @GET("notifications")
+    Call<List<Notification>> getNotifications(@Query("userId") int userId);
+
+    @PUT("notifications/{id}")
+    Call<Notification> markAsRead(@Path("id") int id);
     class RegisterRequest {
         String username, fullName, email, phoneNumber, password, confirm_password;
 
@@ -180,24 +205,5 @@ public interface ApiService {
         }
     }
 
-    @POST("/api/auth/logout")
-    Call<LogoutResponse> logout(@Header("Authorization") String token);
-
-    @GET("api/notifications")
-    Call<List<Notification>> getNotifications();
-
-    @POST("/api/auth/login")
-    @Headers("Content-Type: application/json")
-    Call<User> login(@Body UserLoginRequest request);
-
-    @POST("/api/auth/googleauth")
-    @Headers("Content-Type: application/json")
-    Call<User> loginWithGoogle(@Body GoogleAuthRequest request);
-    @Headers("Content-Type: application/json")
-    @POST("/api/verify_email/verify")
-    Call<OtpResponse> verifyOtp(@Body OtpRequest request);
-
-    @POST("/api/resend-otp")
-    Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
 
 }
