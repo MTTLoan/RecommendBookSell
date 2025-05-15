@@ -13,6 +13,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.app.R;
+import com.example.app.models.request.ResetPasswordRequest;
+import com.example.app.models.response.ResetPasswordResponse;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 
@@ -59,10 +61,10 @@ public class ResetPasswordActivity extends AppCompatActivity {
             }
 
             ApiService apiService = RetrofitClient.getApiService();
-            Call<ApiService.ResetPasswordResponse> call = apiService.resetPassword(new ApiService.ResetPasswordRequest(email, otp, newPassword, confirmPassword));
-            call.enqueue(new Callback<ApiService.ResetPasswordResponse>() {
+            Call<ResetPasswordResponse> call = apiService.resetPassword(new ResetPasswordRequest(email, otp, newPassword, confirmPassword));
+            call.enqueue(new Callback<ResetPasswordResponse>() {
                 @Override
-                public void onResponse(Call<ApiService.ResetPasswordResponse> call, Response<ApiService.ResetPasswordResponse> response) {
+                public void onResponse(Call<ResetPasswordResponse> call, Response<ResetPasswordResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         Toast.makeText(ResetPasswordActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(ResetPasswordActivity.this, CongratulationActivity.class));
@@ -78,7 +80,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(Call<ApiService.ResetPasswordResponse> call, Throwable t) {
+                public void onFailure(Call<ResetPasswordResponse> call, Throwable t) {
                     Toast.makeText(ResetPasswordActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });

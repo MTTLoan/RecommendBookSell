@@ -12,6 +12,8 @@ import androidx.fragment.app.Fragment;
 import com.chaos.view.PinView;
 import com.example.app.R;
 import com.example.app.activities.ResetPasswordActivity;
+import com.example.app.models.request.ForgotPasswordRequest;
+import com.example.app.models.response.ForgotPasswordResponse;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import retrofit2.Call;
@@ -71,10 +73,10 @@ public class OTPFragment extends Fragment {
         // Sự kiện nhấn "Gửi lại OTP"
         tvResendOTP.setOnClickListener(v -> {
             ApiService apiService = RetrofitClient.getApiService();
-            Call<ApiService.ForgotPasswordResponse> call = apiService.sendPasswordResetOTP(new ApiService.ForgotPasswordRequest(email));
-            call.enqueue(new Callback<ApiService.ForgotPasswordResponse>() {
+            Call<ForgotPasswordResponse> call = apiService.sendPasswordResetOTP(new ForgotPasswordRequest(email));
+            call.enqueue(new Callback<ForgotPasswordResponse>() {
                 @Override
-                public void onResponse(Call<ApiService.ForgotPasswordResponse> call, Response<ApiService.ForgotPasswordResponse> response) {
+                public void onResponse(Call<ForgotPasswordResponse> call, Response<ForgotPasswordResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         String message = response.body().getMessage();
                         Toast.makeText(getContext(), message != null ? message : "OTP đã được gửi lại", Toast.LENGTH_SHORT).show();
@@ -89,7 +91,7 @@ public class OTPFragment extends Fragment {
                 }
 
                 @Override
-                public void onFailure(Call<ApiService.ForgotPasswordResponse> call, Throwable t) {
+                public void onFailure(Call<ForgotPasswordResponse> call, Throwable t) {
                     Toast.makeText(getContext(), "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });

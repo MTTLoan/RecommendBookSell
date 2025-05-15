@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.app.R;
+import com.example.app.models.response.LogoutResponse;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
@@ -82,14 +83,14 @@ public class InforUserActivity extends AppCompatActivity {
         dialog.setCancelable(false);
         dialog.show();
 
-        Call<ApiService.LogoutResponse> call = apiService.logout(token);
+        Call<LogoutResponse> call = apiService.logout(token);
         Log.d(TAG, "Logout request URL: " + call.request().url());
-        call.enqueue(new Callback<ApiService.LogoutResponse>() {
+        call.enqueue(new Callback<LogoutResponse>() {
             @Override
-            public void onResponse(Call<ApiService.LogoutResponse> call, Response<ApiService.LogoutResponse> response) {
+            public void onResponse(Call<LogoutResponse> call, Response<LogoutResponse> response) {
                 dialog.dismiss();
                 if (response.isSuccessful() && response.body() != null) {
-                    ApiService.LogoutResponse logoutResponse = response.body();
+                    LogoutResponse logoutResponse = response.body();
                     Log.d(TAG, "Logout response body: " + new String(response.body().toString())); // Note: This might not show JSON
                     Log.d(TAG, "Logout response - success: " + logoutResponse.isSuccess());
                     Log.d(TAG, "Logout response - message: " + logoutResponse.getMessage());
@@ -118,7 +119,7 @@ public class InforUserActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<ApiService.LogoutResponse> call, Throwable t) {
+            public void onFailure(Call<LogoutResponse> call, Throwable t) {
                 dialog.dismiss();
                 Log.e(TAG, "Logout API call failed: " + t.getMessage());
                 Toast.makeText(InforUserActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
