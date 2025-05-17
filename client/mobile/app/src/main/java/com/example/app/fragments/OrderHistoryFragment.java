@@ -36,10 +36,6 @@ public class OrderHistoryFragment extends Fragment {
         rvStatusBar = view.findViewById(R.id.rvStatusBar);
         viewPager = view.findViewById(R.id.viewPager);
 
-        if (rvStatusBar == null) {
-            throw new IllegalStateException("rvStatusBar is null. Check layout file or ID.");
-        }
-
         // Khởi tạo danh sách trạng thái
         statusList = new ArrayList<>();
         String[] statuses = {"Đang đóng gói", "Chờ giao hàng", "Đã giao", "Trả hàng", "Đã hủy"};

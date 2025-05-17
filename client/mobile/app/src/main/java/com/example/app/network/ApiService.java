@@ -2,6 +2,17 @@ package com.example.app.network;
 
 import com.example.app.models.Notification;
 import com.example.app.models.User;
+import com.example.app.models.request.ForgotPasswordRequest;
+import com.example.app.models.request.OtpRequest;
+import com.example.app.models.request.RegisterRequest;
+import com.example.app.models.request.ResendOtpRequest;
+import com.example.app.models.request.ResetPasswordRequest;
+import com.example.app.models.request.UserLoginRequest;
+import com.example.app.models.response.ForgotPasswordResponse;
+import com.example.app.models.response.GoogleAuthRequest;
+import com.example.app.models.response.LogoutResponse;
+import com.example.app.models.response.OtpResponse;
+import com.example.app.models.response.ResetPasswordResponse;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
@@ -12,6 +23,9 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
     @POST("auth/register")
@@ -206,9 +220,6 @@ public interface ApiService {
 
     @POST("/api/auth/logout")
     Call<LogoutResponse> logout(@Header("Authorization") String token);
-
-    @GET("api/notifications")
-    Call<List<Notification>> getNotifications();
 
     @POST("/api/auth/login")
     @Headers("Content-Type: application/json")

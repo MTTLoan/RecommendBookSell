@@ -11,6 +11,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.app.R;
 import com.example.app.fragments.OTPFragment;
+import com.example.app.models.request.ForgotPasswordRequest;
+import com.example.app.models.response.ForgotPasswordResponse;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import retrofit2.Call;
@@ -43,10 +45,10 @@ public class EmailResetPasswordActivity extends AppCompatActivity {
             }
 
             ApiService apiService = RetrofitClient.getApiService();
-            Call<ApiService.ForgotPasswordResponse> call = apiService.sendPasswordResetOTP(new ApiService.ForgotPasswordRequest(email));
-            call.enqueue(new Callback<ApiService.ForgotPasswordResponse>() {
+            Call<ForgotPasswordResponse> call = apiService.sendPasswordResetOTP(new ForgotPasswordRequest(email));
+            call.enqueue(new Callback<ForgotPasswordResponse>() {
                 @Override
-                public void onResponse(Call<ApiService.ForgotPasswordResponse> call, Response<ApiService.ForgotPasswordResponse> response) {
+                public void onResponse(Call<ForgotPasswordResponse> call, Response<ForgotPasswordResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         Toast.makeText(EmailResetPasswordActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
                         // Chuyển sang OTPFragment (truyền email qua Bundle)
@@ -70,7 +72,7 @@ public class EmailResetPasswordActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(Call<ApiService.ForgotPasswordResponse> call, Throwable t) {
+                public void onFailure(Call<ForgotPasswordResponse> call, Throwable t) {
                     Toast.makeText(EmailResetPasswordActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });

@@ -22,6 +22,14 @@ export const registerController = async (req, res) => {
       phoneNumber,
       password: await bcrypt.hash(password, 10),
       role: "user",
+      verified: false,
+      addressProvince: null,
+      addressDistrict: null,
+      addressWard: null,
+      addressDetail: null,
+      birthday: null,
+      avatar: null,
+      token: null,
     });
     await user.save();
 
@@ -30,7 +38,7 @@ export const registerController = async (req, res) => {
 
     // Tạo token
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user.id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -163,7 +171,7 @@ export const googleAuthController = async (req, res) => {
     let isNewAccount = false;
     // Tìm người dùng bằng googleId hoặc email
     let user = await User.findOne({ $or: [{ googleId }, { email }] });
-    
+
     if (!user) {
       // Generate a unique username
       let username;
@@ -236,7 +244,6 @@ export const googleAuthController = async (req, res) => {
     return res.status(500).json({
       success: false,
       msg: "Lỗi máy chủ khi đăng nhập Google!",
-
     });
   }
 };

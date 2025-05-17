@@ -26,9 +26,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.HomeActivity"
-            android:exported="true">
-        </activity>
         <activity
             android:name=".activities.BookDetailActivity"
             android:exported="true">
@@ -84,10 +81,6 @@
             android:exported="true">
         </activity>
         <activity android:name=".activities.OrderActivity"
-            android:exported="true">
-        </activity>
-        <activity
-            android:name=".activities.OrderHistoryActivity"
             android:exported="true">
         </activity>
         <activity android:name=".activities.OrderConfirmationActivity"

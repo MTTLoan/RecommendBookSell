@@ -20,6 +20,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.example.app.fragments.OTPFragmentRegister;
 import com.example.app.models.User;
+import com.example.app.models.request.RegisterRequest;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
@@ -128,7 +129,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             // Gọi API đăng ký
             ApiService apiService = RetrofitClient.getApiService();
-            Call<User> call = apiService.register(new ApiService.RegisterRequest(username, fullName, email, phoneNumber, password, confirmPassword));
+            Call<User> call = apiService.register(new RegisterRequest(username, fullName, email, phoneNumber, password, confirmPassword));
             call.enqueue(new Callback<User>() {
                 @Override
                 public void onResponse(Call<User> call, Response<User> response) {

@@ -1,13 +1,40 @@
 import mongoose from "mongoose";
 
-const NotificationSchema = new mongoose.Schema({
-  id: { type: Number, required: true, unique: true },
-  userId: { type: Number, ref: "User", required: true },
-  orderId: { type: Number, ref: "Order", required: true },
-  title: { type: String, required: true },
-  message: { type: String, required: true },
-  isRead: { type: Boolean, default: false },
-  createdAt: { type: Date, required: true },
-});
+const notificationSchema = new mongoose.Schema(
+  {
+    id: {
+      type: Number,
+      required: true,
+      unique: true,
+    },
+    userId: {
+      type: Number,
+      required: true,
+    },
+    orderId: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+    title: {
+      type: String,
+      required: true,
+    },
+    message: {
+      type: String,
+      required: true,
+    },
+    isRead: {
+      type: Boolean,
+      default: false,
+    },
+    createdAt: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-export default mongoose.model("Notification", NotificationSchema);
+export default mongoose.model("Notification", notificationSchema);

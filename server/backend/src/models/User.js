@@ -1,33 +1,73 @@
 import mongoose from "mongoose";
+import "../models/Counter.js";
 
 const UserSchema = new mongoose.Schema(
   {
-    id: { type: Number, required: true, unique: true }, // Maps to int [pk]
-    username: { type: String, required: true, unique: true },
-    fullName: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    phoneNumber: { type: String, required: true }, // Removed unique
-    addressProvince: { type: Number, required: false }, // int
-    addressDistrict: { type: Number, required: false }, // int
-    addressWard: { type: Number, required: false }, // int
-    addressDetail: { type: String, required: false }, // varchar
+    id: { type: Number, unique: true },
+    username: { type: String, unique: true },
+    fullName: { type: String },
+    email: { type: String, unique: true },
+    phoneNumber: { type: String, required: true },
+    addressProvince: { type: Number },
+    addressDistrict: { type: Number },
+    addressWard: { type: Number },
+    addressDetail: { type: String },
     password: { type: String, required: true },
-    role: { type: String, default: "user" }, // Removed enum to allow any varchar
-    birthday: { type: Date, required: false }, // Maps to date
-    avatar: { type: String, required: false }, // Maps to avatar varchar
-    token: { type: String, required: false }, // Maps to token varchar
+    role: { type: String, default: "user" },
+    birthday: { type: Date },
+    avatar: { type: String },
+    token: { type: String },
+    verified: { type: Boolean, default: false },
   },
   {
-    timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" }, // Auto-manage createdAt, updatedAt
+    timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" },
   }
 );
 
-// Virtual to expose _id as id for API compatibility
-UserSchema.virtual("id").get(function () {
-  return this._id;
+// Đồng bộ Counter với id lớn nhất trong users
+const syncCounter = async () => {
+  try {
+    const Counter = mongoose.model("Counter");
+    const maxId = await mongoose
+      .model("User")
+      .findOne()
+      .sort({ id: -1 })
+      .select("id")
+      .exec();
+    const currentMaxId = maxId ? maxId.id : 0;
+    await Counter.updateOne(
+      { _id: "userId" },
+      { $set: { seq: currentMaxId } },
+      { upsert: true }
+    );
+    console.log(`Counter synced with max id: ${currentMaxId}`);
+  } catch (error) {
+    console.error("Error syncing counter:", error);
+  }
+};
+
+// Gọi đồng bộ khi khởi động
+mongoose.connection.once("open", syncCounter);
+
+// Pre-save hook để gán id tự tăng
+UserSchema.pre("save", async function (next) {
+  if (this.isNew) {
+    try {
+      const Counter = mongoose.model("Counter");
+      const counter = await Counter.findOneAndUpdate(
+        { _id: "userId" },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+      );
+      this.id = counter.seq;
+    } catch (error) {
+      return next(error);
+    }
+  }
+  next();
 });
 
-// Ensure virtuals are included in JSON output
+// Đảm bảo virtuals được bao gồm trong JSON output
 UserSchema.set("toJSON", { virtuals: true });
 
 export default mongoose.model("User", UserSchema);
