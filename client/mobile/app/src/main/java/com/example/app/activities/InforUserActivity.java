@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +28,9 @@ public class InforUserActivity extends AppCompatActivity {
     private TextView tvEditPersonalInfoLabel;
     private TextView tvChangePasswordLabel;
     private TextView tvLogOut;
+    private TextView tvName;
+    private TextView tvEmail;
+    private ImageView ivAvatar;
     private ApiService apiService;
 
     @Override
@@ -38,6 +42,9 @@ public class InforUserActivity extends AppCompatActivity {
         tvEditPersonalInfoLabel = findViewById(R.id.tvEditPersonalInfoLabel);
         tvChangePasswordLabel = findViewById(R.id.tvChangePasswordLabel);
         tvLogOut = findViewById(R.id.tvlogOut);
+        tvName = findViewById(R.id.tvName);
+        tvEmail = findViewById(R.id.tvEmail);
+        ivAvatar = findViewById(R.id.ivAvatar);
 
         // Initialize ApiService
         apiService = RetrofitClient.getApiService();
@@ -145,7 +152,7 @@ public class InforUserActivity extends AppCompatActivity {
                     tvEmail.setText(user.getEmail() != null ? user.getEmail() : "N/A");
 
                     // Load avatar with Glide
-                    String photoUrl = user.getPhotoUrl();
+                    String photoUrl = user.getAvatar();
                     if (photoUrl != null && !photoUrl.isEmpty()) {
                         Glide.with(InforUserActivity.this)
                                 .load(photoUrl)

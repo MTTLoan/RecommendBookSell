@@ -70,6 +70,9 @@ public class Book implements Parcelable {
         }
     };
 
+    public Book(int id, String xứSởMiênMan, String description, List<Image> images3, double price, double averageRating, int ratingCount, int stockQuantity, int categoryId, String s, String nhậtSơn) {
+    }
+
     @Override
     public int describeContents() {
         return 0;
