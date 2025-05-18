@@ -115,22 +115,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                 LocalDateTime createdAt = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
                 LocalDateTime updatedAt = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
 
-                Order order = new Order(
-                        1, // id (giả lập)
-                        1, // userId (giả lập)
-                        orderDate, // orderDate
-                        totalAmount,
-                        "PENDING", // status
-                        79, // shippingProvince (TP. Hồ Chí Minh)
-                        774, // shippingDistrict (Quận Thủ Đức)
-                        26124, // shippingWard (Phường Linh Trung)
-                        "37 đường số 8", // shippingDetail (giả lập)
-                        orderItems,
-                        createdAt,
-                        updatedAt,
-                        "Mai Thị Thanh Loan", // userFullName (giả lập)
-                        "0123456789" // userPhoneNumber (giả lập)
-                );
+                Order order;
 
                 // Chuyển sang OrderConfirmationActivity
                 try {
