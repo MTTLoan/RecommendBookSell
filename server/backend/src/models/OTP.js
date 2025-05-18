@@ -13,6 +13,4 @@ const OTPSchema = new Schema({
   expiresAt: Date,
 });
 
-// export const OTP = mongoose.model("OTP", OTPSchema);
-
 export default mongoose.model("OTP", OTPSchema);

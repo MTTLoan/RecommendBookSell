@@ -3,7 +3,7 @@ import "../models/Counter.js";
 
 const UserSchema = new mongoose.Schema(
   {
-    id: { type: Number, unique: true },
+    id: { type: Number, required: true, unique: true },
     username: { type: String, unique: true },
     fullName: { type: String },
     email: { type: String, unique: true },

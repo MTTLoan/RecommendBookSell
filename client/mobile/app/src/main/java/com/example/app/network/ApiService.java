@@ -1,6 +1,7 @@
 package com.example.app.network;
 
 import com.example.app.models.Notification;
+import com.example.app.models.Order;
 import com.example.app.models.User;
 import com.example.app.models.request.ForgotPasswordRequest;
 import com.example.app.models.request.OtpRequest;
@@ -11,6 +12,7 @@ import com.example.app.models.request.UserLoginRequest;
 import com.example.app.models.response.ForgotPasswordResponse;
 import com.example.app.models.request.GoogleAuthRequest;
 import com.example.app.models.response.LogoutResponse;
+import com.example.app.models.response.OrderHistoryResponse;
 import com.example.app.models.response.OtpResponse;
 import com.example.app.models.response.ResetPasswordResponse;
 import com.example.app.models.response.ChangePasswordResponse;
@@ -18,6 +20,7 @@ import com.example.app.models.request.ChangePasswordRequest;
 
 
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -60,5 +63,6 @@ public interface ApiService {
 
     Call<List<Notification>> getNotifications(int userId);
 
-    Call<Notification> markAsRead(int id);
+    @GET("orders/history")
+    Call<OrderHistoryResponse> getOrderHistory(@Header("Authorization") String authorization);
 }

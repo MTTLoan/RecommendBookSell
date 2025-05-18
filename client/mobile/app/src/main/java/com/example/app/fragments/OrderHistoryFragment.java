@@ -51,11 +51,11 @@ public class OrderHistoryFragment extends Fragment {
         });
         rvStatusBar.setAdapter(statusAdapter);
 
-        // Thiết lập ViewPager2
+        // Thiết lập ViewPager cho danh sách đơn hàng
         pagerAdapter = new OrderPagerAdapter(requireActivity());
         viewPager.setAdapter(pagerAdapter);
 
-        // Đồng bộ ViewPager2 với thanh trạng thái
+        // Đồng bộ ViewPager và thanh trạng thái
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
@@ -64,7 +64,6 @@ public class OrderHistoryFragment extends Fragment {
             }
         });
 
-        // Đặt trang đầu tiên
         viewPager.setCurrentItem(0);
         statusAdapter.setSelectedPosition(0);
 
