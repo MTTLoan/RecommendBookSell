@@ -7,8 +7,6 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,12 +21,12 @@ public class Book implements Parcelable {
     private int ratingCount;
     private int stockQuantity;
     private int categoryId;
-    private LocalDateTime createdAt;
+    private String createdAt;
     private String author;
 
     public Book(int id, String name, String description, List<Image> images, double price,
                 double averageRating, int ratingCount, int stockQuantity, int categoryId,
-                LocalDateTime createdAt, String author) {
+                String createdAt, String author) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -53,8 +51,7 @@ public class Book implements Parcelable {
         ratingCount = in.readInt();
         stockQuantity = in.readInt();
         categoryId = in.readInt();
-        String createdAtStr = in.readString();
-        createdAt = createdAtStr != null ? LocalDateTime.parse(createdAtStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
+        createdAt = in.readString(); // Read as String directly
         author = in.readString();
     }
 
@@ -86,7 +83,7 @@ public class Book implements Parcelable {
         dest.writeInt(ratingCount);
         dest.writeInt(stockQuantity);
         dest.writeInt(categoryId);
-        dest.writeString(createdAt != null ? createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null);
+        dest.writeString(createdAt); // Write as String directly
         dest.writeString(author);
     }
 
@@ -100,7 +97,7 @@ public class Book implements Parcelable {
     public int getRatingCount() { return ratingCount; }
     public int getStockQuantity() { return stockQuantity; }
     public int getCategoryId() { return categoryId; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public String getCreatedAt() { return createdAt; }
     public String getAuthor() { return author; }
 
     // Setters
@@ -113,30 +110,27 @@ public class Book implements Parcelable {
     public void setRatingCount(int ratingCount) { this.ratingCount = ratingCount; }
     public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
     public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
     public void setAuthor(String author) { this.author = author; }
 
-    // Custom TypeAdapter for LocalDateTime to handle "yyyy-MM-dd HH:mm:ss" format
-    public static class LocalDateTimeTypeAdapter extends TypeAdapter<LocalDateTime> {
-        private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
+    // Custom TypeAdapter for String to handle MongoDB's ISO 8601 string
+    public static class StringTypeAdapter extends TypeAdapter<String> {
         @Override
-        public void write(JsonWriter out, LocalDateTime value) throws IOException {
+        public void write(JsonWriter out, String value) throws IOException {
             if (value == null) {
                 out.nullValue();
             } else {
-                out.value(formatter.format(value));
+                out.value(value); // Write the ISO 8601 string directly
             }
         }
 
         @Override
-        public LocalDateTime read(JsonReader in) throws IOException {
+        public String read(JsonReader in) throws IOException {
             if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
                 in.nextNull();
                 return null;
             }
-            String dateStr = in.nextString();
-            return LocalDateTime.parse(dateStr, formatter);
+            return in.nextString(); // Read the ISO 8601 string directly
         }
     }
 }

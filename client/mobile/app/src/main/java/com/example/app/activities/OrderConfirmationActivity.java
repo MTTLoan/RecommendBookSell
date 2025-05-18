@@ -85,8 +85,8 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             }
 
             // Đặt giá trị mặc định từ Order
-            etUserFullName.setText(order.getUserFullName() != null ? order.getUserFullName() : "");
-            etUserPhoneNumber.setText(order.getUserPhoneNumber() != null ? order.getUserPhoneNumber() : "");
+//            etUserFullName.setText(order.getUserFullName() != null ? order.getUserFullName() : "");
+//            etUserPhoneNumber.setText(order.getUserPhoneNumber() != null ? order.getUserPhoneNumber() : "");
             etDetailedAddress.setText(order.getShippingDetail() != null ? order.getShippingDetail() : "37 đường số 8");
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi khi nhận dữ liệu đơn hàng: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -373,8 +373,8 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         dialog.show();
 
         // Cập nhật order với dữ liệu mới (sau khi xác nhận)
-        order.setUserFullName(newFullName);
-        order.setUserPhoneNumber(newPhoneNumber);
+//        order.setUserFullName(newFullName);
+//        order.setUserPhoneNumber(newPhoneNumber);
 
         // Gửi tổng giá bao gồm chi phí giao hàng
         Toast.makeText(this, "Đặt hàng thành công với tổng giá: " + String.format("%,d VNĐ", (int) finalTotal), Toast.LENGTH_SHORT).show();
