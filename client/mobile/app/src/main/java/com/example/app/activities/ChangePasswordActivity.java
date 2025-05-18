@@ -66,7 +66,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
 
         // Sự kiện nút Đổi mật khẩu
         btnChangePassword.setOnClickListener(v -> {
-            String email = getIntent().getStringExtra("email");
+            String identifier = AuthUtils.getIdentifier(ChangePasswordActivity.this);
             String oldPassword = etOldPassword.getText().toString().trim();
             String newPassword = etNewPassword.getText().toString().trim();
             String confirmPassword = etConfirmPassword.getText().toString().trim();
@@ -91,7 +91,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
             btnChangePassword.setEnabled(false);
 
             // Gọi API để đổi mật khẩu
-            changePassword(email, oldPassword, newPassword, confirmPassword);
+            changePassword(identifier, oldPassword, newPassword, confirmPassword);
         });
 
         // Cài đặt toggle hiển thị mật khẩu
@@ -100,9 +100,9 @@ public class ChangePasswordActivity extends AppCompatActivity {
         UIUtils.setupPasswordToggle(tfConfirmPassword);
     }
 
-    private void changePassword(String email, String oldPassword, String newPassword, String confirmPassword) {
-        Log.d("ChangePasswordActivity", "Email: " + email + ", Old Password: " + oldPassword + ", New Password: " + newPassword + ", Confirm Password: " + confirmPassword);
-        ChangePasswordRequest request = new ChangePasswordRequest(email, oldPassword, newPassword, confirmPassword);
+    private void changePassword(String identifier, String oldPassword, String newPassword, String confirmPassword) {
+        Log.d("ChangePasswordActivity", "Email: " + identifier + ", Old Password: " + oldPassword + ", New Password: " + newPassword + ", Confirm Password: " + confirmPassword);
+        ChangePasswordRequest request = new ChangePasswordRequest(identifier, oldPassword, newPassword, confirmPassword);
         Call<ChangePasswordResponse> call = apiService.changePassword(request);
         call.enqueue(new Callback<ChangePasswordResponse>() {
             @Override

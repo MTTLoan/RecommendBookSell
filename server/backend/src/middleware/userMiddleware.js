@@ -208,7 +208,11 @@ export const resetPasswordValidator = validate({
 
 // Validator cho thay đổi mật khẩu
 export const changePasswordValidator = validate({
-  email: emailSchema,
+  identifier: {
+    notEmpty: { errorMessage: "Tên tài khoản hoặc email là bắt buộc" },
+    isString: { errorMessage: "Tên tài khoản hoặc email phải là chuỗi" },
+    trim: true,
+  },
   oldPassword: {
     notEmpty: { errorMessage: "Mật khẩu cũ là bắt buộc" },
     isString: { errorMessage: "Mật khẩu cũ phải là chuỗi" },

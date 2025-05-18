@@ -108,7 +108,7 @@ public class SearchFragment extends Fragment {
                 3.5,
                 2,
                 10,
-                2,
+                1,
                 createdAt1,
                 "Tô Bảo"
         ));
@@ -127,7 +127,7 @@ public class SearchFragment extends Fragment {
                 4.0,
                 5,
                 15,
-                2,
+                1,
                 createdAt2,
                 "Nguyễn Nhật Ánh"
         ));
@@ -146,7 +146,7 @@ public class SearchFragment extends Fragment {
                 4.5,
                 10,
                 20,
-                2,
+                1,
                 createdAt3,
                 "Nhật Sơn"
         ));

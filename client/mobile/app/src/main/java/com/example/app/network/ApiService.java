@@ -65,4 +65,6 @@ public interface ApiService {
 
     @GET("orders/history")
     Call<OrderHistoryResponse> getOrderHistory(@Header("Authorization") String authorization);
+
+    Call<Notification> markAsRead(int id);
 }

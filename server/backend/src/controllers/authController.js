@@ -247,12 +247,15 @@ export const googleAuthController = async (req, res) => {
   }
 };
 
-export const changePasswordController = async ({ email, oldPassword, newPassword }) => {
+export const changePasswordController = async ({ identifier, oldPassword, newPassword }) => {
   try {
-    // Tìm người dùng theo email
-    const user = await User.findOne({ email });
+    // Tìm người dùng theo email hoặc username
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { username: identifier }],
+    });
+
     if (!user) {
-      throw Error("Không tìm thấy tài khoản nào với email đã cung cấp.");
+      throw Error("Không tìm thấy tài khoản nào với tên đăng nhập hoặc email đã cung cấp.");
     }
 
     // Kiểm tra mật khẩu cũ
@@ -264,15 +267,15 @@ export const changePasswordController = async ({ email, oldPassword, newPassword
     // Hash mật khẩu mới
     const hashedPassword = await hashData(newPassword);
 
-    // Cập nhật mật mới
-    await User.updateOne({ email }, { password: hashedPassword });
+    // Cập nhật mật khẩu mới
+    await User.updateOne({ _id: user._id }, { password: hashedPassword });
 
     return { message: "Mật khẩu đã được thay đổi thành công." };
   } catch (error) {
     throw error;
   }
-  
 };
+
 
 export const getProfileController = async (req, res) => {
   try {

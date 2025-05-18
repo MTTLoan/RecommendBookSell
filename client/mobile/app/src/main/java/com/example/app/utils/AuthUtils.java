@@ -7,6 +7,7 @@ import android.util.Log;
 public class AuthUtils {
     private static final String PREF_NAME = "AuthPrefs";
     private static final String KEY_TOKEN = "token";
+    private static final String KEY_IDENTIFIER = "identifier";
 
     public static void saveToken(Context context, String token) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -25,5 +26,17 @@ public class AuthUtils {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().remove(KEY_TOKEN).apply();
         Log.d("AuthUtils", "Token cleared");
+    }
+
+    public static void saveIdentifier(Context context, String identifier) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString(KEY_IDENTIFIER, identifier).apply();
+        Log.d("AuthUtils", "Identifier saved: " + identifier);
+    }
+    public static String getIdentifier(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        String identifier = prefs.getString(KEY_IDENTIFIER, null);
+        Log.d("AuthUtils", "Identifier retrieved: " + (identifier != null ? identifier : "null"));
+        return identifier;
     }
 }
