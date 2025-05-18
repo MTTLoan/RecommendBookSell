@@ -6,6 +6,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +23,11 @@ public class Book implements Parcelable {
     private int stockQuantity;
     private int categoryId;
     private String createdAt;
-    private String author;
+    private List<String> author; // Mảng tác giả
 
     public Book(int id, String name, String description, List<Image> images, double price,
                 double averageRating, int ratingCount, int stockQuantity, int categoryId,
-                String createdAt, String author) {
+                String createdAt, List<String> author) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -51,8 +52,9 @@ public class Book implements Parcelable {
         ratingCount = in.readInt();
         stockQuantity = in.readInt();
         categoryId = in.readInt();
-        createdAt = in.readString(); // Read as String directly
-        author = in.readString();
+        createdAt = in.readString();
+        author = new ArrayList<>();
+        in.readStringList(author);
     }
 
     public static final Creator<Book> CREATOR = new Creator<Book>() {
@@ -83,8 +85,8 @@ public class Book implements Parcelable {
         dest.writeInt(ratingCount);
         dest.writeInt(stockQuantity);
         dest.writeInt(categoryId);
-        dest.writeString(createdAt); // Write as String directly
-        dest.writeString(author);
+        dest.writeString(createdAt);
+        dest.writeStringList(author);
     }
 
     // Getters
@@ -98,7 +100,7 @@ public class Book implements Parcelable {
     public int getStockQuantity() { return stockQuantity; }
     public int getCategoryId() { return categoryId; }
     public String getCreatedAt() { return createdAt; }
-    public String getAuthor() { return author; }
+    public List<String> getAuthor() { return author; }
 
     // Setters
     public void setId(int id) { this.id = id; }
@@ -111,7 +113,7 @@ public class Book implements Parcelable {
     public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
     public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
-    public void setAuthor(String author) { this.author = author; }
+    public void setAuthor(List<String> author) { this.author = author; }
 
     // Custom TypeAdapter for String to handle MongoDB's ISO 8601 string
     public static class StringTypeAdapter extends TypeAdapter<String> {
@@ -120,7 +122,7 @@ public class Book implements Parcelable {
             if (value == null) {
                 out.nullValue();
             } else {
-                out.value(value); // Write the ISO 8601 string directly
+                out.value(value);
             }
         }
 
@@ -130,7 +132,7 @@ public class Book implements Parcelable {
                 in.nextNull();
                 return null;
             }
-            return in.nextString(); // Read the ISO 8601 string directly
+            return in.nextString();
         }
     }
 }

@@ -17,7 +17,7 @@ const BookSchema = new mongoose.Schema(
     stockQuantity: { type: Number, required: true },
     categoryId: { type: Number, ref: "Category", required: true },
     createdAt: { type: Date, required: true },
-    author: { type: String, required: true },
+    author: [{ type: String }],
   },
   {
     timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" },

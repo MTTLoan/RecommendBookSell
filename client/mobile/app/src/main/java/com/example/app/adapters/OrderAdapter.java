@@ -1,12 +1,15 @@
 package com.example.app.adapters;
 
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,29 +17,35 @@ import com.example.app.R;
 import com.example.app.activities.OrderActivity;
 import com.example.app.activities.ReviewActivity;
 import com.example.app.models.Order;
+import com.example.app.models.request.StatusUpdateRequest;
+import com.example.app.network.ApiService;
+import com.example.app.network.RetrofitClient;
+import com.example.app.utils.AuthUtils;
 import java.util.List;
 import java.util.Locale;
 
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
     private List<Order> orderList;
+    private final Runnable onStatusChanged; // Callback để tải lại fragment
 
-    public OrderAdapter(List<Order> orderList) {
+    public OrderAdapter(List<Order> orderList, Runnable onStatusChanged) {
         this.orderList = orderList;
+        this.onStatusChanged = onStatusChanged;
     }
 
     @NonNull
     @Override
     public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(com.example.app.R.layout.item_order_history, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_order_history, parent, false);
         return new OrderViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
         Order order = orderList.get(position);
-        holder.tvOrderDate.setText(String.format("Ngày đặt hàng: %s", order.getOrderDate()));
+        holder.tvOrderDate.setText(String.format("Ngày đặt hàng: %s", order.getFormattedOrderDate()));
         holder.tvTotalAmount.setText(String.format(Locale.forLanguageTag("vi-VN"), "Tổng tiền: %,d VNĐ", (int) order.getTotalAmount()));
-        holder.tvStatus.setText(String.format("%s", order.getStatus()));
+        holder.tvStatus.setText(order.getStatus());
 
         // Thiết lập RecyclerView cho danh sách sách
         OrderItemAdapter itemAdapter = new OrderItemAdapter(order.getItems());
@@ -49,16 +58,37 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         holder.btnReturn.setVisibility(View.GONE);
         holder.btnRate.setVisibility(View.GONE);
 
+        ApiService apiService = RetrofitClient.getApiService();
+        String token = AuthUtils.getToken(holder.itemView.getContext());
+
         switch (order.getStatus()) {
             case "Đang đóng gói":
                 holder.btnCancelOrder.setVisibility(View.VISIBLE);
+                holder.btnCancelOrder.setOnClickListener(v -> showConfirmDialog(
+                        holder.itemView.getContext(),
+                        "Xác nhận hủy đơn hàng",
+                        "Bạn có chắc muốn hủy đơn hàng này?",
+                        () -> updateOrderStatus(apiService, token, order, "Đã hủy", holder.itemView.getContext())
+                ));
                 break;
             case "Chờ giao hàng":
                 holder.btnReceived.setVisibility(View.VISIBLE);
+                holder.btnReceived.setOnClickListener(v -> showConfirmDialog(
+                        holder.itemView.getContext(),
+                        "Xác nhận nhận hàng",
+                        "Bạn đã nhận được hàng và muốn xác nhận?",
+                        () -> updateOrderStatus(apiService, token, order, "Đã giao", holder.itemView.getContext())
+                ));
                 break;
             case "Đã giao":
                 holder.btnReturn.setVisibility(View.VISIBLE);
                 holder.btnRate.setVisibility(View.VISIBLE);
+                holder.btnReturn.setOnClickListener(v -> showConfirmDialog(
+                        holder.itemView.getContext(),
+                        "Xác nhận trả hàng",
+                        "Bạn muốn yêu cầu trả hàng/hoàn tiền?",
+                        () -> updateOrderStatus(apiService, token, order, "Trả hàng", holder.itemView.getContext())
+                ));
                 holder.btnRate.setOnClickListener(v -> {
                     Intent intent = new Intent(holder.itemView.getContext(), ReviewActivity.class);
                     intent.putExtra("order", order);
@@ -76,7 +106,44 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             Intent intent = new Intent(holder.itemView.getContext(), OrderActivity.class);
             holder.itemView.getContext().startActivity(intent);
         });
+    }
 
+    private void showConfirmDialog(android.content.Context context, String title, String message, Runnable onConfirm) {
+        new AlertDialog.Builder(context)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("Xác nhận", (dialog, which) -> onConfirm.run())
+                .setNegativeButton("Hủy", null)
+                .setCancelable(true)
+                .show();
+    }
+
+    private void updateOrderStatus(ApiService apiService, String token, Order order, String newStatus, android.content.Context context) {
+        if (token == null) {
+            Toast.makeText(context, "Vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        StatusUpdateRequest request = new StatusUpdateRequest(newStatus);
+        apiService.updateOrderStatus("Bearer " + token, order.getId(), request)
+                .enqueue(new retrofit2.Callback<Order>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<Order> call, retrofit2.Response<Order> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            Toast.makeText(context, "Cập nhật trạng thái thành công: " + newStatus, Toast.LENGTH_SHORT).show();
+                            if (onStatusChanged != null) {
+                                onStatusChanged.run(); // Gọi lại API getOrderHistory
+                            }
+                        } else {
+                            Toast.makeText(context, "Lỗi cập nhật trạng thái: " + response.message(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<Order> call, Throwable t) {
+                        Toast.makeText(context, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e("OrderAdapter", "Update status failed: " + t.getMessage());
+                    }
+                });
     }
 
     @Override
@@ -91,7 +158,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvOrderDate = itemView.findViewById(com.example.app.R.id.tvOrderDate);
+            tvOrderDate = itemView.findViewById(R.id.tvOrderDate);
             tvTotalAmount = itemView.findViewById(R.id.tvTotalAmount);
             tvStatus = itemView.findViewById(R.id.tvStatus);
             rvOrderItems = itemView.findViewById(R.id.rvOrderItems);

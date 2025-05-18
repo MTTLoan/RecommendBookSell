@@ -46,16 +46,16 @@ public class OrderActivity extends AppCompatActivity {
         ivReturn = findViewById(R.id.ivReturn);
 
         // Tạo dữ liệu giả theo ví dụ đơn hàng
-        List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem(106, 3, 156000));
-        items.add(new OrderItem(9, 2, 299000));
-        items.add(new OrderItem(240, 2, 235000));
+//        List<OrderItem> items = new ArrayList<>();
+//        items.add(new OrderItem(106, 3, 156000));
+//        items.add(new OrderItem(9, 2, 299000));
+//        items.add(new OrderItem(240, 2, 235000));
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-        LocalDateTime orderDate = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
-        LocalDateTime createdAt = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
-        LocalDateTime updatedAt = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//
+//        LocalDateTime orderDate = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
+//        LocalDateTime createdAt = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
+//        LocalDateTime updatedAt = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
 
         Order order = new Order();
 

@@ -93,32 +93,32 @@ public class ReviewActivity extends AppCompatActivity {
         images2.add(new Image("https://example.com/image2.jpg", "Image 2 alt"));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        // Thêm sách vào danh sách
-        bookList.add(new Book(
-                1,
-                "Sách Mindset Tâm Lý Học Thành Công - Carol Dw...",
-                "Mô tả sách 1",
-                images1,
-                100000,
-                5.0, // averageRating
-                10,  // ratingCount
-                50,  // stockQuantity
-                1,   // categoryId
-                "2025-04-28 02:27:21",
-                "Carol Dweck" // author
-        ));
-        bookList.add(new Book(
-                2,
-                "Sách Tâm Lý Học Về Tiền",
-                "Mô tả sách 2",
-                images2,
-                120000,
-                5.0, // averageRating
-                8,   // ratingCount
-                30,  // stockQuantity
-                1,   // categoryId
-                "2025-04-28 02:27:21",
-                "Tác giả 2" // author
-        ));
+//        // Thêm sách vào danh sách
+//        bookList.add(new Book(
+//                1,
+//                "Sách Mindset Tâm Lý Học Thành Công - Carol Dw...",
+//                "Mô tả sách 1",
+//                images1,
+//                100000,
+//                5.0, // averageRating
+//                10,  // ratingCount
+//                50,  // stockQuantity
+//                1,   // categoryId
+//                "2025-04-28 02:27:21",
+//                "Carol Dweck" // author
+//        ));
+//        bookList.add(new Book(
+//                2,
+//                "Sách Tâm Lý Học Về Tiền",
+//                "Mô tả sách 2",
+//                images2,
+//                120000,
+//                5.0, // averageRating
+//                8,   // ratingCount
+//                30,  // stockQuantity
+//                1,   // categoryId
+//                "2025-04-28 02:27:21",
+//                "Tác giả 2" // author
+//        ));
     }
 }
