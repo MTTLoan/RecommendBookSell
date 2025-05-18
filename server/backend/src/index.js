@@ -4,6 +4,7 @@ import cors from "cors";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import otpRoutes from "./routes/otp.js";
+import orderRoutes from "./routes/orderRoutes.js";
 import notificationRoutes from "./routes/notification.js";
 import verifyEmailRoutes from "./routes/verifyEmail.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -29,6 +30,9 @@ app.use("/api/forgot_password", forgotPasswordRoutes);
 
 // notification routes
 app.use("/api", notificationRoutes);
+
+// Sử dụng routes
+app.use("/api/orders", orderRoutes);
 
 app.use(errorHandler);
 
