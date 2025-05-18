@@ -40,5 +40,10 @@
     <string name="error_invalid_password">Mật khẩu không chính xác</string>
     <string name="error_unverified_email">Email chưa được xác thực</string>
     <string name="error_server">Lỗi máy chủ, vui lòng thử lại sau</string>
+    <string name="error_change_password_failed">Đổi mật khẩu thất bại\n</string>
+    <string name="error_server_unexpected_response">"Lỗi server "</string>
+    <string name="error_no_token">Không tìm thấy token</string>
+    <string name="error_network">Lỗi kết nối\n</string>
+    <string name="error_unknown">Lỗi\n</string>
 
 </resources>

@@ -1,7 +1,6 @@
 package com.example.app.activities;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -12,10 +11,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.app.R;
 import com.example.app.models.User;
 import com.example.app.models.request.UserLoginRequest;
-import com.example.app.models.response.GoogleAuthRequest;
+import com.example.app.models.request.GoogleAuthRequest;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
+import com.example.app.utils.UIUtils;
+
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -29,6 +30,8 @@ import org.json.JSONObject;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+
 
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
@@ -171,16 +174,23 @@ public class LoginActivity extends AppCompatActivity {
         signInButton.setOnClickListener(v -> signInWithGoogle());
 
         // Cài đặt toggle hiển thị mật khẩu
-        tfPassword.setEndIconOnClickListener(v -> {
-            if (tfPassword.getEditText().getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
-                tfPassword.getEditText().setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                tfPassword.setEndIconDrawable(R.drawable.visibility_24px);
-            } else {
-                tfPassword.getEditText().setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                tfPassword.setEndIconDrawable(R.drawable.visibility_off_24px);
+        UIUtils.setupPasswordToggle(tfPassword);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                handleGoogleSignInResult(account);
+            } catch (ApiException e) {
+                Log.w(TAG, "Google sign in failed, status code: " + e.getStatusCode(), e);
+                Toast.makeText(this, "Đăng nhập Google thất bại: " + e.getStatusCode(), Toast.LENGTH_SHORT).show();
             }
-            tfPassword.getEditText().setSelection(tfPassword.getEditText().length());
-        });
+        }
     }
 
     private void signInWithGoogle() {
@@ -198,22 +208,6 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(LoginActivity.this, "Đã đăng xuất Google", Toast.LENGTH_SHORT).show();
             AuthUtils.clearToken(LoginActivity.this);
         });
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            try {
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                handleGoogleSignInResult(account);
-            } catch (ApiException e) {
-                Log.w(TAG, "Google sign in failed, status code: " + e.getStatusCode(), e);
-                Toast.makeText(this, "Đăng nhập Google thất bại: " + e.getStatusCode(), Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     private void handleGoogleSignInResult(GoogleSignInAccount account) {

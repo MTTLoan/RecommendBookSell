@@ -34,10 +34,10 @@
             android:name=".activities.LoginActivity"
             android:exported="true">
         </activity>
-        <activity
-            android:name=".activities.InforUserActivity"
-            android:exported="true">
-        </activity>
+<!--        <activity-->
+<!--            android:name=".activities.InforUserActivity"-->
+<!--            android:exported="true">-->
+<!--        </activity>-->
         <activity
             android:name=".activities.ListBookActivity"
             android:exported="true">

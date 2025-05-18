@@ -1,7 +1,6 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { userService } from "../services/userService.js";
 import { sendVerificationOTPEmail } from "./email_verificationController.js";
 import { hashData, verifyHashedData } from "../util/hashData.js";
 
@@ -275,7 +274,7 @@ export const changePasswordController = async ({ email, oldPassword, newPassword
   
 };
 
-const getProfileController = async (req, res) => {
+export const getProfileController = async (req, res) => {
   try {
     // Fetch user by ID from JWT payload (req.user._id set by authMiddleware)
     const user = await User.findById(req.user._id).select("username fullName email phoneNumber role verified photoUrl");

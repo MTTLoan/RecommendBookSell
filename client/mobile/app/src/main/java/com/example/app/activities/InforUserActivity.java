@@ -16,6 +16,7 @@ import com.example.app.models.User;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
+import com.example.app.models.response.LogoutResponse;
 
 import retrofit2.Call;
 import retrofit2.Callback;
