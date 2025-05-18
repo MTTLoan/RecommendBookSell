@@ -104,7 +104,7 @@ public class ReviewActivity extends AppCompatActivity {
                 10,  // ratingCount
                 50,  // stockQuantity
                 1,   // categoryId
-                LocalDateTime.parse("2025-04-28 02:27:21", formatter),
+                "2025-04-28 02:27:21",
                 "Carol Dweck" // author
         ));
         bookList.add(new Book(
@@ -117,7 +117,7 @@ public class ReviewActivity extends AppCompatActivity {
                 8,   // ratingCount
                 30,  // stockQuantity
                 1,   // categoryId
-                LocalDateTime.parse("2025-04-28 02:27:21", formatter),
+                "2025-04-28 02:27:21",
                 "Tác giả 2" // author
         ));
     }
