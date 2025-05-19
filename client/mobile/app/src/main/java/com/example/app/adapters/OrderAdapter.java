@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -177,8 +178,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 .show();
     }
 
-
-
     private void updateOrderStatus(ApiService apiService, String token, Order order, String newStatus, android.content.Context context) {
         if (token == null) {
             Toast.makeText(context, "Vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
@@ -192,10 +191,25 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                         if (response.isSuccessful() && response.body() != null) {
                             Toast.makeText(context, "Cập nhật trạng thái thành công: " + newStatus, Toast.LENGTH_SHORT).show();
                             if (onStatusChanged != null) {
-                                onStatusChanged.run(); // Gọi lại API getOrderHistory
+                                onStatusChanged.run();
                             }
+                            // Gửi broadcast để làm mới danh sách đơn hàng
+                            Intent intent = new Intent("com.example.app.REFRESH_ORDERS");
+                            intent.putExtra("status", newStatus); // Gửi trạng thái mới
+                            intent.putExtra("oldStatus", order.getStatus()); // Gửi trạng thái cũ
+                            LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+                            Log.d("OrderAdapter", "Sent refresh broadcast for newStatus: " + newStatus + ", oldStatus: " + order.getStatus());
                         } else {
-                            Toast.makeText(context, "Lỗi cập nhật trạng thái: " + response.message(), Toast.LENGTH_SHORT).show();
+                            String errorMsg = "Lỗi cập nhật trạng thái: " + response.message();
+                            try {
+                                if (response.errorBody() != null) {
+                                    errorMsg += " - " + response.errorBody().string();
+                                }
+                            } catch (Exception e) {
+                                Log.e("OrderAdapter", "Error parsing error body: " + e.getMessage());
+                            }
+                            Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+                            Log.e("OrderAdapter", errorMsg);
                         }
                     }
 

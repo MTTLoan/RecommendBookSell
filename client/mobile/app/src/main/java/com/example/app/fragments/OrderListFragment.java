@@ -62,9 +62,12 @@ public class OrderListFragment extends Fragment {
         refreshReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                String receivedStatus = intent.getStringExtra("status");
-                Log.d(TAG, "Received refresh broadcast for status: " + receivedStatus);
-                if (status.equals(receivedStatus)) {
+                String newStatus = intent.getStringExtra("status");
+                String oldStatus = intent.getStringExtra("oldStatus");
+                Log.d(TAG, "Received refresh broadcast - newStatus: " + newStatus + ", oldStatus: " + oldStatus);
+                // Làm mới nếu fragment khớp với trạng thái mới hoặc cũ
+                if (status.equals(newStatus) || status.equals(oldStatus)) {
+                    Log.d(TAG, "Refreshing orders for status: " + status);
                     fetchOrderHistory();
                 }
             }
