@@ -2,12 +2,14 @@ package com.example.app.network;
 
 import com.example.app.models.Notification;
 import com.example.app.models.Order;
+import com.example.app.models.Review;
 import com.example.app.models.User;
 import com.example.app.models.request.ForgotPasswordRequest;
 import com.example.app.models.request.OtpRequest;
 import com.example.app.models.request.RegisterRequest;
 import com.example.app.models.request.ResendOtpRequest;
 import com.example.app.models.request.ResetPasswordRequest;
+import com.example.app.models.request.StatusUpdateRequest;
 import com.example.app.models.request.UserLoginRequest;
 import com.example.app.models.response.ForgotPasswordResponse;
 import com.example.app.models.response.GoogleAuthRequest;
@@ -65,4 +67,10 @@ public interface ApiService {
 
     @GET("orders/history")
     Call<OrderHistoryResponse> getOrderHistory(@Header("Authorization") String authorization);
+
+    @PUT("orders/{id}/status")
+    Call<Order> updateOrderStatus(@Header("Authorization") String authorization, @Path("id") int orderId, @Body StatusUpdateRequest request);
+
+    @POST("reviews")
+    Call<Review> submitReview(@Header("Authorization") String authorization, @Body Review review);
 }

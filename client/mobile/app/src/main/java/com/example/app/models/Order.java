@@ -1,13 +1,19 @@
 package com.example.app.models;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.List;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-public class Order implements Serializable {
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
+public class Order implements Parcelable {
     private int id;
     private int userId;
-    private String orderDate; // Thay đổi từ LocalDateTime sang String
+    private String orderDate; // Lưu dưới dạng chuỗi ISO 8601
     private double totalAmount;
     private String status;
     private int shippingProvince;
@@ -15,12 +21,11 @@ public class Order implements Serializable {
     private int shippingWard;
     private String shippingDetail;
     private List<OrderItem> items;
-
-    public Order() {}
+    public Order(){}
 
     public Order(int id, int userId, String orderDate, double totalAmount, String status,
-                 int shippingProvince, int shippingDistrict, int shippingWard, String shippingDetail,
-                 List<OrderItem> items) {
+                 int shippingProvince, int shippingDistrict, int shippingWard,
+                 String shippingDetail, List<OrderItem> items) {
         this.id = id;
         this.userId = userId;
         this.orderDate = orderDate;
@@ -33,83 +38,84 @@ public class Order implements Serializable {
         this.items = items;
     }
 
-    public int getId() {
-        return id;
+    protected Order(Parcel in) {
+        id = in.readInt();
+        userId = in.readInt();
+        orderDate = in.readString();
+        totalAmount = in.readDouble();
+        status = in.readString();
+        shippingProvince = in.readInt();
+        shippingDistrict = in.readInt();
+        shippingWard = in.readInt();
+        shippingDetail = in.readString();
+        items = new ArrayList<>();
+        in.readList(items, OrderItem.class.getClassLoader());
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public static final Creator<Order> CREATOR = new Creator<Order>() {
+        @Override
+        public Order createFromParcel(Parcel in) {
+            return new Order(in);
+        }
+
+        @Override
+        public Order[] newArray(int size) {
+            return new Order[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
-    public int getUserId() {
-        return userId;
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeInt(userId);
+        dest.writeString(orderDate);
+        dest.writeDouble(totalAmount);
+        dest.writeString(status);
+        dest.writeInt(shippingProvince);
+        dest.writeInt(shippingDistrict);
+        dest.writeInt(shippingWard);
+        dest.writeString(shippingDetail);
+        dest.writeList(items);
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
+    // Getters
+    public int getId() { return id; }
+    public int getUserId() { return userId; }
+    public String getOrderDate() { return orderDate; }
+    public double getTotalAmount() { return totalAmount; }
+    public String getStatus() { return status; }
+    public int getShippingProvince() { return shippingProvince; }
+    public int getShippingDistrict() { return shippingDistrict; }
+    public int getShippingWard() { return shippingWard; }
+    public String getShippingDetail() { return shippingDetail; }
+    public List<OrderItem> getItems() { return items; }
 
-    public String getOrderDate() {
-        return orderDate;
-    }
+    // Setters
+    public void setId(int id) { this.id = id; }
+    public void setUserId(int userId) { this.userId = userId; }
+    public void setOrderDate(String orderDate) { this.orderDate = orderDate; }
+    public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
+    public void setStatus(String status) { this.status = status; }
+    public void setShippingProvince(int shippingProvince) { this.shippingProvince = shippingProvince; }
+    public void setShippingDistrict(int shippingDistrict) { this.shippingDistrict = shippingDistrict; }
+    public void setShippingWard(int shippingWard) { this.shippingWard = shippingWard; }
+    public void setShippingDetail(String shippingDetail) { this.shippingDetail = shippingDetail; }
+    public void setItems(List<OrderItem> items) { this.items = items; }
 
-    public void setOrderDate(String orderDate) {
-        this.orderDate = orderDate;
-    }
-
-    public double getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(double totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public int getShippingProvince() {
-        return shippingProvince;
-    }
-
-    public void setShippingProvince(int shippingProvince) {
-        this.shippingProvince = shippingProvince;
-    }
-
-    public int getShippingDistrict() {
-        return shippingDistrict;
-    }
-
-    public void setShippingDistrict(int shippingDistrict) {
-        this.shippingDistrict = shippingDistrict;
-    }
-
-    public int getShippingWard() {
-        return shippingWard;
-    }
-
-    public void setShippingWard(int shippingWard) {
-        this.shippingWard = shippingWard;
-    }
-
-    public String getShippingDetail() {
-        return shippingDetail;
-    }
-
-    public void setShippingDetail(String shippingDetail) {
-        this.shippingDetail = shippingDetail;
-    }
-
-    public List<OrderItem> getItems() {
-        return items;
-    }
-
-    public void setItems(List<OrderItem> items) {
-        this.items = items;
+    // Phương thức định dạng ngày
+    public String getFormattedOrderDate() {
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.getDefault());
+            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            Date date = inputFormat.parse(orderDate);
+            return outputFormat.format(date);
+        } catch (ParseException e) {
+            return orderDate; // Trả về nguyên bản nếu lỗi
+        }
     }
 }

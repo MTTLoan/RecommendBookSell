@@ -7,8 +7,11 @@ import otpRoutes from "./routes/otp.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import notificationRoutes from "./routes/notification.js";
 import verifyEmailRoutes from "./routes/verifyEmail.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import forgotPasswordRoutes from "./routes/forgotPassword.js";
+import "./models/Counter.js";
+import "./models/Review.js";
 
 dotenv.config();
 const app = express();
@@ -31,8 +34,11 @@ app.use("/api/forgot_password", forgotPasswordRoutes);
 // notification routes
 app.use("/api", notificationRoutes);
 
-// Sử dụng routes
+// order routes
 app.use("/api/orders", orderRoutes);
+
+// review routes
+app.use("/api/reviews", reviewRoutes);
 
 app.use(errorHandler);
 
