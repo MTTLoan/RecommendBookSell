@@ -57,30 +57,14 @@ public class OrderActivity extends AppCompatActivity {
         LocalDateTime createdAt = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
         LocalDateTime updatedAt = LocalDateTime.parse("2025-05-08 12:00:00", formatter);
 
-        Order order = new Order(
-                1, // id (giả lập)
-                1, // userId (giả lập)
-                orderDate, // orderDate
-                1536000,
-                "PENDING", // status
-                79, // shippingProvince (TP. Hồ Chí Minh)
-                774, // shippingDistrict (Quận Thủ Đức)
-                26124, // shippingWard (Phường Linh Trung)
-                "37 đường số 8", // shippingDetail (giả lập)
-                items,
-                createdAt,
-                updatedAt,
-                "Mai Thị Thanh Loan", // userFullName (giả lập)
-                "0123456789" // userPhoneNumber (giả lập)
-        );
+        Order order = new Order();
 
         // Gán dữ liệu vào view
         tvTitle.setText("THÔNG TIN ĐƠN HÀNG");
         tvStatus.setText("Trạng thái: " + (order.getStatus().equals("completed") ? "Hoàn thành" : order.getStatus()));
         tvOrderCode.setText(String.valueOf(order.getId()));
-        tvOrderDate.setText(order.getOrderDate().format(formatter));
-        tvShippingAddress.setText(order.getUserFullName() + "\n" +
-                order.getUserPhoneNumber() + "\n" +
+//        tvOrderDate.setText(order.getOrderDate().format(formatter));
+        tvShippingAddress.setText(
                 order.getShippingDetail() + ", " +
                 order.getShippingWard() + ", " +
                 order.getShippingDistrict() + ", " +

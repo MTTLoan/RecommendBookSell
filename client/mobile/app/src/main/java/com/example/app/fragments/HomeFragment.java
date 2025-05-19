@@ -101,7 +101,7 @@ public class HomeFragment extends Fragment {
                 2,
                 10,
                 2,
-                LocalDateTime.parse("2025-04-28 02:27:21", formatter),
+                "2025-04-28 02:27:21",
                 "Unknown Author" // Author unclear from description
         ));
 
@@ -119,7 +119,7 @@ public class HomeFragment extends Fragment {
                 5,
                 15,
                 2,
-                LocalDateTime.parse("2025-04-29 10:15:30", formatter),
+                "2025-04-29 10:15:30",
                 "Unknown Author" // Author unclear from description
         ));
 
@@ -137,7 +137,7 @@ public class HomeFragment extends Fragment {
                 10,
                 20,
                 2,
-                LocalDateTime.parse("2025-04-30 14:20:45", formatter),
+                "2025-04-30 14:20:45",
                 "Jun Phạm" // Corrected from Nhật Sơn
         ));
 
@@ -155,7 +155,7 @@ public class HomeFragment extends Fragment {
                 8,
                 12,
                 2,
-                LocalDateTime.parse("2025-05-01 09:30:00", formatter),
+                "2025-05-01 09:30:00",
                 "Phùng Quán" // Corrected from Mai Anh
         ));
 
@@ -173,7 +173,7 @@ public class HomeFragment extends Fragment {
                 3,
                 18,
                 3,
-                LocalDateTime.parse("2025-05-02 16:45:10", formatter),
+                "2025-05-02 16:45:10",
                 "Sơn Nam" // Corrected from Sơn Tùng
         ));
 
@@ -191,7 +191,7 @@ public class HomeFragment extends Fragment {
                 2,
                 10,
                 2,
-                LocalDateTime.parse("2025-04-28 02:27:21", formatter),
+                "2025-04-28 02:27:21",
                 "Luis Sepúlveda" // Corrected from Nguyễn Nhật Ánh
         ));
 
@@ -209,7 +209,7 @@ public class HomeFragment extends Fragment {
                 5,
                 15,
                 1,
-                LocalDateTime.parse("2025-04-29 10:15:30", formatter),
+                "2025-04-29 10:15:30",
                 "Hà Mi"
         ));
 
@@ -227,7 +227,7 @@ public class HomeFragment extends Fragment {
                 10,
                 20,
                 1,
-                LocalDateTime.parse("2025-04-30 14:20:45", formatter),
+                "2025-04-30 14:20:45",
                 "Tô Bảo"
         ));
 
@@ -245,7 +245,7 @@ public class HomeFragment extends Fragment {
                 8,
                 12,
                 3,
-                LocalDateTime.parse("2025-05-01 09:30:00", formatter),
+                "2025-05-01 09:30:00",
                 "Nguyễn Sơn"
         ));
 
@@ -263,7 +263,7 @@ public class HomeFragment extends Fragment {
                 3,
                 18,
                 3,
-                LocalDateTime.parse("2025-05-02 16:45:10", formatter),
+                "2025-05-02 16:45:10",
                 "Clint Emerson" // Corrected from Nguyễn Nhật Ánh
         ));
 
