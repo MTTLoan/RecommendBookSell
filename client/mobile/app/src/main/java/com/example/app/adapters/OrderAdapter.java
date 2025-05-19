@@ -104,6 +104,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         // Sự kiện nhấn vào đơn hàng để chuyển sang OrderActivity
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(holder.itemView.getContext(), OrderActivity.class);
+            intent.putExtra("order", order); // Truyền order để hiển thị chi tiết
             holder.itemView.getContext().startActivity(intent);
         });
     }

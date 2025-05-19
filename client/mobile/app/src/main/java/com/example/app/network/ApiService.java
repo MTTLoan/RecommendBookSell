@@ -2,6 +2,7 @@ package com.example.app.network;
 
 import com.example.app.models.Notification;
 import com.example.app.models.Order;
+import com.example.app.models.Review;
 import com.example.app.models.User;
 import com.example.app.models.request.ForgotPasswordRequest;
 import com.example.app.models.request.OtpRequest;
@@ -70,4 +71,6 @@ public interface ApiService {
     @PUT("orders/{id}/status")
     Call<Order> updateOrderStatus(@Header("Authorization") String authorization, @Path("id") int orderId, @Body StatusUpdateRequest request);
 
+    @POST("reviews")
+    Call<Review> submitReview(@Header("Authorization") String authorization, @Body Review review);
 }
