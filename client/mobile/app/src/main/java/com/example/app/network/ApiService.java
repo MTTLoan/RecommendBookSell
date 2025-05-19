@@ -17,6 +17,7 @@ import com.example.app.models.response.OtpResponse;
 import com.example.app.models.response.ResetPasswordResponse;
 import com.example.app.models.response.ChangePasswordResponse;
 import com.example.app.models.request.ChangePasswordRequest;
+import com.example.app.models.response.UserResponse;
 
 
 import java.util.List;
@@ -28,6 +29,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 
 public interface ApiService {
     @POST("auth/register")
@@ -57,9 +59,12 @@ public interface ApiService {
     Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
 
     @POST("/api/auth/change-password")
-    Call<ChangePasswordResponse> changePassword(@Body ChangePasswordRequest request);
-    @GET("api/user/profile")
-    Call<User> getUserProfile(String token);
+    Call<ChangePasswordResponse> changePassword(@Header("Authorization") String token, @Body ChangePasswordRequest request);
+    @GET("/api/auth/profile")
+    Call<UserResponse> getUserProfile(@Header("Authorization") String token);
+
+    @PUT("/api/auth/update-profile")
+    Call<UserResponse> updateUserProfile(@Header("Authorization") String token, @Body User user);
 
     Call<List<Notification>> getNotifications(int userId);
 
@@ -67,4 +72,5 @@ public interface ApiService {
     Call<OrderHistoryResponse> getOrderHistory(@Header("Authorization") String authorization);
 
     Call<Notification> markAsRead(int id);
+
 }

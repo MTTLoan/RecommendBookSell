@@ -117,7 +117,6 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         User user = response.body();
                         AuthUtils.saveToken(LoginActivity.this, user.getToken());
-                        AuthUtils.saveIdentifier(LoginActivity.this, email);
                         startActivity(new Intent(LoginActivity.this, Menu.class));
                         finish();
                     } else {

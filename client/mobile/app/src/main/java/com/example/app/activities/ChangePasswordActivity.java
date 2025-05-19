@@ -2,6 +2,7 @@ package com.example.app.activities;
 
 import static android.app.ProgressDialog.show;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -66,7 +67,6 @@ public class ChangePasswordActivity extends AppCompatActivity {
 
         // Sự kiện nút Đổi mật khẩu
         btnChangePassword.setOnClickListener(v -> {
-            String identifier = AuthUtils.getIdentifier(ChangePasswordActivity.this);
             String oldPassword = etOldPassword.getText().toString().trim();
             String newPassword = etNewPassword.getText().toString().trim();
             String confirmPassword = etConfirmPassword.getText().toString().trim();
@@ -91,7 +91,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
             btnChangePassword.setEnabled(false);
 
             // Gọi API để đổi mật khẩu
-            changePassword(identifier, oldPassword, newPassword, confirmPassword);
+            changePassword(oldPassword, newPassword, confirmPassword);
         });
 
         // Cài đặt toggle hiển thị mật khẩu
@@ -100,34 +100,41 @@ public class ChangePasswordActivity extends AppCompatActivity {
         UIUtils.setupPasswordToggle(tfConfirmPassword);
     }
 
-    private void changePassword(String identifier, String oldPassword, String newPassword, String confirmPassword) {
-        Log.d("ChangePasswordActivity", "Email: " + identifier + ", Old Password: " + oldPassword + ", New Password: " + newPassword + ", Confirm Password: " + confirmPassword);
-        ChangePasswordRequest request = new ChangePasswordRequest(identifier, oldPassword, newPassword, confirmPassword);
-        Call<ChangePasswordResponse> call = apiService.changePassword(request);
+    private void changePassword(String oldPassword, String newPassword, String confirmPassword) {
+        String token = AuthUtils.getToken(this);
+        if (TextUtils.isEmpty(token)) {
+            Toast.makeText(this, "Vui lòng đăng nhập lại.", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+
+        Log.d("ChangePasswordActivity", "Old: " + oldPassword + ", New: " + newPassword + ", Confirm: " + confirmPassword);
+
+        ChangePasswordRequest request = new ChangePasswordRequest(oldPassword, newPassword, confirmPassword);
+
+        Call<ChangePasswordResponse> call = apiService.changePassword(token, request);
         call.enqueue(new Callback<ChangePasswordResponse>() {
             @Override
             public void onResponse(Call<ChangePasswordResponse> call, Response<ChangePasswordResponse> response) {
                 btnChangePassword.setEnabled(true);
                 Log.d("ChangePasswordActivity", "Response code: " + response.code());
+
                 if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(ChangePasswordActivity.this, response.body().getMessage(), Toast.LENGTH_LONG).show();
-                    finish();
+                    String message = "Mật khẩu đã được thay đổi.";
+                    Toast.makeText(ChangePasswordActivity.this, message, Toast.LENGTH_LONG).show();
+                    finish(); // Quay lại
                 } else {
                     String errorMessage = "Lỗi không xác định";
                     try {
                         String errorBody = response.errorBody().string();
                         Log.e("ChangePasswordActivity", "Error body: " + errorBody);
                         JSONObject errorJson = new JSONObject(errorBody);
-                        if (errorJson.has("errors")) {
-                            JSONArray errors = errorJson.getJSONArray("errors");
-                            if (errors.length() > 0) {
-                                errorMessage = errors.getJSONObject(0).optString("msg", errorMessage);
-                            }
-                        } else if (errorJson.has("message")) {
-                            errorMessage = errorJson.optString("message", errorMessage);
+                        if (errorJson.has("msg")) {
+                            errorMessage = errorJson.getString("msg");
                         }
                     } catch (Exception e) {
-                        Log.e("ChangePasswordActivity", "Error parsing", e);
+                        Log.e("ChangePasswordActivity", "Error parsing error body", e);
                     }
                     Toast.makeText(ChangePasswordActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 }
@@ -136,7 +143,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ChangePasswordResponse> call, Throwable t) {
                 btnChangePassword.setEnabled(true);
-                String errorMessage = t instanceof IOException ? getString(R.string.error_network) : getString(R.string.error_unknown);
+                String errorMessage = t instanceof IOException ? "Lỗi mạng" : "Lỗi không xác định";
                 Toast.makeText(ChangePasswordActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 Log.e("ChangePasswordActivity", "API failure", t);
             }

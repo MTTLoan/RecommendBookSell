@@ -1,13 +1,11 @@
 package com.example.app.models;
 
-import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 
 public class  User {
     private Integer id;
     private String username;
     private String fullName;
-    @SerializedName("email")
     private String email;
     private String phoneNumber;
     private Integer addressProvince;
@@ -16,9 +14,10 @@ public class  User {
     private String addressDetail;
     private String password;
     private String role;
-    private Date birthday;
+    private String birthday;
     private Date createdAt;
     private Date updatedAt;
+//    private String gender;
     private String avatar;
     private String token;
 
@@ -110,11 +109,11 @@ public class  User {
         this.role = role;
     }
 
-    public Date getBirthday() {
+    public String getBirthday() {
         return birthday;
     }
 
-    public void setBirthday(Date birthday) {
+    public void setBirthday(String birthday) {
         this.birthday = birthday;
     }
 
@@ -149,5 +148,11 @@ public class  User {
     public void setToken(String token) {
         this.token = token;
     }
+//    public String getGender() {
+//        return gender;
+//    }
+//    public void setGender(String gender) {
+//        this.gender = this.gender;
+//    }
 
 }

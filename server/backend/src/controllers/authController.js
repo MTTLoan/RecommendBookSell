@@ -247,60 +247,121 @@ export const googleAuthController = async (req, res) => {
   }
 };
 
-export const changePasswordController = async ({ identifier, oldPassword, newPassword }) => {
+export const changePasswordController = async (req, res) => {
   try {
-    // Tìm người dùng theo email hoặc username
-    const user = await User.findOne({
-      $or: [{ email: identifier }, { username: identifier }],
-    });
+    const { oldPassword, newPassword, confirmPassword } = req.body;
 
+    // Kiểm tra mật khẩu xác nhận
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        msg: "Mật khẩu xác nhận không khớp.",
+      });
+    }
+
+    // Tìm người dùng
+    const user = await User.findOne({ id: req.user.id });
     if (!user) {
-      throw Error("Không tìm thấy tài khoản nào với tên đăng nhập hoặc email đã cung cấp.");
+      return res.status(404).json({
+        success: false,
+        msg: "Không tìm thấy tài khoản.",
+      });
     }
 
     // Kiểm tra mật khẩu cũ
     const isValid = await verifyHashedData(oldPassword, user.password);
     if (!isValid) {
-      throw Error("Mật khẩu cũ không đúng.");
+      return res.status(400).json({
+        success: false,
+        msg: "Mật khẩu cũ không đúng.",
+      });
     }
 
-    // Hash mật khẩu mới
-    const hashedPassword = await hashData(newPassword);
-
     // Cập nhật mật khẩu mới
-    await User.updateOne({ _id: user._id }, { password: hashedPassword });
+    const hashedPassword = await hashData(newPassword);
+    user.password = hashedPassword;
+    await user.save();
 
-    return { message: "Mật khẩu đã được thay đổi thành công." };
+    return res.status(200).json({
+      success: true,
+      msg: "Mật khẩu đã được thay đổi thành công.",
+    });
   } catch (error) {
-    throw error;
+    console.error("Lỗi thay đổi mật khẩu:", error.message);
+    return res.status(500).json({
+      success: false,
+      msg: "Lỗi server khi thay đổi mật khẩu.",
+    });
   }
 };
 
-
 export const getProfileController = async (req, res) => {
   try {
-    // Fetch user by ID from JWT payload (req.user._id set by authMiddleware)
-    const user = await User.findById(req.user._id).select("username fullName email phoneNumber role verified photoUrl");
+    const user = await User.findOne({ id: req.user.id });
+
     if (!user) {
       return res.status(404).json({ message: "Không tìm thấy tài khoản." });
     }
 
     return res.status(200).json({
       message: "Lấy thông tin hồ sơ thành công.",
-      user: {
-        username: user.username,
-        fullName: user.fullName,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        role: user.role,
-        verified: user.verified,
-        photoUrl: user.photoUrl || "",
-      },
+      user,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message || "Lỗi server." });
   }
 };
 
+export const updateProfileController = async (req, res) => {
+  try {
+    const {
+      fullName,
+      phoneNumber,
+      addressProvince,
+      addressDistrict,
+      addressWard,
+      addressDetail,
+      birthday,
+      avatar,
+      gender,
+    } = req.body;
 
+    // Tìm người dùng
+    const user = await User.findOne({ id: req.user.id });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        msg: "Không tìm thấy tài khoản.",
+      });
+    }
 
+    // Cập nhật các trường
+    if (fullName !== undefined) user.fullName = fullName;
+    if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
+    if (addressProvince !== undefined) user.addressProvince = addressProvince;
+    if (addressDistrict !== undefined) user.addressDistrict = addressDistrict;
+    if (addressWard !== undefined) user.addressWard = addressWard;
+    if (addressDetail !== undefined) user.addressDetail = addressDetail;
+    if (birthday !== undefined)
+      user.birthday = birthday ? new Date(birthday) : null;
+    if (avatar !== undefined) user.avatar = avatar;
+    if (gender !== undefined) user.gender = gender;
+
+    user.updatedAt = new Date();
+
+    // Lưu người dùng
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      msg: "Cập nhật hồ sơ thành công!",
+      user,
+    });
+  } catch (error) {
+    console.error("Lỗi cập nhật hồ sơ:", error.message);
+    return res.status(500).json({
+      success: false,
+      msg: "Cập nhật hồ sơ thất bại! Lỗi server.",
+    });
+  }
+};
