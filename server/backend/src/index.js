@@ -9,6 +9,7 @@ import notificationRoutes from "./routes/notification.js";
 import verifyEmailRoutes from "./routes/verifyEmail.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import forgotPasswordRoutes from "./routes/forgotPassword.js";
+import bookRoutes from "./routes/book.js";
 
 dotenv.config();
 const app = express();
@@ -27,6 +28,9 @@ app.use("/api/verify_email", verifyEmailRoutes);
 
 // forgotPassword routes
 app.use("/api/forgot_password", forgotPasswordRoutes);
+
+// book routes
+app.use("/api/books", bookRoutes);
 
 
 // Sử dụng routes

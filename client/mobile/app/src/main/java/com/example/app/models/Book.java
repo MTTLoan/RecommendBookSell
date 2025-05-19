@@ -14,7 +14,6 @@ public class Book implements Parcelable {
     private int id;
     private String name;
     private String description;
-    @SerializedName("images")
     private List<Image> images;
     private double price;
     private double averageRating;
@@ -66,9 +65,6 @@ public class Book implements Parcelable {
             return new Book[size];
         }
     };
-
-    public Book(int id, String xứSởMiênMan, String description, List<Image> images3, double price, double averageRating, int ratingCount, int stockQuantity, int categoryId, String s, String nhậtSơn) {
-    }
 
     @Override
     public int describeContents() {
