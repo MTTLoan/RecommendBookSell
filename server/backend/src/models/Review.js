@@ -31,6 +31,9 @@ const syncCounter = async () => {
   }
 };
 
+// Gọi đồng bộ khi khởi động
+mongoose.connection.once("open", syncCounter);
+
 ReviewSchema.set("toJSON", { virtuals: true });
 
 export default mongoose.model("Review", ReviewSchema);
