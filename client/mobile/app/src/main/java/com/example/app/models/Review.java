@@ -10,6 +10,7 @@ public class Review implements Parcelable {
     private int rating;
     private String comment;
     private String createdAt; // Đổi sang String để khớp với MongoDB
+    private String username;
 
     // Constructor
     public Review(int id, int userId, int bookId, int rating, String comment, String createdAt) {
@@ -70,4 +71,8 @@ public class Review implements Parcelable {
     public void setComment(String comment) { this.comment = comment; }
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+    public String getUsername() {
+        return username;
+    }
 }

@@ -27,6 +27,7 @@ import com.example.app.utils.HeaderController;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SearchFragment extends Fragment {
@@ -109,7 +110,7 @@ public class SearchFragment extends Fragment {
                 10,
                 1,
                 createdAt1,
-                "Tô Bảo"
+                Collections.singletonList("Tô Bảo")
         ));
 
         // Book 2
@@ -128,7 +129,7 @@ public class SearchFragment extends Fragment {
                 15,
                 1,
                 createdAt2,
-                "Nguyễn Nhật Ánh"
+                Collections.singletonList("Nguyễn Nhật Ánh")
         ));
 
         // Book 3
@@ -147,7 +148,7 @@ public class SearchFragment extends Fragment {
                 20,
                 1,
                 createdAt3,
-                "Nhật Sơn"
+                Collections.singletonList("Nhật Sơn")
         ));
 
         // Book 4
@@ -166,7 +167,7 @@ public class SearchFragment extends Fragment {
                 12,
                 2,
                 createdAt4,
-                "Mai Anh"
+                Collections.singletonList("Mai Anh")
         ));
 
         // Book 5
@@ -185,7 +186,7 @@ public class SearchFragment extends Fragment {
                 18,
                 3,
                 createdAt5,
-                "Sơn Tùng"
+                Collections.singletonList("Sơn Tùng")
         ));
 
         // Book 6
@@ -204,7 +205,7 @@ public class SearchFragment extends Fragment {
                 10,
                 2,
                 createdAt6,
-                "Nguyễn Nhật Ánh"
+                Collections.singletonList("Nguyễn Nhật Ánh")
         ));
 
         // Book 7
@@ -223,7 +224,7 @@ public class SearchFragment extends Fragment {
                 15,
                 1,
                 createdAt7,
-                "Hà Mi"
+                Collections.singletonList("Hà Mi")
         ));
 
         // Book 8
@@ -242,7 +243,7 @@ public class SearchFragment extends Fragment {
                 20,
                 1,
                 createdAt8,
-                "Tô Bảo"
+                Collections.singletonList("Tô Bảo")
         ));
 
         // Book 9
@@ -261,7 +262,7 @@ public class SearchFragment extends Fragment {
                 12,
                 3,
                 createdAt9,
-                "Nguyễn Sơn"
+                Collections.singletonList("Nguyễn Sơn")
         ));
 
         // Book 10
@@ -280,7 +281,7 @@ public class SearchFragment extends Fragment {
                 18,
                 3,
                 createdAt10,
-                "Nguyễn Nhật Ánh"
+                Collections.singletonList("Nguyễn Nhật Ánh")
         ));
         // Set up click listener for recommendationsTitle
         TextView recommendationsTitle = view.findViewById(R.id.recommendationsTitle);

@@ -3,7 +3,6 @@ package com.example.app.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
@@ -94,7 +93,7 @@ public class Book implements Parcelable {
     public String getDescription() { return description; }
     public List<Image> getImages() { return images; }
     public double getPrice() { return price; }
-    public double getAverageRating() { return averageRating; }
+    public float getAverageRating() { return (float) averageRating; }
     public int getRatingCount() { return ratingCount; }
     public int getStockQuantity() { return stockQuantity; }
     public int getCategoryId() { return categoryId; }

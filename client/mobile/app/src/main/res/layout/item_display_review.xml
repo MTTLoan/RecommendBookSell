@@ -2,40 +2,39 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingVertical="8dp">
+    android:layout_height="wrap_content">
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/light_gray"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/tvUsername"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Thái Thị Sửu"
-        android:textSize="14sp"
-        android:fontFamily="@font/roboto_regular"
+        android:textSize="10sp"
+        android:paddingTop="8dp"
+        android:fontFamily="@font/roboto_medium"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/tvRatingLabel" />
+        app:layout_constraintEnd_toStartOf="@id/rbrating_bar" />
 
-    <TextView
-        android:id="@+id/tvRatingLabel"
+    <RatingBar
+        android:id="@+id/rbrating_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="4.5/5"
-        android:textSize="14sp"
-        android:fontFamily="@font/roboto_bold"
+        android:numStars="5"
+        android:stepSize="1.0"
+        android:paddingTop="6dp"
+        android:progressTint="@color/yellow"
+        style="@style/Widget.AppCompat.RatingBar.Small"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tvUsername" />
-
-    <TextView
-        android:id="@+id/tvCreatedAt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="24/05/2025"
-        android:textSize="10sp"
-        android:fontFamily="@font/roboto_light"
-        android:textColor="@color/txt_subtitle"
-        app:layout_constraintTop_toBottomOf="@id/tvUsername"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/tvReviewDescription"
@@ -43,11 +42,25 @@
         android:layout_height="wrap_content"
         android:text="Nội dung đánh giá"
         android:textSize="12sp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="6dp"
         android:fontFamily="@font/roboto_regular"
         android:textColor="@color/txt_subtitle"
-        app:layout_constraintTop_toBottomOf="@id/tvCreatedAt"
+        app:layout_constraintTop_toBottomOf="@id/tvUsername"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/tvCreatedAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="24/05/2025"
+        android:textSize="8sp"
+        android:paddingBottom="8dp"
+        android:fontFamily="@font/roboto_light"
+        android:textColor="@color/txt_subtitle"
+        app:layout_constraintTop_toBottomOf="@id/tvReviewDescription"
+        app:layout_constraintStart_toStartOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

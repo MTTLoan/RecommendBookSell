@@ -20,6 +20,11 @@ public class BookImageAdapter extends RecyclerView.Adapter<BookImageAdapter.Imag
 
     private Context context;
     private List<Image> images;
+    private OnImageClickListener onImageClickListener;
+
+    public interface OnImageClickListener {
+        void onImageClick(int position);
+    }
 
     public BookImageAdapter(Context context, List<Image> images) {
         this.context = context;
@@ -40,11 +45,21 @@ public class BookImageAdapter extends RecyclerView.Adapter<BookImageAdapter.Imag
                 .load(image.getUrl())
                 .error(R.drawable.placeholder_book) // ảnh mặc định khi lỗi
                 .into(holder.imageView);
+
+        holder.imageView.setOnClickListener(v -> {
+            if (onImageClickListener != null) {
+                onImageClickListener.onImageClick(position);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
         return images.size();
+    }
+
+    public void setOnImageClickListener(OnImageClickListener listener) {
+        this.onImageClickListener = listener;
     }
 
     public static class ImageViewHolder extends RecyclerView.ViewHolder {

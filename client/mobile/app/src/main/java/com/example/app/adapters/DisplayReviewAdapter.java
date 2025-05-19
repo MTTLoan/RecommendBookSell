@@ -1,8 +1,10 @@
 package com.example.app.adapters;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -11,8 +13,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.app.R;
 import com.example.app.models.Review;
 
-import java.time.format.DateTimeFormatter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class DisplayReviewAdapter extends RecyclerView.Adapter<DisplayReviewAdapter.ReviewViewHolder> {
 
@@ -20,6 +25,12 @@ public class DisplayReviewAdapter extends RecyclerView.Adapter<DisplayReviewAdap
 
     public DisplayReviewAdapter(List<Review> reviewList) {
         this.reviewList = reviewList;
+    }
+
+    // Method to update reviews
+    public void setReviews(List<Review> reviews) {
+        this.reviewList = reviews;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -32,12 +43,25 @@ public class DisplayReviewAdapter extends RecyclerView.Adapter<DisplayReviewAdap
     @Override
     public void onBindViewHolder(@NonNull ReviewViewHolder holder, int position) {
         Review review = reviewList.get(position);
-        holder.tvUsername.setText("Người dùng #" + review.getUserId());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-//        String formattedDate = review.getCreatedAt().format(formatter);
-//        holder.tvCreatedAt.setText(formattedDate);
-        holder.tvRatingLabel.setText(String.format("%.1f/5", review.getRating()));
-        holder.tvReviewDescription.setText(review.getComment());
+        // Use username if available, fallback to userId
+        holder.tvUsername.setText(review.getUsername() != null ? review.getUsername() : "Người dùng #" + review.getUserId());
+
+        // Parse and format createdAt from ISO 8601 string
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
+            SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            Date date = inputFormat.parse(review.getCreatedAt());
+            holder.tvCreatedAt.setText(outputFormat.format(date));
+        } catch (ParseException e) {
+            holder.tvCreatedAt.setText(review.getCreatedAt()); // Fallback to raw string
+            Log.e("DisplayReviewAdapter", "Error parsing date: " + review.getCreatedAt(), e);
+        }
+
+        // Set rating for RatingBar
+        holder.ratingBar.setRating(review.getRating());
+
+        // Set review comment
+        holder.tvReviewDescription.setText(review.getComment() != null ? review.getComment() : "Không có bình luận");
     }
 
     @Override
@@ -46,13 +70,14 @@ public class DisplayReviewAdapter extends RecyclerView.Adapter<DisplayReviewAdap
     }
 
     public static class ReviewViewHolder extends RecyclerView.ViewHolder {
-        TextView tvUsername, tvCreatedAt, tvRatingLabel, tvReviewDescription;
+        TextView tvUsername, tvCreatedAt, tvReviewDescription;
+        RatingBar ratingBar;
 
         public ReviewViewHolder(@NonNull View itemView) {
             super(itemView);
             tvUsername = itemView.findViewById(R.id.tvUsername);
             tvCreatedAt = itemView.findViewById(R.id.tvCreatedAt);
-            tvRatingLabel = itemView.findViewById(R.id.tvRatingLabel);
+            ratingBar = itemView.findViewById(R.id.rbrating_bar);
             tvReviewDescription = itemView.findViewById(R.id.tvReviewDescription);
         }
     }
