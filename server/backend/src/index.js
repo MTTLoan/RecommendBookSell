@@ -7,6 +7,7 @@ import otpRoutes from "./routes/otp.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import notificationRoutes from "./routes/notification.js";
 import verifyEmailRoutes from "./routes/verifyEmail.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import forgotPasswordRoutes from "./routes/forgotPassword.js";
 import bookRoutes from "./routes/book.js";
@@ -33,8 +34,11 @@ app.use("/api/forgot_password", forgotPasswordRoutes);
 app.use("/api/books", bookRoutes);
 
 
-// Sử dụng routes
+// order routes
 app.use("/api/orders", orderRoutes);
+
+// review routes
+app.use("/api/reviews", reviewRoutes);
 
 app.use(errorHandler);
 

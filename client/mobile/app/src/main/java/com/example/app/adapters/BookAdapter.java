@@ -49,7 +49,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         }
         holder.textCategory.setText(categoryName);
         holder.textTitle.setText(book.getName());
-        holder.textAuthor.setText(book.getAuthor()); // Assuming author is not provided
+//        holder.textAuthor.setText(book.getAuthor());
         holder.textPrice.setText(String.format("%,.0f đ", book.getPrice()));
 
         // Load image using Glide

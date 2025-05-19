@@ -67,7 +67,7 @@ public class OrderListFragment extends Fragment {
         return view;
     }
 
-    private void fetchOrderHistory() {
+    public void fetchOrderHistory() {
         String token = AuthUtils.getToken(requireContext());
 
         if (token == null) {
@@ -100,7 +100,7 @@ public class OrderListFragment extends Fragment {
                     } else {
                         tvEmpty.setVisibility(View.GONE);
                         rvOrders.setVisibility(View.VISIBLE);
-                        OrderAdapter adapter = new OrderAdapter(orderList);
+                        OrderAdapter adapter = new OrderAdapter(orderList, OrderListFragment.this::fetchOrderHistory);
                         rvOrders.setAdapter(adapter);
                     }
                 } else {

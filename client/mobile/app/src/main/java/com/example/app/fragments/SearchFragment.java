@@ -345,7 +345,7 @@ public class SearchFragment extends Fragment {
     private void filterBooks(String query) {
         List<Book> filteredList = new ArrayList<>();
         for (Book book : bookList) {
-            if (book.getName().toLowerCase().contains(query.toLowerCase()) || book.getAuthor().toLowerCase().contains(query.toLowerCase())) {
+            if (book.getName().toLowerCase().contains(query.toLowerCase()) ) {
                 filteredList.add(book);
             }
         }

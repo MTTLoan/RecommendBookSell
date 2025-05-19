@@ -1,4 +1,5 @@
 import Order from "../models/Order.js";
+import Book from "../models/Book.js";
 
 export const getOrderHistory = async (req, res) => {
   try {
@@ -19,9 +20,10 @@ export const getOrderHistory = async (req, res) => {
       orderHistory[status] = [];
     });
 
-    // Lấy đơn hàng và thông tin người dùng
+    // Lấy đơn hàng, thông tin người dùng và thông tin sách
     const orders = await Order.aggregate([
       { $match: { userId: userId } },
+      { $sort: { updatedAt: -1 } }, // Sắp xếp theo updatedAt giảm dần (mới nhất trước)
       {
         $lookup: {
           from: "users",
@@ -31,9 +33,50 @@ export const getOrderHistory = async (req, res) => {
         },
       },
       { $unwind: "$user" },
+      {
+        $lookup: {
+          from: "books",
+          localField: "items.bookId",
+          foreignField: "id",
+          as: "itemDetails",
+        },
+      },
+      {
+        $addFields: {
+          items: {
+            $map: {
+              input: "$items",
+              as: "item",
+              in: {
+                bookId: "$$item.bookId",
+                quantity: "$$item.quantity",
+                unitPrice: "$$item.unitPrice",
+                book: {
+                  $arrayElemAt: [
+                    {
+                      $filter: {
+                        input: "$itemDetails",
+                        as: "book",
+                        cond: { $eq: ["$$book.id", "$$item.bookId"] },
+                      },
+                    },
+                    0,
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          itemDetails: 0,
+          "user.password": 0,
+        },
+      },
     ]).catch((err) => {
       console.error("Aggregation error:", err);
-      return []; // Trả về mảng rỗng nếu lỗi
+      return [];
     });
 
     // Phân loại đơn hàng theo trạng thái
@@ -49,6 +92,54 @@ export const getOrderHistory = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching order history:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const orderId = parseInt(req.params.id);
+    const { status } = req.body;
+
+    // Kiểm tra trạng thái hợp lệ
+    const validStatuses = [
+      "Đang đóng gói",
+      "Chờ giao hàng",
+      "Đã giao",
+      "Trả hàng",
+      "Đã hủy",
+    ];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Trạng thái không hợp lệ",
+      });
+    }
+
+    // Tìm và cập nhật đơn hàng
+    const order = await Order.findOneAndUpdate(
+      { id: orderId, userId: userId },
+      { status: status, updatedAt: new Date() }, // Cập nhật updatedAt
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: order,
+    });
+  } catch (error) {
+    console.error("Error updating order status:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",

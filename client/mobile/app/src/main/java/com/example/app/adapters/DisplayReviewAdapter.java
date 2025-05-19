@@ -34,8 +34,8 @@ public class DisplayReviewAdapter extends RecyclerView.Adapter<DisplayReviewAdap
         Review review = reviewList.get(position);
         holder.tvUsername.setText("Người dùng #" + review.getUserId());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        String formattedDate = review.getCreatedAt().format(formatter);
-        holder.tvCreatedAt.setText(formattedDate);
+//        String formattedDate = review.getCreatedAt().format(formatter);
+//        holder.tvCreatedAt.setText(formattedDate);
         holder.tvRatingLabel.setText(String.format("%.1f/5", review.getRating()));
         holder.tvReviewDescription.setText(review.getComment());
     }

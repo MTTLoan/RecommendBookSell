@@ -157,9 +157,9 @@ public class BookDetailActivity extends AppCompatActivity {
         List<Review> reviews = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        reviews.add(new Review(1, book.getId(), 1, 4, "Rất hay, con tôi rất thích!", LocalDateTime.parse("2024-05-01 12:00:00", formatter)));
-        reviews.add(new Review(2, book.getId(), 2, 5, "Minh họa đẹp, giấy tốt.", LocalDateTime.parse("2024-05-02 12:00:00", formatter)));
-        reviews.add(new Review(3, book.getId(), 3, 5, "Câu chuyện hấp dẫn và dễ hiểu cho trẻ nhỏ.", LocalDateTime.parse("2024-05-03 12:00:00", formatter)));
+//        reviews.add(new Review(1, book.getId(), 1, 4, "Rất hay, con tôi rất thích!", LocalDateTime.parse("2024-05-01 12:00:00", formatter)));
+//        reviews.add(new Review(2, book.getId(), 2, 5, "Minh họa đẹp, giấy tốt.", LocalDateTime.parse("2024-05-02 12:00:00", formatter)));
+//        reviews.add(new Review(3, book.getId(), 3, 5, "Câu chuyện hấp dẫn và dễ hiểu cho trẻ nhỏ.", LocalDateTime.parse("2024-05-03 12:00:00", formatter)));
 
         DisplayReviewAdapter reviewAdapter = new DisplayReviewAdapter(reviews);
         reviewRecyclerView.setLayoutManager(new LinearLayoutManager(this));

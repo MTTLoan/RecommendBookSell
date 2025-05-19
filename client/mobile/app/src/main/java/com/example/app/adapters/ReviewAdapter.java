@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.app.R;
 import com.example.app.models.Book;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -41,22 +42,26 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
         // Hiển thị thông tin sách
         holder.tvBookName.setText(book.getName());
 
+        // Tải hình ảnh sách
+        if (!book.getImages().isEmpty()) {
+            Picasso.get()
+                    .load(book.getImages().get(0).getUrl())
+                    .placeholder(R.drawable.placeholder_book)
+                    .into(holder.ivBookImage);
+        }
+
         // Để trống RatingBar và các EditText để người dùng nhập
-        holder.ratingBar.setRating(0); // Mặc định là 0 sao
-        holder.etContent.setText(""); // Để trống đánh giá nội dung
-        holder.etPackaging.setText(""); // Để trống đánh giá bao bì
-        holder.etShipping.setText(""); // Để trống đánh giá đóng gói
-        holder.etComment.setText(""); // Để trống đánh giá riêng
+        holder.ratingBar.setRating(0);
+        holder.etContent.setText("");
+        holder.etPackaging.setText("");
+        holder.etShipping.setText("");
+        holder.etComment.setText("");
 
         // Thêm sự kiện khi RatingBar thay đổi
-        holder.ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
-            @Override
-            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
-                if (fromUser) { // Chỉ xử lý khi người dùng thay đổi (không phải do setRating())
-                    String bookName = book.getName();
-                    Log.d("ReviewAdapter", "Book: " + bookName + ", Rating changed to: " + rating);
-                    // TODO: Có thể lưu rating vào một danh sách tạm thời hoặc gửi lên server
-                }
+        holder.ratingBar.setOnRatingBarChangeListener((ratingBar, rating, fromUser) -> {
+            if (fromUser) {
+                String bookName = book.getName();
+                Log.d("ReviewAdapter", "Book: " + bookName + ", Rating changed to: " + rating);
             }
         });
     }
