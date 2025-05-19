@@ -1,24 +1,27 @@
 import express from "express";
 import { submitReview } from "../controllers/reviewController.js";
 import userJwtMiddleware from "../middleware/user_jwt.js";
+import mongoose from "mongoose";
 
 const router = express.Router();
 
 // Route gửi đánh giá
 router.post("/", userJwtMiddleware, submitReview);
 
-// Endpoint để kiểm tra review của đơn hàng
+// Endpoint kiểm tra xem đơn hàng có review chưa
 router.get("/:orderId/reviews", userJwtMiddleware, async (req, res) => {
   try {
     const orderId = parseInt(req.params.orderId);
     const userId = req.user.id;
-    const reviews = await mongoose.model("Review").find({ orderId, userId });
+    const reviewCount = await mongoose
+      .model("Review")
+      .countDocuments({ orderId, userId });
     res.status(200).json({
       success: true,
-      data: reviews,
+      hasReviews: reviewCount > 0,
     });
   } catch (error) {
-    console.error("Error fetching reviews:", error);
+    console.error("Error checking reviews:", error);
     res.status(500).json({
       success: false,
       message: "Lỗi máy chủ: " + error.message,

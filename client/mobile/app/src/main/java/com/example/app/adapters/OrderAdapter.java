@@ -16,13 +16,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.app.R;
 import com.example.app.activities.OrderActivity;
 import com.example.app.activities.ReviewActivity;
+import com.example.app.models.HasReviewsResponse;
 import com.example.app.models.Order;
+import com.example.app.models.Review;
 import com.example.app.models.request.StatusUpdateRequest;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
 import java.util.List;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
     private List<Order> orderList;
@@ -82,18 +88,14 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 break;
             case "Đã giao":
                 holder.btnReturn.setVisibility(View.VISIBLE);
-                holder.btnRate.setVisibility(View.VISIBLE);
                 holder.btnReturn.setOnClickListener(v -> showConfirmDialog(
                         holder.itemView.getContext(),
                         "Xác nhận trả hàng",
                         "Bạn muốn yêu cầu trả hàng/hoàn tiền?",
                         () -> updateOrderStatus(apiService, token, order, "Trả hàng", holder.itemView.getContext())
                 ));
-                holder.btnRate.setOnClickListener(v -> {
-                    Intent intent = new Intent(holder.itemView.getContext(), ReviewActivity.class);
-                    intent.putExtra("order", order);
-                    holder.itemView.getContext().startActivity(intent);
-                });
+                // Kiểm tra xem đơn hàng đã có review chưa
+                checkHasReviews(apiService, token, order, holder);
                 break;
             case "Trả hàng":
             case "Đã hủy":
@@ -109,6 +111,62 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         });
     }
 
+    private void checkHasReviews(ApiService apiService, String token, Order order, OrderViewHolder holder) {
+        if (token == null) {
+            Log.e("OrderAdapter", "Token is null");
+            return;
+        }
+        apiService.getReviewsForOrder("Bearer " + token, order.getId()).enqueue(new Callback<HasReviewsResponse>() {
+            @Override
+            public void onResponse(Call<HasReviewsResponse> call, Response<HasReviewsResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    boolean hasReviews = response.body().hasReviews();
+                    Log.d("OrderAdapter", "Order " + order.getId() + " has reviews: " + hasReviews);
+                    if (!hasReviews) {
+                        // Chưa có review, hiển thị nút đánh giá
+                        holder.btnRate.setVisibility(View.VISIBLE);
+                        holder.btnRate.setOnClickListener(v -> {
+                            Intent intent = new Intent(holder.itemView.getContext(), ReviewActivity.class);
+                            intent.putExtra("order", order);
+                            holder.itemView.getContext().startActivity(intent);
+                        });
+                    } else {
+                        // Đã có review, ẩn nút
+                        holder.btnRate.setVisibility(View.GONE);
+                    }
+                } else {
+                    String errorMsg = "Error checking reviews: " + response.message();
+                    try {
+                        if (response.errorBody() != null) {
+                            errorMsg += " - " + response.errorBody().string();
+                        }
+                    } catch (Exception e) {
+                        Log.e("OrderAdapter", "Error parsing error body: " + e.getMessage());
+                    }
+                    Log.e("OrderAdapter", errorMsg);
+                    // Mặc định hiển thị nút nếu lỗi
+                    holder.btnRate.setVisibility(View.VISIBLE);
+                    holder.btnRate.setOnClickListener(v -> {
+                        Intent intent = new Intent(holder.itemView.getContext(), ReviewActivity.class);
+                        intent.putExtra("order", order);
+                        holder.itemView.getContext().startActivity(intent);
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(Call<HasReviewsResponse> call, Throwable t) {
+                Log.e("OrderAdapter", "Failed to check reviews: " + t.getMessage());
+                // Mặc định hiển thị nút nếu lỗi
+                holder.btnRate.setVisibility(View.VISIBLE);
+                holder.btnRate.setOnClickListener(v -> {
+                    Intent intent = new Intent(holder.itemView.getContext(), ReviewActivity.class);
+                    intent.putExtra("order", order);
+                    holder.itemView.getContext().startActivity(intent);
+                });
+            }
+        });
+    }
     private void showConfirmDialog(android.content.Context context, String title, String message, Runnable onConfirm) {
         new AlertDialog.Builder(context)
                 .setTitle(title)
@@ -118,6 +176,8 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 .setCancelable(true)
                 .show();
     }
+
+
 
     private void updateOrderStatus(ApiService apiService, String token, Order order, String newStatus, android.content.Context context) {
         if (token == null) {

@@ -4,6 +4,7 @@ const ReviewSchema = new mongoose.Schema({
   id: { type: Number, required: true, unique: true }, // id sẽ được gán trong controller
   userId: { type: Number, ref: "User", required: true },
   bookId: { type: Number, ref: "Book", required: true },
+  orderId: { type: Number, ref: "Order", required: true },
   rating: { type: Number, required: true },
   comment: { type: String, required: false },
   createdAt: { type: Date, required: true },

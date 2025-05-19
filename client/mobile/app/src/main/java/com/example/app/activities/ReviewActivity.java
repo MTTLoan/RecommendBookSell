@@ -113,18 +113,22 @@ public class ReviewActivity extends AppCompatActivity {
                     // Kiểm tra nếu có đánh giá hợp lệ
                     if (rating > 0 || !content.isEmpty() || !packaging.isEmpty() || !shipping.isEmpty() || !comment.isEmpty()) {
                         hasValidReview = true;
-                        String fullComment = content + " \n " + packaging + " \n " + shipping + " \n " + comment;
+                        String fullComment = (!content.isEmpty() ? content + "\n" : "") +
+                                (!packaging.isEmpty() ? packaging + "\n" : "") +
+                                (!shipping.isEmpty() ? shipping + "\n" : "") +
+                                (!comment.isEmpty() ? comment : "");
                         Book book = bookList.get(i);
                         Review review = new Review(
                                 0, // ID sẽ được server tạo
                                 order.getUserId(),
                                 book.getId(),
+                                order.getId(),
                                 (int) rating,
                                 fullComment,
                                 null // createdAt sẽ được server tạo
                         );
                         reviews.add(review);
-                        Log.d("ReviewActivity", "Added review for bookId: " + book.getId() + ", rating: " + rating);
+                        Log.d("ReviewActivity", "Added review for bookId: " + book.getId() + ", orderId: " + order.getId() + ", rating: " + rating);
                     }
                 }
             }
@@ -141,7 +145,7 @@ public class ReviewActivity extends AppCompatActivity {
 
             // Gửi từng đánh giá lên server
             for (Review review : reviews) {
-                Log.d("ReviewActivity", "Sending review for bookId: " + review.getBookId());
+                Log.d("ReviewActivity", "Sending review for bookId: " + review.getBookId() + ", orderId: " + review.getOrderId());
                 apiService.submitReview("Bearer " + token, review).enqueue(new Callback<Review>() {
                     @Override
                     public void onResponse(Call<Review> call, Response<Review> response) {

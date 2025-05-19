@@ -1,5 +1,6 @@
 package com.example.app.network;
 
+import com.example.app.models.HasReviewsResponse;
 import com.example.app.models.Notification;
 import com.example.app.models.Order;
 import com.example.app.models.Review;
@@ -74,4 +75,6 @@ public interface ApiService {
     @POST("reviews")
     Call<Review> submitReview(@Header("Authorization") String authorization, @Body Review review);
 
+    @GET("reviews/{orderId}/reviews")
+    Call<HasReviewsResponse> getReviewsForOrder(@Header("Authorization") String token, @Path("orderId") int orderId);
 }
