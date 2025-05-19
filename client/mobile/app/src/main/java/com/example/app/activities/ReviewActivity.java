@@ -1,5 +1,6 @@
 package com.example.app.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -7,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -104,7 +106,7 @@ public class ReviewActivity extends AppCompatActivity {
             for (int i = 0; i < recyclerReviews.getChildCount(); i++) {
                 ReviewAdapter.ReviewViewHolder holder = (ReviewAdapter.ReviewViewHolder) recyclerReviews.findViewHolderForAdapterPosition(i);
                 if (holder != null) {
-                    float rating = ratings.get(i); // Lấy rating từ adapter
+                    float rating = ratings.get(i);
                     String content = holder.etContent.getText().toString().trim();
                     String packaging = holder.etPackaging.getText().toString().trim();
                     String shipping = holder.etShipping.getText().toString().trim();
@@ -185,7 +187,13 @@ public class ReviewActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Cảm ơn bạn!")
                 .setMessage("Cảm ơn bạn đã đánh giá! Đánh giá của bạn giúp chúng tôi cải thiện dịch vụ.")
-                .setPositiveButton("OK", (dialog, which) -> finish())
+                .setPositiveButton("OK", (dialog, which) -> {
+                    // Gửi broadcast để làm mới danh sách đơn hàng
+                    Intent intent = new Intent("com.example.app.REFRESH_ORDERS");
+                    intent.putExtra("status", order.getStatus());
+                    LocalBroadcastManager.getInstance(ReviewActivity.this).sendBroadcast(intent);
+                    finish();
+                })
                 .setCancelable(false)
                 .show();
     }

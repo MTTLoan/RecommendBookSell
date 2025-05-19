@@ -1,5 +1,9 @@
 package com.example.app.fragments;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -36,6 +41,7 @@ public class OrderListFragment extends Fragment {
     private RecyclerView rvOrders;
     private TextView tvEmpty;
     private List<Order> orderList;
+    private BroadcastReceiver refreshReceiver;
 
     public static OrderListFragment newInstance(String status) {
         OrderListFragment fragment = new OrderListFragment();
@@ -51,6 +57,20 @@ public class OrderListFragment extends Fragment {
         if (getArguments() != null) {
             status = getArguments().getString("status");
         }
+
+        // Đăng ký BroadcastReceiver
+        refreshReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String receivedStatus = intent.getStringExtra("status");
+                Log.d(TAG, "Received refresh broadcast for status: " + receivedStatus);
+                if (status.equals(receivedStatus)) {
+                    fetchOrderHistory();
+                }
+            }
+        };
+        LocalBroadcastManager.getInstance(requireContext())
+                .registerReceiver(refreshReceiver, new IntentFilter("com.example.app.REFRESH_ORDERS"));
     }
 
     @Nullable
@@ -65,6 +85,13 @@ public class OrderListFragment extends Fragment {
         fetchOrderHistory();
 
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Hủy đăng ký BroadcastReceiver
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(refreshReceiver);
     }
 
     public void fetchOrderHistory() {
