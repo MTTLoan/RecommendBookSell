@@ -5,7 +5,7 @@ import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import otpRoutes from "./routes/otp.js";
 import orderRoutes from "./routes/orderRoutes.js";
-import notificationRoutes from "./routes/notification.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 import verifyEmailRoutes from "./routes/verifyEmail.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -36,6 +36,9 @@ app.use("/api/books", bookRoutes);
 
 // category routes
 app.use("/api/categories", categoryRoutes);
+
+// notification routes
+app.use("/api/notifications", notificationRoutes);
 
 // order routes
 app.use("/api/orders", orderRoutes);

@@ -12,7 +12,7 @@ const notificationSchema = new mongoose.Schema(
       required: true,
     },
     orderId: {
-      type: mongoose.Schema.Types.Mixed,
+      type: Number,
       default: null,
     },
     title: {
@@ -28,13 +28,43 @@ const notificationSchema = new mongoose.Schema(
       default: false,
     },
     createdAt: {
-      type: String,
+      type: Date,
       required: true,
+    },
+    imageUrl: {
+      type: String,
+      required: false,
     },
   },
   {
     timestamps: true,
   }
 );
+
+// Đồng bộ Counter với id lớn nhất trong notifications
+const syncCounter = async () => {
+  try {
+    const Counter = mongoose.model("Counter");
+    const maxId = await mongoose
+      .model("Notification")
+      .findOne()
+      .sort({ id: -1 })
+      .select("id")
+      .exec();
+    const currentMaxId = maxId ? maxId.id : 0;
+    await Counter.updateOne(
+      { _id: "notificationId" },
+      { $set: { seq: currentMaxId } },
+      { upsert: true }
+    );
+    console.log(`Counter synced with max id: ${currentMaxId}`);
+  } catch (error) {
+    console.error("Error syncing counter:", error);
+  }
+};
+
+mongoose.connection.once("open", syncCounter);
+
+notificationSchema.set("toJSON", { virtuals: true });
 
 export default mongoose.model("Notification", notificationSchema);

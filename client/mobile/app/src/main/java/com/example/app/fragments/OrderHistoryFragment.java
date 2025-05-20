@@ -69,4 +69,16 @@ public class OrderHistoryFragment extends Fragment {
 
         return view;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Làm mới tất cả các OrderListFragment khi quay lại
+        for (int i = 0; i < statusList.size(); i++) {
+            Fragment fragment = getChildFragmentManager().findFragmentByTag("f" + i);
+            if (fragment instanceof OrderListFragment) {
+                ((OrderListFragment) fragment).fetchOrderHistory();
+            }
+        }
+    }
 }

@@ -5,15 +5,31 @@ import Book from "../models/Book.js";
 export const submitReview = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { bookId, rating, comment } = req.body;
-    console.log("Submitting review:", { userId, bookId, rating, comment });
+    const { bookId, rating, comment, orderId } = req.body;
+    console.log("Submitting review:", {
+      userId,
+      bookId,
+      rating,
+      comment,
+      orderId,
+    });
 
     // Kiểm tra dữ liệu đầu vào
-    if (!bookId || !rating || rating < 1 || rating > 5) {
+    if (!bookId || !rating || rating < 1 || rating > 5 || !orderId) {
       console.log("Invalid input data");
       return res.status(400).json({
         success: false,
-        message: "Dữ liệu không hợp lệ",
+        message: "Dữ liệu không hợp lệ: Thiếu bookId, rating, hoặc orderId",
+      });
+    }
+
+    // Kiểm tra xem đã có review cho bookId và orderId chưa
+    const existingReview = await Review.findOne({ userId, bookId, orderId });
+    if (existingReview) {
+      console.log("Duplicate review detected");
+      return res.status(400).json({
+        success: false,
+        message: "Bạn đã đánh giá sách này cho đơn hàng này",
       });
     }
 
@@ -29,11 +45,7 @@ export const submitReview = async (req, res) => {
     console.log("Counter result:", counterResult);
 
     // Kiểm tra kết quả
-    if (
-      !counterResult ||
-      !counterResult ||
-      typeof counterResult.seq !== "number"
-    ) {
+    if (!counterResult || typeof counterResult.seq !== "number") {
       throw new Error("Failed to retrieve or increment counter for reviewId");
     }
 
@@ -44,6 +56,7 @@ export const submitReview = async (req, res) => {
       id: reviewId,
       userId,
       bookId,
+      orderId,
       rating,
       comment,
       createdAt: new Date(),
