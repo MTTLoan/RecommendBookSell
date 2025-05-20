@@ -11,6 +11,7 @@ import reviewRoutes from "./routes/reviewRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import forgotPasswordRoutes from "./routes/forgotPassword.js";
 import bookRoutes from "./routes/book.js";
+import categoryRoutes from "./routes/category.js";
 
 dotenv.config();
 const app = express();
@@ -33,6 +34,8 @@ app.use("/api/forgot_password", forgotPasswordRoutes);
 // book routes
 app.use("/api/books", bookRoutes);
 
+// category routes
+app.use("/api/categories", categoryRoutes);
 
 // order routes
 app.use("/api/orders", orderRoutes);

@@ -1,7 +1,32 @@
 import Book from '../models/Book.js';
 import Review from '../models/Review.js';
-import User from '../models/User.js'; // Import User model
 
+export const getBooks = async (req, res) => {
+    try {
+        const categoryId = req.query.categoryId ? parseInt(req.query.categoryId) : null;
+        let books;
+
+        if (categoryId) {
+            books = await Book.find({ categoryId }); // Lọc sách theo categoryId
+        } else {
+            books = await Book.find(); // Lấy tất cả sách nếu không có categoryId
+        }
+
+        return res.status(200).json({
+            success: true,
+            msg: 'Lấy danh sách sách thành công.',
+            book: books,
+        });
+    } catch (error) {
+        console.error('Lỗi lấy danh sách sách:', error.message);
+        return res.status(500).json({
+            success: false,
+            msg: `Lỗi server: ${error.message}`,
+        });
+    }
+};
+
+// Lấy chi tiết sách theo ID
 export const getBookDetail = async (req, res) => {
   try {
     const bookId = parseInt(req.params.id);
@@ -28,6 +53,7 @@ export const getBookDetail = async (req, res) => {
   }
 };
 
+// Lấy danh sách đánh giá của một cuốn sách
 export const getBookReviews = async (req, res) => {
   try {
     const bookId = parseInt(req.params.bookId);

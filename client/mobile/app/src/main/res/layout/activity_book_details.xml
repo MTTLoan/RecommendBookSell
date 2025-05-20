@@ -22,12 +22,10 @@
         android:layout_height="0dp"
         android:paddingHorizontal="24dp"
         android:paddingVertical="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/footer"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/header"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintTop_toBottomOf="@id/header">
 
         <!-- Nội dung cuộn -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -142,6 +140,7 @@
                     android:textSize="20dp"
                     android:gravity="center"
                     android:paddingTop="12dp"
+                    android:paddingHorizontal="12dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/tabIndicator" />
@@ -167,13 +166,14 @@
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:numStars="5"
                     android:paddingTop="12dp"
                     android:paddingBottom="18dp"
                     android:scaleX="1.5"
                     android:gravity="center"
                     android:scaleY="1.5"
-                    android:stepSize="1.0"
+                    android:isIndicator="true"
+                    android:numStars="5"
+                    android:stepSize="0.1"
                     android:progressTint="@color/yellow"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -269,7 +269,7 @@
                     android:fontFamily="@font/roboto_bold"
                     android:text="Đánh giá"
                     android:textSize="14sp"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="36dp"
                     app:layout_constraintTop_toBottomOf="@id/tvDescription"
                     app:layout_constraintStart_toStartOf="parent"
                     app:tint="@color/black" />
@@ -287,8 +287,8 @@
 
                 <TextView
                     android:id="@+id/tvRating"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_height="27dp"
                     android:layout_marginStart="12dp"
                     android:fontFamily="@font/roboto_bold"
                     android:text="4.5/5"
@@ -316,24 +316,43 @@
                 android:id="@+id/reviewRecyclerView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:nestedScrollingEnabled="false"
                 app:layout_constraintTop_toBottomOf="@id/infoContainer"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 tools:listitem="@layout/item_review" />
 
+            <TextView
+                android:id="@+id/tvToggleReview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="4dp"
+                android:text="Xem tất cả"
+                android:textColor="@color/green"
+                android:textSize="12sp"
+                android:fontFamily="@font/roboto_light"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/reviewRecyclerView" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>
     <!-- Footer (không cuộn) -->
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/footer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="24dp"
         android:paddingVertical="12dp"
         android:background="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
 
         <!-- Nút Giảm -->

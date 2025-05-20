@@ -2,6 +2,7 @@ package com.example.app.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import com.example.app.activities.BookDetailActivity;
 import com.example.app.models.Book;
 import com.example.app.models.Category;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder> {
@@ -25,8 +27,18 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
 
     public BookAdapter(Context context, List<Book> bookList, List<Category> categoryList) {
         this.context = context;
-        this.bookList = bookList;
-        this.categoryList = categoryList;
+        this.bookList = bookList != null ? bookList : new ArrayList<>();
+        this.categoryList = categoryList != null ? categoryList : new ArrayList<>();
+    }
+
+    public void setBooks(List<Book> books) {
+        this.bookList = books != null ? books : new ArrayList<>();
+        notifyDataSetChanged();
+    }
+
+    public void setCategories(List<Category> categories) {
+        this.categoryList = categories != null ? categories : new ArrayList<>();
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -49,7 +61,9 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         }
         holder.textCategory.setText(categoryName);
         holder.textTitle.setText(book.getName());
-//        holder.textAuthor.setText(book.getAuthor());
+        List<String> authors = book.getAuthor();
+        String authorsText = TextUtils.join(", ", authors);
+        holder.textAuthor.setText(authorsText);
         holder.textPrice.setText(String.format("%,.0f đ", book.getPrice()));
 
         // Load image using Glide
@@ -64,10 +78,10 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
             holder.imageBook.setImageResource(R.drawable.placeholder_book);
         }
 
-        // Set click listener to navigate to BookDetailActivity
+        // Thiết lập sự kiện click
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, BookDetailActivity.class);
-            intent.putExtra("book", bookList.get(position));
+            intent.putExtra("bookId", book.getId());
             context.startActivity(intent);
         });
     }

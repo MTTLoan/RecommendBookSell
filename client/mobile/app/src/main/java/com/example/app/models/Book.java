@@ -93,7 +93,7 @@ public class Book implements Parcelable {
     public String getDescription() { return description; }
     public List<Image> getImages() { return images; }
     public double getPrice() { return price; }
-    public float getAverageRating() { return (float) averageRating; }
+    public double getAverageRating() { return (double) averageRating; }
     public int getRatingCount() { return ratingCount; }
     public int getStockQuantity() { return stockQuantity; }
     public int getCategoryId() { return categoryId; }

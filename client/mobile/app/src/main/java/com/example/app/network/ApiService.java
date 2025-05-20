@@ -11,7 +11,7 @@ import com.example.app.models.request.ResendOtpRequest;
 import com.example.app.models.request.ResetPasswordRequest;
 import com.example.app.models.request.StatusUpdateRequest;
 import com.example.app.models.request.UserLoginRequest;
-import com.example.app.models.response.BookResponse;
+import com.example.app.models.response.BookDetailResponse;
 import com.example.app.models.response.ForgotPasswordResponse;
 import com.example.app.models.request.GoogleAuthRequest;
 import com.example.app.models.response.LogoutResponse;
@@ -22,10 +22,11 @@ import com.example.app.models.response.ChangePasswordResponse;
 import com.example.app.models.request.ChangePasswordRequest;
 import com.example.app.models.response.UserResponse;
 import com.example.app.models.response.ReviewResponse;
+import com.example.app.models.response.CategoryResponse;
+import com.example.app.models.response.BookResponse;
 
 
 import java.util.List;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -35,6 +36,7 @@ import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
     @POST("auth/register")
@@ -82,11 +84,16 @@ public interface ApiService {
     @POST("reviews")
     Call<Review> submitReview(@Header("Authorization") String authorization, @Body Review review);
 
+    @GET("/api/books/all-book")
+    Call<BookResponse> getBooks(@Query("categoryId") Integer categoryId);
     @GET("/api/books/book-detail/{id}")
-    Call<BookResponse> getBookDetail(@Path("id") int bookId);
-
+    Call<BookDetailResponse> getBookDetail(@Path("id") int bookId);
     @GET("/api/books/book-detail/{bookId}/reviews")
     Call<ReviewResponse> getBookReviews(@Path("bookId") int bookId);
+
+    @GET("/api/categories/all-categories")
+    Call<CategoryResponse> getCategories();
+
 
     Call<Notification> markAsRead(int id);
 }
