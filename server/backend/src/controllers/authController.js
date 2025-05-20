@@ -1,17 +1,19 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
-import nodemailer from "nodemailer";
-import PasswordReset from "../models/PasswordReset.js";
-
+import { sendVerificationOTPEmail } from "./email_verificationController.js";
+import { hashData, verifyHashedData } from "../util/hashData.js";
 
 export const registerController = async (req, res) => {
   const { username, fullName, email, phoneNumber, password } = req.body;
   try {
+    // Kiểm tra xem username đã tồn tại chưa
     let user = await User.findOne({ username });
-    if (user) return res.status(400).json({ message: "Tên tài khoản đã tồn tại" });
+    if (user) {
+      return res.status(400).json({ message: "Tên tài khoản đã tồn tại" });
+    }
 
+    // Tạo người dùng mới
     user = new User({
       username,
       fullName,
@@ -19,36 +21,74 @@ export const registerController = async (req, res) => {
       phoneNumber,
       password: await bcrypt.hash(password, 10),
       role: "user",
+      verified: false,
+      addressProvince: null,
+      addressDistrict: null,
+      addressWard: null,
+      addressDetail: null,
+      birthday: null,
+      avatar: null,
+      token: null,
     });
     await user.save();
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    // Gửi OTP xác nhận tài khoản
+    await sendVerificationOTPEmail(email);
 
+    // Tạo token
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // Lưu token vào trường `token` trong cơ sở dữ liệu
+    user.token = token;
+    await user.save();
+
+    // Trả về phản hồi
     res.status(201).json({
+      success: true,
+      msg: "Đăng ký thành công!",
       token,
-      user: user,
+      user,
     });
   } catch (error) {
-    res.status(500).json({ message: "Đăng ký thất bại: " + error.message });
+    console.error("Lỗi đăng ký:", error.message);
+    res.status(500).json({
+      success: false,
+      msg: "Đăng ký thất bại! Lỗi server.",
+    });
   }
 };
 
 export const loginController = async (req, res) => {
-  const { username, password } = req.body;
-  console.log('Login attempt:', { username }); // Log thông tin đăng nhập
+  let { identifier, password } = req.body; // `identifier` có thể là username hoặc email
+  password = password.trim();
 
   try {
-    // Tìm user theo username
-    const user = await User.findOne({
-      $or: [{ username: username }],
+    // Tìm người dùng bằng username hoặc email
+    let user = await User.findOne({
+      $or: [{ username: identifier }, { email: identifier }],
     });
 
-    console.log('User found:', user ? 'Yes' : 'No'); // Log kết quả tìm kiếm
-
     if (!user) {
-      return res.status(400).json({ message: "Tên đăng nhập không tồn tại." });
+      return res.status(400).json({
+        success: false,
+        error_server: false,
+        msg: "Tên tài khoản hoặc email không tồn tại!",
+      });
+    }
+
+    // Kiểm tra xem tài khoản đã được xác thực chưa
+    if (!user.verified) {
+      return res.status(400).json({
+        success: false,
+        error_server: false,
+        verified: false,
+        email: user.email,
+        msg: "Email chưa được xác thực. Vui lòng kiểm tra hộp thư của bạn!",
+      });
     }
 
     // Kiểm tra mật khẩu
@@ -56,74 +96,268 @@ export const loginController = async (req, res) => {
     console.log('Password match:', isMatch ? 'Yes' : 'No'); // Log kết quả so sánh mật khẩu
 
     if (!isMatch) {
-      return res.status(400).json({ message: "Mật khẩu không chính xác." });
+      return res.status(400).json({
+        success: false,
+        error_server: false,
+        msg: "Mật khẩu không chính xác!",
+      });
     }
 
+    // Tạo payload cho JWT
+    const payload = {
+      user: {
+        id: user.id,
+        role: user.role,
+      },
+    };
+
     // Tạo token
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
-    // Trả về thông tin user (không bao gồm mật khẩu)
-    const userResponse = {
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      fullName: user.fullName,
-      role: user.role,
-    };
+    // Lưu token vào trường `token` trong cơ sở dữ liệu
+    user.token = token;
+    await user.save();
 
-    res.status(200).json({
-      token,
-      user: userResponse,
+    return res.status(200).json({
+      success: true,
+      msg: "Đăng nhập thành công!",
+      user_id: user.id,
+      token: token,
+      user: user,
     });
-  } catch (error) {
-    console.error('Login error:', error); // Log lỗi nếu có
-    res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
+  } catch (err) {
+    console.log(err.message);
+
+    return res.status(500).json({
+      success: false,
+      error_server: true,
+      msg: "Lỗi máy chủ!",
+    });
   }
 };
 
-export const forgotPasswordController = async (req, res) => {
-  console.log("Request body:", req.body);
-  const { email } = req.body;
-
+export const logoutController = async (req, res) => {
   try {
-    console.log("Received email from frontend:", email);
-    const user = await User.findOne({ email });
-    console.log("User found:", user);
+    const user = await User.findOne({ id: req.user.id });
+
     if (!user) {
-      return res.status(404).json({ message: "Email không tồn tại." });
+      return res.status(404).json({
+        success: false,
+        msg: "Người dùng không tồn tại hoặc đã đăng xuất.",
+      });
     }
 
-    // Tạo token và lưu vào bảng PasswordResets
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const expiresAt = Date.now() + 3600000; // Token hết hạn sau 1 giờ
-
-    const passwordReset = new PasswordReset({
-      userId: user._id,
-      token: resetToken,
-      expiresAt,
+    res.status(200).json({ message: "Đăng xuất thành công!" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({
+      success: false,
+      msg: "Đăng xuất thất bại! Lỗi server.",
     });
-    await passwordReset.save();
+  }
+};
 
-    // Gửi email
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: {
-        user: process.env.AUTH_EMAIL,
-        pass: process.env.AUTH_PASS,
+export const googleAuthController = async (req, res) => {
+  let { googleId, email, fullName, photoUrl } = req.body;
+
+  googleId = googleId.trim();
+  email = email.trim();
+  fullName = fullName.trim();
+  photoUrl = photoUrl.trim();
+
+  try {
+    let isNewAccount = false;
+    // Tìm người dùng bằng googleId hoặc email
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
+
+    if (!user) {
+      // Generate a unique username
+      let username;
+      let usernameExists;
+      let attempts = 0;
+      do {
+        username = email.split("@")[0] + Math.random().toString(36).slice(-4);
+        usernameExists = await User.findOne({ username });
+        attempts++;
+        if (attempts > 5) {
+          throw new Error("Không thể tạo tên người dùng duy nhất");
+        }
+      } while (usernameExists);
+
+      // Log user creation data
+      const userData = {
+        googleId,
+        email,
+        fullName,
+        photoUrl,
+        username,
+        phoneNumber: "0000000000", // Temporary placeholder
+        password: Math.random().toString(36).slice(-8), // Temporary password
+        verified: true,
+        role: "user",
+      };
+      console.log("Tạo người dùng mới:", userData);
+
+      // Create a new user
+      user = new User(userData);
+
+      await user.save();
+      isNewAccount = true;
+    } else if (user.googleId && user.googleId !== googleId) {
+      return res.status(400).json({
+        success: false,
+        msg: "Email đã được liên kết với một tài khoản Google khác!",
+      });
+    }
+
+    // Tạo payload cho JWT
+    const payload = {
+      user: {
+        id: user.id,
+        role: user.role,
       },
+    };
+
+    // Tạo JWT token
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
     });
 
-    const resetUrl = `${process.env.CLIENT_URL}/auth/reset-password?token=${resetToken}`;
+    // Lưu token vào user
+    user.token = token;
+    await user.save();
 
-    await transporter.sendMail({
-      to: email,
-      subject: "Khôi phục mật khẩu",
-      html: `<p>Nhấn vào liên kết sau để khôi phục mật khẩu:</p><a href="${resetUrl}">${resetUrl}</a>`,
+    return res.status(200).json({
+      success: true,
+      msg: isNewAccount
+        ? "Tạo tài khoản Google thành công!"
+        : "Đăng nhập Google thành công!",
+      isNewAccount,
+      token,
+      user_id: user.id,
+      user,
     });
+  } catch (err) {
+    console.error("Lỗi đăng nhập Google:", err.message);
+    return res.status(500).json({
+      success: false,
+      msg: "Lỗi máy chủ khi đăng nhập Google!",
+    });
+  }
+};
 
-    res.json({ message: "Email khôi phục mật khẩu đã được gửi." });
+export const changePasswordController = async (req, res) => {
+  try {
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+
+    // Kiểm tra mật khẩu xác nhận
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        msg: "Mật khẩu xác nhận không khớp.",
+      });
+    }
+
+    // Tìm người dùng
+    const user = await User.findOne({ id: req.user.id });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        msg: "Không tìm thấy tài khoản.",
+      });
+    }
+
+    // Kiểm tra mật khẩu cũ
+    const isValid = await verifyHashedData(oldPassword, user.password);
+    if (!isValid) {
+      return res.status(400).json({
+        success: false,
+        msg: "Mật khẩu cũ không đúng.",
+      });
+    }
+
+    // Cập nhật mật khẩu mới
+    const hashedPassword = await hashData(newPassword);
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      msg: "Mật khẩu đã được thay đổi thành công.",
+    });
+  } catch (error) {
+    console.error("Lỗi thay đổi mật khẩu:", error.message);
+    return res.status(500).json({
+      success: false,
+      msg: "Lỗi server khi thay đổi mật khẩu.",
+    });
+  }
+};
+
+export const getProfileController = async (req, res) => {
+  try {
+    const user = await User.findOne({ id: req.user.id });
+
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy tài khoản." });
+    }
+
+    return res.status(200).json({
+      message: "Lấy thông tin hồ sơ thành công.",
+      user,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Lỗi server." });
+  }
+};
+
+export const updateProfileController = async (req, res) => {
+  try {
+    const {
+      fullName,
+      phoneNumber,
+      addressProvince,
+      addressDistrict,
+      addressWard,
+      addressDetail,
+      birthday,
+      avatar,
+      gender,
+    } = req.body;
+
+    // Tìm người dùng
+    const user = await User.findOne({ id: req.user.id });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        msg: "Không tìm thấy tài khoản.",
+      });
+    }
+
+    // Cập nhật các trường
+    if (fullName !== undefined) user.fullName = fullName;
+    if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
+    if (addressProvince !== undefined) user.addressProvince = addressProvince;
+    if (addressDistrict !== undefined) user.addressDistrict = addressDistrict;
+    if (addressWard !== undefined) user.addressWard = addressWard;
+    if (addressDetail !== undefined) user.addressDetail = addressDetail;
+    if (birthday !== undefined)
+      user.birthday = birthday ? new Date(birthday) : null;
+    if (avatar !== undefined) user.avatar = avatar;
+    if (gender !== undefined) user.gender = gender;
+
+    user.updatedAt = new Date();
+
+    // Lưu người dùng
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      msg: "Cập nhật hồ sơ thành công!",
+      user,
+    });
   } catch (error) {
     console.error("Forgot password error:", error); 
     res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
@@ -171,3 +405,10 @@ export const resetPasswordController = async (req, res) => {
     }
   };
 
+    console.error("Lỗi cập nhật hồ sơ:", error.message);
+    return res.status(500).json({
+      success: false,
+      msg: "Cập nhật hồ sơ thất bại! Lỗi server.",
+    });
+  }
+};

@@ -1,21 +1,54 @@
 package com.example.app.models;
 
-public class OrderItem {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class OrderItem implements Parcelable {
     private int bookId;
     private int quantity;
     private double unitPrice;
-    // Thông tin sách sẽ được lấy từ bảng Books
-    private String bookName;
-    private String imageUrl;
+    private Book book; // Thông tin sách
 
-    public OrderItem(int bookId, int quantity, double unitPrice, String bookName, String imageUrl) {
+    public OrderItem(int bookId, int quantity, double unitPrice, Book book) {
         this.bookId = bookId;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
-        this.bookName = bookName;
-        this.imageUrl = imageUrl;
+        this.book = book;
     }
 
+    protected OrderItem(Parcel in) {
+        bookId = in.readInt();
+        quantity = in.readInt();
+        unitPrice = in.readDouble();
+        book = in.readParcelable(Book.class.getClassLoader());
+    }
+
+    public static final Creator<OrderItem> CREATOR = new Creator<OrderItem>() {
+        @Override
+        public OrderItem createFromParcel(Parcel in) {
+            return new OrderItem(in);
+        }
+
+        @Override
+        public OrderItem[] newArray(int size) {
+            return new OrderItem[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(bookId);
+        dest.writeInt(quantity);
+        dest.writeDouble(unitPrice);
+        dest.writeParcelable(book, flags);
+    }
+
+    // Getters
     public int getBookId() {
         return bookId;
     }
@@ -28,11 +61,7 @@ public class OrderItem {
         return unitPrice;
     }
 
-    public String getBookName() {
-        return bookName;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
+    public Book getBook() {
+        return book;
     }
 }

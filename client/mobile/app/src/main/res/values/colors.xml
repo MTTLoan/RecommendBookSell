@@ -7,4 +7,24 @@
     <color name="bg_gray">#F2F2F2</color>
     <color name="background">#FAFAFA</color>
     <color name="red">#E10606</color>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="text_selected">#b0003a</color>
+    <color name="text_focused">#E91E63</color>
+    <color name="text_default">#F8BBD0</color>
+    <color name="text_hint_default">#BDBDBD</color>
+    <color name="line_selected">#E91E63</color>
+    <color name="line_focused">#3F51B5</color>
+    <color name="line_default">#C5CAE9</color>
+    <color name="light_green">#ECFFF4</color>
+    <color name="yellow">#F6A500</color>
+    <color name="txt_subtitle">#454545</color>
+    <color name="dark_green">#007537</color>
+    <color name="light_dark">#DEDEDE</color>
+    <color name="green_success">#00C853</color>
+    <color name="red_error">#D32F2F</color>
+    <color name="search_background_focused">#FFFFFF</color>
+    <color name="sub">#7F7F7F</color>
+    <color name="dark">#808080</color>
 </resources>

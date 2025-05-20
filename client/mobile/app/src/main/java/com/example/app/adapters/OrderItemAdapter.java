@@ -13,6 +13,7 @@ import com.example.app.models.OrderItem;
 import com.squareup.picasso.Picasso;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.OrderItemViewHolder> {
     private final List<OrderItem> items;
@@ -31,20 +32,24 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
     @Override
     public void onBindViewHolder(@NonNull OrderItemViewHolder holder, int position) {
         OrderItem item = items.get(position);
-        holder.tvBookTitle.setText(item.getBookName());
-        holder.tvQuantity.setText(String.format(
-                holder.itemView.getContext().getString(R.string.quantity_label),
-                item.getQuantity()
-        ));
-        holder.tvPrice.setText(String.format(
-                Locale.forLanguageTag("vi-VN"),
-                holder.itemView.getContext().getString(R.string.price_format),
-                item.getUnitPrice()
-        ));
-        Picasso.get()
-                .load(item.getImageUrl())
-                .placeholder(android.R.drawable.ic_menu_gallery)
-                .into(holder.ivBookImage);
+        if (item.getBook() != null) {
+            holder.tvBookTitle.setText(item.getBook().getName());
+            // Hiển thị danh sách tác giả
+            String authors = item.getBook().getAuthor().isEmpty()
+                    ? "Unknown"
+                    : item.getBook().getAuthor().stream().collect(Collectors.joining(", "));
+            holder.tvBookTitle.setText(item.getBook().getName() + " - " + authors);
+            if (!item.getBook().getImages().isEmpty()) {
+                Picasso.get()
+                        .load(item.getBook().getImages().get(0).getUrl())
+                        .placeholder(android.R.drawable.ic_menu_gallery)
+                        .into(holder.ivBookImage);
+            }
+        } else {
+            holder.tvBookTitle.setText("Không có thông tin sách");
+        }
+        holder.tvQuantity.setText(String.format("SL: %d", item.getQuantity()));
+        holder.tvPrice.setText(String.format(Locale.forLanguageTag("vi-VN"), "%,.0fđ", item.getUnitPrice()));
     }
 
     @Override

@@ -9,17 +9,21 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
 import com.example.app.R;
 import com.example.app.models.Notification;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
     private List<Notification> notifications;
     private Context context;
     private OnItemClickListener listener;
 
-    // Interface để xử lý sự kiện nhấn
     public interface OnItemClickListener {
         void onItemClick(Notification notification);
     }
@@ -43,26 +47,39 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
         holder.tvTitle.setText(notification.getTitle());
         holder.tvContent.setText(notification.getMessage());
-        holder.tvTime.setText(notification.getCreatedAt());
 
-        // Đổi màu nền dựa trên trạng thái isRead
-        if (notification.isRead()) {
-            holder.itemView.setBackgroundColor(0xFFFFFFFF); // #FFFFFF (trắng)
-        } else {
-            holder.itemView.setBackgroundColor(0xFFFFF8F8); // #FFF8F8 (hồng nhạt)
+        // Định dạng createdAt từ ISO 8601 sang YYYY-MM-DD HH:mm:ss
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
+            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            Date date = inputFormat.parse(notification.getCreatedAt());
+            holder.tvTime.setText(outputFormat.format(date));
+        } catch (ParseException e) {
+            holder.tvTime.setText(notification.getCreatedAt()); // Hiển thị gốc nếu lỗi
         }
 
-        // Sự kiện nhấn
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int currentPosition = holder.getAdapterPosition(); // Lấy vị trí hiện tại
-                if (currentPosition != RecyclerView.NO_POSITION) { // Kiểm tra vị trí hợp lệ
-                    Notification clickedNotification = notifications.get(currentPosition);
-                    clickedNotification.setRead(true); // Đánh dấu đã đọc
-                    notifyItemChanged(currentPosition); // Cập nhật giao diện
-                    listener.onItemClick(clickedNotification);
-                }
+        // Tải hình ảnh bằng Picasso
+        if (notification.getImageUrl() != null && !notification.getImageUrl().isEmpty()) {
+            Picasso.get()
+                    .load(notification.getImageUrl())
+                    .placeholder(R.drawable.placeholder_book)
+                    .error(R.drawable.placeholder_book)
+                    .into(holder.imageBook);
+        } else {
+            holder.imageBook.setImageResource(R.drawable.placeholder_book);
+        }
+
+        if (notification.isRead()) {
+            holder.itemView.setBackgroundColor(0xFFFFFFFF); // Trắng
+        } else {
+            holder.itemView.setBackgroundColor(0xFFFFF8F8); // Hồng nhạt
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            int currentPosition = holder.getAdapterPosition();
+            if (currentPosition != RecyclerView.NO_POSITION) {
+                Notification clickedNotification = notifications.get(currentPosition);
+                listener.onItemClick(clickedNotification);
             }
         });
     }

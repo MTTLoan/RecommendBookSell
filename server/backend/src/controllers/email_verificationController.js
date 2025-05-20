@@ -5,7 +5,9 @@ const verifyUserEmail = async ({ email, otp }) => {
   try {
     const validOTP = await verifyOTP({ email, otp });
     if (!validOTP) {
-      throw Error("Invalid code passed. Check your inbox.");
+      throw Error(
+        "Mã xác thực không hợp lệ. Vui lòng kiểm tra hộp thư của bạn."
+      );
     }
 
     // update user.verify -> true
@@ -23,13 +25,13 @@ const sendVerificationOTPEmail = async (email) => {
     // check if an account exists
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
-      throw Error("There's no account for the provided email.");
+      throw Error("Không tìm thấy tài khoản nào với email đã cung cấp.");
     }
 
     const otpDetails = {
       email,
-      subject: "BOOKPROJECT: Email Verification",
-      message: "Verify BO email with the code below.",
+      subject: "BOOKPROJECT: Xác Thực Email",
+      message: "Xác thực email BOOKPROJECT của bạn bằng mã bên dưới.",
       duration: 15,
     };
 

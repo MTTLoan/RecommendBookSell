@@ -1,20 +1,31 @@
 package com.example.app.models;
 
-public class Book {
+import android.os.Parcel;
+import android.os.Parcelable;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Book implements Parcelable {
     private int id;
     private String name;
     private String description;
-    private String images;
+    private List<Image> images;
     private double price;
-    private float averageRating;
+    private double averageRating;
     private int ratingCount;
     private int stockQuantity;
     private int categoryId;
     private String createdAt;
+    private List<String> author;
 
-    // Constructor
-    public Book(int id, String name, String description, String images, double price, float averageRating,
-                int ratingCount, int stockQuantity, int categoryId, String createdAt) {
+    public Book(int id, String name, String description, List<Image> images, double price,
+                double averageRating, int ratingCount, int stockQuantity, int categoryId,
+                String createdAt, List<String> author) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -25,27 +36,101 @@ public class Book {
         this.stockQuantity = stockQuantity;
         this.categoryId = categoryId;
         this.createdAt = createdAt;
+        this.author = author;
     }
 
-    // Getters and Setters
+    protected Book(Parcel in) {
+        id = in.readInt();
+        name = in.readString();
+        description = in.readString();
+        images = new ArrayList<>();
+        in.readList(images, Image.class.getClassLoader());
+        price = in.readDouble();
+        averageRating = in.readDouble();
+        ratingCount = in.readInt();
+        stockQuantity = in.readInt();
+        categoryId = in.readInt();
+        createdAt = in.readString();
+        author = new ArrayList<>();
+        in.readStringList(author);
+    }
+
+    public static final Creator<Book> CREATOR = new Creator<Book>() {
+        @Override
+        public Book createFromParcel(Parcel in) {
+            return new Book(in);
+        }
+
+        @Override
+        public Book[] newArray(int size) {
+            return new Book[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeString(name);
+        dest.writeString(description);
+        dest.writeList(images);
+        dest.writeDouble(price);
+        dest.writeDouble(averageRating);
+        dest.writeInt(ratingCount);
+        dest.writeInt(stockQuantity);
+        dest.writeInt(categoryId);
+        dest.writeString(createdAt);
+        dest.writeStringList(author);
+    }
+
+    // Getters
     public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
     public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
     public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public String getImages() { return images; }
-    public void setImages(String images) { this.images = images; }
+    public List<Image> getImages() { return images; }
     public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
-    public float getAverageRating() { return averageRating; }
-    public void setAverageRating(float averageRating) { this.averageRating = averageRating; }
+    public double getAverageRating() { return (double) averageRating; }
     public int getRatingCount() { return ratingCount; }
-    public void setRatingCount(int ratingCount) { this.ratingCount = ratingCount; }
     public int getStockQuantity() { return stockQuantity; }
-    public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
     public int getCategoryId() { return categoryId; }
-    public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
     public String getCreatedAt() { return createdAt; }
+    public List<String> getAuthor() { return author; }
+
+    // Setters
+    public void setId(int id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setDescription(String description) { this.description = description; }
+    public void setImages(List<Image> images) { this.images = images; }
+    public void setPrice(double price) { this.price = price; }
+    public void setAverageRating(double averageRating) { this.averageRating = averageRating; }
+    public void setRatingCount(int ratingCount) { this.ratingCount = ratingCount; }
+    public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
+    public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public void setAuthor(List<String> author) { this.author = author; }
+
+    // Custom TypeAdapter for String to handle MongoDB's ISO 8601 string
+    public static class StringTypeAdapter extends TypeAdapter<String> {
+        @Override
+        public void write(JsonWriter out, String value) throws IOException {
+            if (value == null) {
+                out.nullValue();
+            } else {
+                out.value(value);
+            }
+        }
+
+        @Override
+        public String read(JsonReader in) throws IOException {
+            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            return in.nextString();
+        }
+    }
 }

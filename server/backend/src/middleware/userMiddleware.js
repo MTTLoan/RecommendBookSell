@@ -176,10 +176,75 @@ export const registerValidator = validate({
 
 // Validator cho đăng |nhập
 export const loginValidator = validate({
-  email: emailSchema,
+  identifier: {
+    notEmpty: { errorMessage: "Tên tài khoản hoặc email là bắt buộc" },
+    isString: { errorMessage: "Tên tài khoản hoặc email phải là chuỗi" },
+    trim: true,
+  },
   password: {
     notEmpty: { errorMessage: "Mật khẩu là bắt buộc" },
     isString: { errorMessage: "Mật khẩu phải là chuỗi" },
     trim: true,
+  },
+});
+
+// Validator quên mật khẩu
+export const forgotPasswordRequestValidator = validate({
+  email: emailSchema,
+});
+
+export const resetPasswordValidator = validate({
+  email: emailSchema,
+  otp: {
+    notEmpty: { errorMessage: "OTP là bắt buộc" },
+    isNumeric: { errorMessage: "OTP chỉ được chứa số" },
+    isLength: {
+      options: { min: 4, max: 4 },
+      errorMessage: "OTP phải gồm đúng 4 chữ số",
+    },
+  },
+  newPassword: passwordSchema,
+});
+
+// Validator cho thay đổi mật khẩu
+export const changePasswordValidator = validate({
+  oldPassword: {
+    notEmpty: { errorMessage: "Mật khẩu cũ là bắt buộc" },
+    isString: { errorMessage: "Mật khẩu cũ phải là chuỗi" },
+    trim: true,
+  },
+  newPassword: passwordSchema,
+  confirmPassword: {
+    notEmpty: { errorMessage: "Xác nhận mật khẩu là bắt buộc" },
+    isString: { errorMessage: "Xác nhận mật khẩu phải là chuỗi" },
+    trim: true,
+    custom: {
+      options: (value, { req }) => {
+        if (value !== req.body.newPassword) {
+          throw new Error("Xác nhận mật khẩu không khớp với mật khẩu mới");
+        }
+        return true;
+      },
+    },
+  },
+});
+
+// Validator cho cập nhật hồ sơ
+export const updateProfileValidator = validate({
+  fullName: { ...fullNameSchema, optional: true },
+  phoneNumber: {
+    ...phoneNumberSchema,
+    optional: true,
+    custom: {
+      options: async (value, { req }) => {
+        if (value) {
+          const user = await userService.User.findOne({ phoneNumber: value });
+          if (user && user.id !== req.user.id) {
+            throw new Error("Số điện thoại đã tồn tại");
+          }
+        }
+        return true;
+      },
+    },
   },
 });

@@ -41,7 +41,6 @@
             android:layout_height="wrap_content"
             android:text="Đặt hàng thành công"
             android:textColor="#4CAF50"
-            android:textStyle="bold"
             android:textSize="16sp"
             android:fontFamily="@font/roboto_medium"
             app:layout_constraintStart_toEndOf="@id/imageBook"
