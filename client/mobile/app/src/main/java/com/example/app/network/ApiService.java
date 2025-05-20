@@ -1,5 +1,6 @@
 package com.example.app.network;
 
+import com.example.app.models.Cart;
 import com.example.app.models.HasReviewsResponse;
 import com.example.app.models.Notification;
 import com.example.app.models.Order;
@@ -104,4 +105,7 @@ public interface ApiService {
 
     @GET("reviews/{orderId}/reviews")
     Call<HasReviewsResponse> getReviewsForOrder(@Header("Authorization") String token, @Path("orderId") int orderId);
+
+    @POST("/api/carts")
+    Call<Cart> addToCart(@Header("Authorization") String authorization, @Body Cart cart);
 }

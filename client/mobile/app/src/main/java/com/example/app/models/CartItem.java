@@ -2,7 +2,6 @@ package com.example.app.models;
 
 public class CartItem {
     private int bookId;
-
     private int quantity;
 
     // Constructor
@@ -12,6 +11,7 @@ public class CartItem {
     public CartItem(int bookId, int quantity) {
         this.bookId = bookId;
         this.quantity = quantity;
+
     }
 
     // Getters and Setters
