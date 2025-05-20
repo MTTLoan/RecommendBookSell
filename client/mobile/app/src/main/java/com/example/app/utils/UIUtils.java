@@ -13,15 +13,15 @@ public class UIUtils {
         }
 
         textInputLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
-        textInputLayout.setEndIconDrawable(R.drawable.visibility_off_24px);
+        textInputLayout.setEndIconDrawable(R.drawable.ic_visibility_off_24px);
         textInputLayout.setEndIconOnClickListener(v -> {
             EditText editText = textInputLayout.getEditText();
             if (editText.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
                 editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                textInputLayout.setEndIconDrawable(R.drawable.visibility_24px);
+                textInputLayout.setEndIconDrawable(R.drawable.ic_visibility_24px);
             } else {
                 editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                textInputLayout.setEndIconDrawable(R.drawable.visibility_off_24px);
+                textInputLayout.setEndIconDrawable(R.drawable.ic_visibility_off_24px);
             }
             editText.setSelection(editText.getText().length());
         });

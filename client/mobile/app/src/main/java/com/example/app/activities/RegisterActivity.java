@@ -253,8 +253,8 @@ public class RegisterActivity extends AppCompatActivity {
         });
 
         // Thiết lập toggle hiển thị mật khẩu
-        setupPasswordToggle(tfPassword, etPassword, R.drawable.visibility_24px, R.drawable.visibility_off_24px);
-        setupPasswordToggle(tfConfirmPassword, etConfirmPassword, R.drawable.visibility_24px, R.drawable.visibility_off_24px);
+        setupPasswordToggle(tfPassword, etPassword, R.drawable.ic_visibility_24px, R.drawable.ic_visibility_off_24px);
+        setupPasswordToggle(tfConfirmPassword, etConfirmPassword, R.drawable.ic_visibility_24px, R.drawable.ic_visibility_off_24px);
     }
 
     private void showOtpFragment(String email) {

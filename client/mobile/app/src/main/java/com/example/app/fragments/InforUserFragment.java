@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.app.R;
 import com.example.app.activities.ChangePasswordActivity;
 import com.example.app.activities.LoginActivity;
@@ -176,6 +177,7 @@ public class InforUserFragment extends Fragment {
                             Glide.with(InforUserFragment.this)
                                     .load(photoUrl)
                                     .placeholder(R.drawable.avt)
+                                    .apply(RequestOptions.circleCropTransform())
                                     .error(R.drawable.avt)
                                     .into(ivAvatar);
                         } else {

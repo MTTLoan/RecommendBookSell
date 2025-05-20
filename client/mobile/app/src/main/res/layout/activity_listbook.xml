@@ -27,7 +27,7 @@
         android:contentDescription="@string/back"
         android:clickable="true"
         android:focusable="true"
-        android:src="@drawable/arrow_back_ios_24px"
+        android:src="@drawable/ic_arrow_back_ios_24px"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/resetHeader"
         app:layout_constraintBottom_toBottomOf="@id/resetHeader"
