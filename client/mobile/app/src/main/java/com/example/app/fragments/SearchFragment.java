@@ -27,6 +27,7 @@ import com.example.app.utils.HeaderController;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SearchFragment extends Fragment {
@@ -92,196 +93,196 @@ public class SearchFragment extends Fragment {
 
         // DateTimeFormatter for parsing "yyyy-MM-dd HH:mm:ss"
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//
-//        // Book 1
-//        List<Image> images1 = new ArrayList<>();
-//        images1.add(new Image("https://salt.tikicdn.com/ts/product/73/24/11/1d84888511d73e6f5da2057115dcc4d8.png",
-//                "1d84888511d73e6f5da2057115dcc4d8.png"));
-//        String createdAt1 = "2025-04-28 02:27:21";
-//        bookList.add(new Book(
-//                1,
-//                "Cùng con trưởng thành - Mình không thích bị cô lập",
-//                "Lời nói đầu   Bé mới tầm 1 tuổi đã cần đọc sách chưa? ...",
-//                images1,
-//                28000.0,
-//                3.5,
-//                2,
-//                10,
-//                2,
-//                createdAt1,
-//                "Tô Bảo"
-//        ));
-//
-//        // Book 2
-//        List<Image> images2 = new ArrayList<>();
-//        images2.add(new Image("https://salt.tikicdn.com/ts/product/5b/21/12/3d905ef72b7de07171761e4b1819543c.jpg",
-//                "789abc123def456ghi789jkl.png"));
-//        String createdAt2 = "2025-04-29 10:15:30";
-//        bookList.add(new Book(
-//                2,
-//                "Rèn luyện Kỹ Năng Sống dành cho học sinh - 25 thói quen tốt để thành công",
-//                "Rèn Luyện Kĩ Năng Sống Dành Cho Học Sinh ...",
-//                images2,
-//                35000.0,
-//                4.0,
-//                5,
-//                15,
-//                2,
-//                createdAt2,
-//                "Nguyễn Nhật Ánh"
-//        ));
-//
-//        // Book 3
-//        List<Image> images3 = new ArrayList<>();
-//        images3.add(new Image("https://salt.tikicdn.com/ts/product/16/72/77/dff96564663b63ba96b2c74b60261dcd.jpg",
-//                "345mno678pqr901stu234vwx.png"));
-//        String createdAt3 = "2025-04-30 14:20:45";
-//        bookList.add(new Book(
-//                3,
-//                "Xứ Sở Miên Man",
-//                "Xứ Sở Miên Man   Giới thiệu tác giả ...",
-//                images3,
-//                45000.0,
-//                4.5,
-//                10,
-//                20,
-//                2,
-//                createdAt3,
-//                "Nhật Sơn"
-//        ));
-//
-//        // Book 4
-//        List<Image> images4 = new ArrayList<>();
-//        images4.add(new Image("https://salt.tikicdn.com/ts/product/56/bc/59/f63f4561ee47a86e1843e671fc6355e5.jpg",
-//                "123yz456abc789def012ghi.png"));
-//        String createdAt4 = "2025-05-01 09:30:00";
-//        bookList.add(new Book(
-//                4,
-//                "Tuổi Thơ Dữ Dội - Tập 2",
-//                "“Tuổi Thơ Dữ Dội” là một câu chuyện hay ...",
-//                images4,
-//                52000.0,
-//                4.2,
-//                8,
-//                12,
-//                2,
-//                createdAt4,
-//                "Mai Anh"
-//        ));
-//
-//        // Book 5
-//        List<Image> images5 = new ArrayList<>();
-//        images5.add(new Image("https://salt.tikicdn.com/ts/product/0f/f9/70/e273b6980de4f6f550329aafe91578d8.jpg",
-//                "567jkl890mno123pqr456stu.png"));
-//        String createdAt5 = "2025-05-02 16:45:10";
-//        bookList.add(new Book(
-//                5,
-//                "Búp Sen Xanh",
-//                "Câu chuyện khoa học về vòng tuần hoàn của nước...",
-//                images5,
-//                30000.0,
-//                3.8,
-//                3,
-//                18,
-//                3,
-//                createdAt5,
-//                "Sơn Tùng"
-//        ));
-//
-//        // Book 6
-//        List<Image> images6 = new ArrayList<>();
-//        images6.add(new Image("https://salt.tikicdn.com/ts/product/f2/01/28/35b7bf7dcaf02091c69fbbd4f9bb929f.jpg",
-//                "1d84888511d73e6f5da2057115dcc4d8.png"));
-//        String createdAt6 = "2025-04-28 02:27:21";
-//        bookList.add(new Book(
-//                6,
-//                "Chuyện Con Mèo Dạy Hải Âu Bay",
-//                "Sinh năm 1949 tại Chile ...",
-//                images6,
-//                28000.0,
-//                3.5,
-//                2,
-//                10,
-//                2,
-//                createdAt6,
-//                "Nguyễn Nhật Ánh"
-//        ));
-//
-//        // Book 7
-//        List<Image> images7 = new ArrayList<>();
-//        images7.add(new Image("https://salt.tikicdn.com/ts/product/75/96/cf/8be7ccb29bb999c9b9aed8e65c75b291.jpg",
-//                "789abc123def456ghi789jkl.png"));
-//        String createdAt7 = "2025-04-29 10:15:30";
-//        bookList.add(new Book(
-//                7,
-//                "Những Con Mèo Sau Bức Tường Hoa",
-//                "Thông tin sản phẩm ...",
-//                images7,
-//                35000.0,
-//                4.0,
-//                5,
-//                15,
-//                1,
-//                createdAt7,
-//                "Hà Mi"
-//        ));
-//
-//        // Book 8
-//        List<Image> images8 = new ArrayList<>();
-//        images8.add(new Image("https://salt.tikicdn.com/ts/product/a7/24/37/42434f74d352fade0090a0d3790b0e9b.jpg",
-//                "345mno678pqr901stu234vwx.png"));
-//        String createdAt8 = "2025-04-30 14:20:45";
-//        bookList.add(new Book(
-//                8,
-//                "Bộ ba phép thuật - Úm ba la ánh sáng hiện ra",
-//                "Bộ sách tranh kể về chuyến phiêu lưu ...",
-//                images8,
-//                45000.0,
-//                4.5,
-//                10,
-//                20,
-//                1,
-//                createdAt8,
-//                "Tô Bảo"
-//        ));
-//
-//        // Book 9
-//        List<Image> images9 = new ArrayList<>();
-//        images9.add(new Image("https://salt.tikicdn.com/ts/product/e7/da/4a/8e75769f26664050a3f60fa150efb0f4.jpg",
-//                "123yz456abc789def012ghi.png"));
-//        String createdAt9 = "2025-05-01 09:30:00";
-//        bookList.add(new Book(
-//                9,
-//                "WHO? Chuyện Kể Về Danh Nhân Thế Giới",
-//                "\"WHO? Chuyện Kể Về Danh Nhân Thế Giới ...",
-//                images9,
-//                52000.0,
-//                4.2,
-//                8,
-//                12,
-//                3,
-//                createdAt9,
-//                "Nguyễn Sơn"
-//        ));
-//
-//        // Book 10
-//        List<Image> images10 = new ArrayList<>();
-//        images10.add(new Image("https://salt.tikicdn.com/ts/product/67/77/6e/915e36b7629c4792218f19b57a8868e4.jpg",
-//                "567jkl890mno123pqr456stu.png"));
-//        String createdAt10 = "2025-05-02 16:45:10";
-//        bookList.add(new Book(
-//                10,
-//                "100 Kỹ Năng Sinh Tồn",
-//                "\"100 Kỹ Năng Sinh Tồn ...",
-//                images10,
-//                30000.0,
-//                3.8,
-//                3,
-//                18,
-//                3,
-//                createdAt10,
-//                "Nguyễn Nhật Ánh"
-//        ));
+
+        // Book 1
+        List<Image> images1 = new ArrayList<>();
+        images1.add(new Image("https://salt.tikicdn.com/ts/product/73/24/11/1d84888511d73e6f5da2057115dcc4d8.png",
+                "1d84888511d73e6f5da2057115dcc4d8.png"));
+        String createdAt1 = "2025-04-28 02:27:21";
+        bookList.add(new Book(
+                1,
+                "Cùng con trưởng thành - Mình không thích bị cô lập",
+                "Lời nói đầu   Bé mới tầm 1 tuổi đã cần đọc sách chưa? ...",
+                images1,
+                28000.0,
+                3.5,
+                2,
+                10,
+                1,
+                createdAt1,
+                Collections.singletonList("Tô Bảo")
+        ));
+
+        // Book 2
+        List<Image> images2 = new ArrayList<>();
+        images2.add(new Image("https://salt.tikicdn.com/ts/product/5b/21/12/3d905ef72b7de07171761e4b1819543c.jpg",
+                "789abc123def456ghi789jkl.png"));
+        String createdAt2 = "2025-04-29 10:15:30";
+        bookList.add(new Book(
+                2,
+                "Rèn luyện Kỹ Năng Sống dành cho học sinh - 25 thói quen tốt để thành công",
+                "Rèn Luyện Kĩ Năng Sống Dành Cho Học Sinh ...",
+                images2,
+                35000.0,
+                4.0,
+                5,
+                15,
+                1,
+                createdAt2,
+                Collections.singletonList("Nguyễn Nhật Ánh")
+        ));
+
+        // Book 3
+        List<Image> images3 = new ArrayList<>();
+        images3.add(new Image("https://salt.tikicdn.com/ts/product/16/72/77/dff96564663b63ba96b2c74b60261dcd.jpg",
+                "345mno678pqr901stu234vwx.png"));
+        String createdAt3 = "2025-04-30 14:20:45";
+        bookList.add(new Book(
+                3,
+                "Xứ Sở Miên Man",
+                "Xứ Sở Miên Man   Giới thiệu tác giả ...",
+                images3,
+                45000.0,
+                4.5,
+                10,
+                20,
+                1,
+                createdAt3,
+                Collections.singletonList("Nhật Sơn")
+        ));
+
+        // Book 4
+        List<Image> images4 = new ArrayList<>();
+        images4.add(new Image("https://salt.tikicdn.com/ts/product/56/bc/59/f63f4561ee47a86e1843e671fc6355e5.jpg",
+                "123yz456abc789def012ghi.png"));
+        String createdAt4 = "2025-05-01 09:30:00";
+        bookList.add(new Book(
+                4,
+                "Tuổi Thơ Dữ Dội - Tập 2",
+                "“Tuổi Thơ Dữ Dội” là một câu chuyện hay ...",
+                images4,
+                52000.0,
+                4.2,
+                8,
+                12,
+                2,
+                createdAt4,
+                Collections.singletonList("Mai Anh")
+        ));
+
+        // Book 5
+        List<Image> images5 = new ArrayList<>();
+        images5.add(new Image("https://salt.tikicdn.com/ts/product/0f/f9/70/e273b6980de4f6f550329aafe91578d8.jpg",
+                "567jkl890mno123pqr456stu.png"));
+        String createdAt5 = "2025-05-02 16:45:10";
+        bookList.add(new Book(
+                5,
+                "Búp Sen Xanh",
+                "Câu chuyện khoa học về vòng tuần hoàn của nước...",
+                images5,
+                30000.0,
+                3.8,
+                3,
+                18,
+                3,
+                createdAt5,
+                Collections.singletonList("Sơn Tùng")
+        ));
+
+        // Book 6
+        List<Image> images6 = new ArrayList<>();
+        images6.add(new Image("https://salt.tikicdn.com/ts/product/f2/01/28/35b7bf7dcaf02091c69fbbd4f9bb929f.jpg",
+                "1d84888511d73e6f5da2057115dcc4d8.png"));
+        String createdAt6 = "2025-04-28 02:27:21";
+        bookList.add(new Book(
+                6,
+                "Chuyện Con Mèo Dạy Hải Âu Bay",
+                "Sinh năm 1949 tại Chile ...",
+                images6,
+                28000.0,
+                3.5,
+                2,
+                10,
+                2,
+                createdAt6,
+                Collections.singletonList("Nguyễn Nhật Ánh")
+        ));
+
+        // Book 7
+        List<Image> images7 = new ArrayList<>();
+        images7.add(new Image("https://salt.tikicdn.com/ts/product/75/96/cf/8be7ccb29bb999c9b9aed8e65c75b291.jpg",
+                "789abc123def456ghi789jkl.png"));
+        String createdAt7 = "2025-04-29 10:15:30";
+        bookList.add(new Book(
+                7,
+                "Những Con Mèo Sau Bức Tường Hoa",
+                "Thông tin sản phẩm ...",
+                images7,
+                35000.0,
+                4.0,
+                5,
+                15,
+                1,
+                createdAt7,
+                Collections.singletonList("Hà Mi")
+        ));
+
+        // Book 8
+        List<Image> images8 = new ArrayList<>();
+        images8.add(new Image("https://salt.tikicdn.com/ts/product/a7/24/37/42434f74d352fade0090a0d3790b0e9b.jpg",
+                "345mno678pqr901stu234vwx.png"));
+        String createdAt8 = "2025-04-30 14:20:45";
+        bookList.add(new Book(
+                8,
+                "Bộ ba phép thuật - Úm ba la ánh sáng hiện ra",
+                "Bộ sách tranh kể về chuyến phiêu lưu ...",
+                images8,
+                45000.0,
+                4.5,
+                10,
+                20,
+                1,
+                createdAt8,
+                Collections.singletonList("Tô Bảo")
+        ));
+
+        // Book 9
+        List<Image> images9 = new ArrayList<>();
+        images9.add(new Image("https://salt.tikicdn.com/ts/product/e7/da/4a/8e75769f26664050a3f60fa150efb0f4.jpg",
+                "123yz456abc789def012ghi.png"));
+        String createdAt9 = "2025-05-01 09:30:00";
+        bookList.add(new Book(
+                9,
+                "WHO? Chuyện Kể Về Danh Nhân Thế Giới",
+                "\"WHO? Chuyện Kể Về Danh Nhân Thế Giới ...",
+                images9,
+                52000.0,
+                4.2,
+                8,
+                12,
+                3,
+                createdAt9,
+                Collections.singletonList("Nguyễn Sơn")
+        ));
+
+        // Book 10
+        List<Image> images10 = new ArrayList<>();
+        images10.add(new Image("https://salt.tikicdn.com/ts/product/67/77/6e/915e36b7629c4792218f19b57a8868e4.jpg",
+                "567jkl890mno123pqr456stu.png"));
+        String createdAt10 = "2025-05-02 16:45:10";
+        bookList.add(new Book(
+                10,
+                "100 Kỹ Năng Sinh Tồn",
+                "\"100 Kỹ Năng Sinh Tồn ...",
+                images10,
+                30000.0,
+                3.8,
+                3,
+                18,
+                3,
+                createdAt10,
+                Collections.singletonList("Nguyễn Nhật Ánh")
+        ));
         // Set up click listener for recommendationsTitle
         TextView recommendationsTitle = view.findViewById(R.id.recommendationsTitle);
         if (recommendationsTitle != null) {

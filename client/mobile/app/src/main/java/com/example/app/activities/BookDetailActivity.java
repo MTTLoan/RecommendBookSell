@@ -1,12 +1,9 @@
 package com.example.app.activities;
 
-
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,31 +15,45 @@ import com.example.app.R;
 import com.example.app.adapters.BookImageAdapter;
 import com.example.app.adapters.DisplayReviewAdapter;
 import com.example.app.models.Book;
+import com.example.app.models.Category;
 import com.example.app.models.Image;
 import com.example.app.models.Review;
+import com.example.app.models.response.BookDetailResponse;
+import com.example.app.models.response.CategoryResponse;
+import com.example.app.models.response.ReviewResponse;
+import com.example.app.network.ApiService;
+import com.example.app.network.RetrofitClient;
 import com.example.app.utils.HeaderController;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import org.json.JSONObject;
+
+import java.text.NumberFormat;
+import java.util.*;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class BookDetailActivity extends AppCompatActivity {
 
     private ViewPager2 imageViewPager;
-    private TabLayout tabIndicator;
-    private TextView txtBookName, txtAuthor, txtRating, tvPrice, tvDescription,
-            tvToggle, tvRating, tvNumberReview;
+    private TextView tvTilte, tabIndicator, txtBookName, txtAuthor, tvPrice, tvDescription,
+            tvToggle, tvRating, tvNumberReview, tvQuantity, tvToggleReview;
+    private ImageButton btnArrowLeft, btnArrowRight, btnIncrease, btnDecrease;
+    private RatingBar ratingBar;
     private RecyclerView reviewRecyclerView;
-
-    private boolean isDescriptionExpanded = false;
-
-    private int quantity = 1;
-    private TextView tvQuantity;
-    private ImageButton btnIncrease, btnDecrease;
     private Button btnAddToCart;
+
+    private DisplayReviewAdapter reviewAdapter;
+    private BookImageAdapter imageAdapter;
+    private ApiService apiService;
+    private int bookId;
+    private int quantity = 1;
+    private boolean isDescriptionExpanded = false;
+    private List<Review> fullReviewList = new ArrayList<>();
+    private boolean isReviewExpanded = false;
+    private List<Category> categoryList = new ArrayList<>();
+    private Book currentBook; // Lưu tạm book để cập nhật sau
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,120 +61,253 @@ public class BookDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_book_details);
 
         initViews();
-        // Set up RecyclerView for header
         HeaderController.setupHeader(this);
         findViewById(R.id.ivReturn).setOnClickListener(v -> onBackPressed());
 
-        // Retrieve the Book object from Intent
-        Book book = getIntent().getParcelableExtra("book");
-        if (book != null) {
-            loadBookData(book);
-        } else {
-            Toast.makeText(this, "Không tìm thấy thông tin sách", Toast.LENGTH_SHORT).show();
+        apiService = RetrofitClient.getApiService();
+        bookId = getIntent().getIntExtra("bookId", -1);
+        if (bookId == -1) {
+            Toast.makeText(this, "ID sách không hợp lệ.", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        tvQuantity = findViewById(R.id.tvQuantity);
-        btnIncrease = findViewById(R.id.btnIncrease);
-        btnDecrease = findViewById(R.id.btnDecrease);
-        btnAddToCart = findViewById(R.id.btnAddToCart);
+        setupQuantityButtons();
+        btnAddToCart.setOnClickListener(v ->
+                Toast.makeText(this, "Đã thêm " + quantity + " sản phẩm vào giỏ hàng", Toast.LENGTH_SHORT).show());
 
-        // Hiển thị số lượng ban đầu
-        tvQuantity.setText(String.valueOf(quantity));
-
-        // Nút Tăng
-        btnIncrease.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                quantity++;
-                tvQuantity.setText(String.valueOf(quantity));
-            }
-        });
-
-        // Nút Giảm
-        btnDecrease.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (quantity > 1) {
-                    quantity--;
-                    tvQuantity.setText(String.valueOf(quantity));
-                }
-            }
-        });
-
-        // Nút Thêm vào giỏ hàng
-        btnAddToCart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(BookDetailActivity.this,
-                        "Đã thêm " + quantity + " sản phẩm vào giỏ hàng",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+        fetchCategories();
+        fetchBookDetail();
+        fetchBookReviews();
     }
 
     private void initViews() {
+        tvTilte = findViewById(R.id.tvTitle);
         imageViewPager = findViewById(R.id.imageViewPager);
         tabIndicator = findViewById(R.id.tabIndicator);
         txtBookName = findViewById(R.id.txtBookName);
         txtAuthor = findViewById(R.id.txtAuthor);
-        txtRating = findViewById(R.id.txtRating);
+        ratingBar = findViewById(R.id.rbrating_bar);
         tvPrice = findViewById(R.id.tvPrice);
         tvDescription = findViewById(R.id.tvDescription);
         tvToggle = findViewById(R.id.tvToggle);
         tvRating = findViewById(R.id.tvRating);
         tvNumberReview = findViewById(R.id.tvNumberReview);
         reviewRecyclerView = findViewById(R.id.reviewRecyclerView);
+        tvQuantity = findViewById(R.id.tvQuantity);
+        btnIncrease = findViewById(R.id.btnIncrease);
+        btnDecrease = findViewById(R.id.btnDecrease);
+        btnAddToCart = findViewById(R.id.btnAddToCart);
+        btnArrowLeft = findViewById(R.id.btnArrowLeft);
+        btnArrowRight = findViewById(R.id.btnArrowRight);
+        tvToggleReview = findViewById(R.id.tvToggleReview); // Khởi tạo tvToggleReview
 
-        reviewRecyclerView.setNestedScrollingEnabled(false); // Vô hiệu hóa cuộn của RecyclerView
+        reviewAdapter = new DisplayReviewAdapter(new ArrayList<>());
+        reviewRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        reviewRecyclerView.setNestedScrollingEnabled(false);
+        reviewRecyclerView.setAdapter(reviewAdapter);
+
         tvToggle.setOnClickListener(v -> toggleDescription());
+        tvToggleReview.setOnClickListener(v -> toggleReviews()); // Thêm sự kiện click cho tvToggleReview
+    }
+
+    private void setupQuantityButtons() {
+        tvQuantity.setText(String.valueOf(quantity));
+        btnIncrease.setOnClickListener(v -> {
+            quantity++;
+            tvQuantity.setText(String.valueOf(quantity));
+        });
+
+        btnDecrease.setOnClickListener(v -> {
+            if (quantity > 1) {
+                quantity--;
+                tvQuantity.setText(String.valueOf(quantity));
+            }
+        });
     }
 
     private void toggleDescription() {
-        if (isDescriptionExpanded) {
-            tvDescription.setMaxLines(5);
-            tvToggle.setText("Xem thêm");
-        } else {
-            tvDescription.setMaxLines(Integer.MAX_VALUE);
-            tvToggle.setText("Thu gọn");
-        }
         isDescriptionExpanded = !isDescriptionExpanded;
+        tvDescription.setMaxLines(isDescriptionExpanded ? Integer.MAX_VALUE : 5);
+        tvToggle.setText(isDescriptionExpanded ? "Thu gọn" : "Xem thêm");
+    }
+
+    private void toggleReviews() {
+        isReviewExpanded = !isReviewExpanded;
+        displayReviews(); // Cập nhật danh sách đánh giá khi toggle
+    }
+
+    private void fetchCategories() {
+        apiService.getCategories().enqueue(new Callback<CategoryResponse>() {
+            @Override
+            public void onResponse(Call<CategoryResponse> call, Response<CategoryResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    categoryList.clear();
+                    categoryList.addAll(response.body().getCategories());
+                    // Cập nhật lại tiêu đề nếu sách đã được tải
+                    if (currentBook != null) {
+                        updateCategoryTitle(currentBook);
+                    }
+                } else {
+                    handleError(response.errorBody(), "Không thể lấy danh mục.");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CategoryResponse> call, Throwable t) {
+                showError(t, "Lỗi khi tải danh mục.");
+            }
+        });
+    }
+
+    private void fetchBookDetail() {
+        apiService.getBookDetail(bookId).enqueue(new Callback<BookDetailResponse>() {
+            @Override
+            public void onResponse(Call<BookDetailResponse> call, Response<BookDetailResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Book book = response.body().getBook();
+                    if (book != null) {
+                        currentBook = book; // Lưu book tạm thời
+                        loadBookData(book);
+                    }
+                } else {
+                    handleError(response.errorBody(), "Lỗi lấy thông tin sách.");
+                    finish();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BookDetailResponse> call, Throwable t) {
+                showError(t, "Lỗi khi tải thông tin sách.");
+                finish();
+            }
+        });
+    }
+
+    private void fetchBookReviews() {
+        apiService.getBookReviews(bookId).enqueue(new Callback<ReviewResponse>() {
+            @Override
+            public void onResponse(Call<ReviewResponse> call, Response<ReviewResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    fullReviewList = response.body().getReviews() != null ? response.body().getReviews() : new ArrayList<>();
+                    displayReviews();
+                } else {
+                    handleError(response.errorBody(), "Lỗi lấy danh sách đánh giá.");
+                    reviewAdapter.setReviews(new ArrayList<>());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ReviewResponse> call, Throwable t) {
+                showError(t, "Lỗi khi tải đánh giá.");
+                reviewAdapter.setReviews(new ArrayList<>());
+            }
+        });
+    }
+
+    private void displayReviews() {
+        List<Review> toDisplay;
+        if (isReviewExpanded) {
+            toDisplay = new ArrayList<>(fullReviewList); // Sao chép toàn bộ danh sách
+            tvToggleReview.setText("Thu gọn");
+        } else {
+            toDisplay = fullReviewList.size() > 5 ? new ArrayList<>(fullReviewList.subList(0, 5)) : new ArrayList<>(fullReviewList);
+            tvToggleReview.setText("Xem tất cả");
+        }
+        reviewAdapter.setReviews(toDisplay);
+        tvToggleReview.setVisibility(fullReviewList.size() > 5 ? View.VISIBLE : View.GONE);
+    }
+
+    private void updateCategoryTitle(Book book) {
+        String categoryName = "Unknown Category";
+        for (Category category : categoryList) {
+            if (category.getId() == book.getCategoryId()) {
+                categoryName = category.getName();
+                break;
+            }
+        }
+        tvTilte.setText(categoryName);
     }
 
     private void loadBookData(Book book) {
-        // Load book images
-        List<Image> imageList = book.getImages();
-        BookImageAdapter imageAdapter = new BookImageAdapter(this, imageList);
+        // Ảnh sách
+        List<Image> imageList = book.getImages() != null ? book.getImages() : new ArrayList<>();
+        imageAdapter = new BookImageAdapter(this, imageList);
         imageViewPager.setAdapter(imageAdapter);
 
-        new TabLayoutMediator(tabIndicator, imageViewPager,
-                (tab, position) -> tab.setText(String.valueOf(position + 1))
-        ).attach();
+        setupImagePagerNavigation();
 
-        // Load book details
+        // Cập nhật tiêu đề danh mục
+        updateCategoryTitle(book);
+
+        // Thông tin sách
         txtBookName.setText(book.getName());
-        txtAuthor.setText("Tác giả: " + book.getAuthor());
-        txtRating.setText(String.format("★ %.1f/5", book.getAverageRating()));
-        tvPrice.setText(String.format("%,.0fđ", book.getPrice()));
-        tvDescription.setText(book.getDescription());
-        tvToggle.setVisibility(book.getDescription().length() > 100 ? View.VISIBLE : View.GONE);
+        txtAuthor.setText("Tác giả: " + String.join(", ", book.getAuthor()));
+        // Rating
+        if (book.getRatingCount() == 0) {
+            ratingBar.setVisibility(View.GONE);
+            tvRating.setText("Chưa có đánh giá");
+            tvNumberReview.setText("");
+        } else {
+            ratingBar.setVisibility(View.VISIBLE);
+            float averageRating = (float) book.getAverageRating();
+            ratingBar.setRating(averageRating);
+            tvRating.setText(String.format(Locale.US, "%.1f/5", averageRating));
+            tvNumberReview.setText(String.format(Locale.US, "(%d đánh giá)", book.getRatingCount()));
+        }
+        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+        tvPrice.setText(currencyFormat.format(book.getPrice()));
 
-        // Load overall rating and review count
-        tvRating.setText(String.format("%.1f/5", book.getAverageRating()));
-        tvNumberReview.setText(String.format("(%d đánh giá)", book.getRatingCount()));
+        String description = book.getDescription();
+        tvDescription.setText(description != null ? description : "Không có mô tả");
+        tvToggle.setVisibility(description != null && description.length() > 100 ? View.VISIBLE : View.GONE);
+    }
 
-        // Simulate reviews for this book (in a real app, fetch via API using book.getId())
-        List<Review> reviews = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private void setupImagePagerNavigation() {
+        int totalImages = imageAdapter.getItemCount();
+        tabIndicator.setText(totalImages > 0 ? "1/" + totalImages : "0/0");
 
-//        reviews.add(new Review(1, book.getId(), 1, 4, "Rất hay, con tôi rất thích!", LocalDateTime.parse("2024-05-01 12:00:00", formatter)));
-//        reviews.add(new Review(2, book.getId(), 2, 5, "Minh họa đẹp, giấy tốt.", LocalDateTime.parse("2024-05-02 12:00:00", formatter)));
-//        reviews.add(new Review(3, book.getId(), 3, 5, "Câu chuyện hấp dẫn và dễ hiểu cho trẻ nhỏ.", LocalDateTime.parse("2024-05-03 12:00:00", formatter)));
+        imageViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                tabIndicator.setText((position + 1) + "/" + totalImages);
+            }
+        });
 
-        DisplayReviewAdapter reviewAdapter = new DisplayReviewAdapter(reviews);
-        reviewRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        reviewRecyclerView.setAdapter(reviewAdapter);
-        reviewAdapter.notifyDataSetChanged();
+        imageAdapter.setOnImageClickListener(position -> {
+            int nextPosition = (position + 1) % imageAdapter.getItemCount();
+            imageViewPager.setCurrentItem(nextPosition, true);
+        });
+
+        btnArrowLeft.setOnClickListener(v -> {
+            int current = imageViewPager.getCurrentItem();
+            imageViewPager.setCurrentItem(current > 0 ? current - 1 : totalImages - 1, true);
+        });
+
+        btnArrowRight.setOnClickListener(v -> {
+            int current = imageViewPager.getCurrentItem();
+            imageViewPager.setCurrentItem(current < totalImages - 1 ? current + 1 : 0, true);
+        });
+    }
+
+    private void handleError(okhttp3.ResponseBody errorBody, String defaultMsg) {
+        String errorMessage = defaultMsg;
+        try {
+            if (errorBody != null) {
+                JSONObject errorJson = new JSONObject(errorBody.string());
+                if (errorJson.has("msg")) {
+                    errorMessage = errorJson.getString("msg");
+                }
+            }
+        } catch (Exception e) {
+            Log.e("BookDetailActivity", "Error parsing error body", e);
+        }
+        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showError(Throwable t, String defaultMsg) {
+        String errorMessage = t instanceof java.io.IOException ? "Lỗi mạng" : defaultMsg;
+        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
+        Log.e("BookDetailActivity", "API error: " + t.getMessage(), t);
     }
 }

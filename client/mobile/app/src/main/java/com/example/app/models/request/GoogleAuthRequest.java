@@ -1,4 +1,4 @@
-package com.example.app.models.response;
+package com.example.app.models.request;
 
 import com.google.gson.annotations.SerializedName;
 

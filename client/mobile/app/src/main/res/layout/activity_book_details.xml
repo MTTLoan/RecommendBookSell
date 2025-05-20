@@ -22,12 +22,10 @@
         android:layout_height="0dp"
         android:paddingHorizontal="24dp"
         android:paddingVertical="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/footer"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/header"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintTop_toBottomOf="@id/header">
 
         <!-- Nội dung cuộn -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -37,7 +35,7 @@
             <!-- Khối ảnh (nền xanh) -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/imageContainer"
-                android:layout_width="336dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_border_24"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -92,19 +90,46 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/resetHeader" />
 
+                <!-- Mũi tên trái -->
+                <ImageButton
+                    android:id="@+id/btnArrowLeft"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Previous Image"
+                    android:src="@drawable/arrow_back_ios_24px"
+                    app:layout_constraintBottom_toBottomOf="@id/imageViewPager"
+                    app:layout_constraintStart_toStartOf="@id/imageViewPager"
+                    app:layout_constraintTop_toTopOf="@id/imageViewPager"
+                    app:tint="@color/dark" />
+
+                <!-- Mũi tên phải -->
+                <ImageButton
+                    android:id="@+id/btnArrowRight"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Next Image"
+                    android:src="@drawable/arrow_forward_ios_24px"
+                    app:layout_constraintBottom_toBottomOf="@id/imageViewPager"
+                    app:layout_constraintEnd_toEndOf="@id/imageViewPager"
+                    app:layout_constraintTop_toTopOf="@id/imageViewPager"
+                    app:tint="@color/dark"/>
+
                 <!-- Indicator dạng số thứ tự -->
-                <com.google.android.material.tabs.TabLayout
+                <TextView
                     android:id="@+id/tabIndicator"
                     android:layout_width="wrap_content"
-                    android:layout_height="24dp"
-                    android:layout_marginTop="4dp"
-                    android:paddingHorizontal="8dp"
-                    app:tabTextAppearance="@style/TabText.Small"
-                    app:tabIndicatorHeight="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="8dp"
+                    android:background="@android:color/transparent"
+                    android:text="1/10"
+                    android:textColor="@color/dark"
+                    android:textSize="16sp"
                     app:layout_constraintTop_toBottomOf="@id/imageViewPager"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    />
+                    app:layout_constraintEnd_toEndOf="parent" />
 
                 <TextView
                     android:id="@+id/txtBookName"
@@ -114,7 +139,8 @@
                     android:textColor="@color/black"
                     android:textSize="20dp"
                     android:gravity="center"
-                    android:paddingTop="8dp"
+                    android:paddingTop="12dp"
+                    android:paddingHorizontal="12dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/tabIndicator" />
@@ -125,28 +151,35 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:fontFamily="@font/roboto_light"
+                    android:gravity="center"
+                    android:paddingVertical="8dp"
                     android:textColor="@color/black"
                     android:textSize="14dp"
-                    android:paddingBottom="4dp"
-                    android:gravity="center"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/txtBookName" />
 
-                <TextView
-                    android:id="@+id/txtRating"
-                    android:layout_width="0dp"
+                <RatingBar
+                    android:id="@+id/rbrating_bar"
+                    style="@style/Widget.AppCompat.RatingBar.Small"
                     android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:fontFamily="@font/roboto_light"
-                    android:textColor="@color/black"
-                    android:textSize="14dp"
-                    android:paddingTop="4dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="18dp"
+                    android:scaleX="1.5"
                     android:gravity="center"
-                    android:paddingBottom="26dp"
+                    android:scaleY="1.5"
+                    android:isIndicator="true"
+                    android:numStars="5"
+                    android:stepSize="0.1"
+                    android:progressTint="@color/yellow"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/txtAuthor" />
+
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- Khối thông tin (nền trắng) -->
@@ -236,7 +269,7 @@
                     android:fontFamily="@font/roboto_bold"
                     android:text="Đánh giá"
                     android:textSize="14sp"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="36dp"
                     app:layout_constraintTop_toBottomOf="@id/tvDescription"
                     app:layout_constraintStart_toStartOf="parent"
                     app:tint="@color/black" />
@@ -254,8 +287,8 @@
 
                 <TextView
                     android:id="@+id/tvRating"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_height="27dp"
                     android:layout_marginStart="12dp"
                     android:fontFamily="@font/roboto_bold"
                     android:text="4.5/5"
@@ -283,22 +316,43 @@
                 android:id="@+id/reviewRecyclerView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:nestedScrollingEnabled="false"
                 app:layout_constraintTop_toBottomOf="@id/infoContainer"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 tools:listitem="@layout/item_review" />
+
+            <TextView
+                android:id="@+id/tvToggleReview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="4dp"
+                android:text="Xem tất cả"
+                android:textColor="@color/green"
+                android:textSize="12sp"
+                android:fontFamily="@font/roboto_light"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/reviewRecyclerView" />
         </androidx.constraintlayout.widget.ConstraintLayout>
+
     </androidx.core.widget.NestedScrollView>
     <!-- Footer (không cuộn) -->
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/footer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="24dp"
         android:paddingVertical="12dp"
         android:background="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
 
         <!-- Nút Giảm -->

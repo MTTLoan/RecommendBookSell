@@ -18,11 +18,11 @@ public class UserLoginRequest {
         this.idToken = null;
     }
 
-    public UserLoginRequest(String email, String idToken) {
-        this.identifier = email;
-        this.idToken = idToken;
-        this.password = null;
-    }
+//    public UserLoginRequest(String email, String idToken) {
+//        this.identifier = email;
+//        this.idToken = idToken;
+//        this.password = null;
+//    }
 
     public String getIdentifier() {
         return identifier;

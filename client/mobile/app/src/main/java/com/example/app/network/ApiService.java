@@ -12,16 +12,22 @@ import com.example.app.models.request.ResendOtpRequest;
 import com.example.app.models.request.ResetPasswordRequest;
 import com.example.app.models.request.StatusUpdateRequest;
 import com.example.app.models.request.UserLoginRequest;
+import com.example.app.models.response.BookDetailResponse;
 import com.example.app.models.response.ForgotPasswordResponse;
-import com.example.app.models.response.GoogleAuthRequest;
+import com.example.app.models.request.GoogleAuthRequest;
 import com.example.app.models.response.LogoutResponse;
 import com.example.app.models.response.OrderHistoryResponse;
 import com.example.app.models.response.OtpResponse;
 import com.example.app.models.response.ResetPasswordResponse;
-import com.google.gson.annotations.SerializedName;
+import com.example.app.models.response.ChangePasswordResponse;
+import com.example.app.models.request.ChangePasswordRequest;
+import com.example.app.models.response.UserResponse;
+import com.example.app.models.response.ReviewResponse;
+import com.example.app.models.response.CategoryResponse;
+import com.example.app.models.response.BookResponse;
+
 
 import java.util.List;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -60,6 +66,14 @@ public interface ApiService {
     @POST("/api/resend-otp")
     Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
 
+    @POST("/api/auth/change-password")
+    Call<ChangePasswordResponse> changePassword(@Header("Authorization") String token, @Body ChangePasswordRequest request);
+    @GET("/api/auth/profile")
+    Call<UserResponse> getUserProfile(@Header("Authorization") String token);
+
+    @PUT("/api/auth/update-profile")
+    Call<UserResponse> updateUserProfile(@Header("Authorization") String token, @Body User user);
+
     @GET("notifications")
     Call<List<Notification>> getNotifications(@Header("Authorization") String token);
 
@@ -77,6 +91,16 @@ public interface ApiService {
 
     @POST("reviews")
     Call<Review> submitReview(@Header("Authorization") String authorization, @Body Review review);
+
+    @GET("/api/books/all-book")
+    Call<BookResponse> getBooks(@Query("categoryId") Integer categoryId);
+    @GET("/api/books/book-detail/{id}")
+    Call<BookDetailResponse> getBookDetail(@Path("id") int bookId);
+    @GET("/api/books/book-detail/{bookId}/reviews")
+    Call<ReviewResponse> getBookReviews(@Path("bookId") int bookId);
+
+    @GET("/api/categories/all-categories")
+    Call<CategoryResponse> getCategories();
 
     @GET("reviews/{orderId}/reviews")
     Call<HasReviewsResponse> getReviewsForOrder(@Header("Authorization") String token, @Path("orderId") int orderId);
