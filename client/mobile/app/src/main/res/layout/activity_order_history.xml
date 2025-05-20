@@ -18,7 +18,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:paddingHorizontal="13dp">
 
-<<<<<<< HEAD
         <!-- Biểu tượng chevron-left -->
         <ImageView
             android:id="@+id/ivReturn"
@@ -30,8 +29,6 @@
             app:layout_constraintTop_toTopOf="@id/header"
             app:tint="@color/black" />
 
-=======
->>>>>>> cb0da3bae22be935f9f4e9e38fafe304a4d3b682
         <!-- Tiêu đề -->
         <TextView
             android:id="@+id/tvTitle"
