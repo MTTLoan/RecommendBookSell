@@ -32,6 +32,7 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Headers;
@@ -108,4 +109,14 @@ public interface ApiService {
 
     @POST("/api/carts")
     Call<Cart> addToCart(@Header("Authorization") String authorization, @Body Cart cart);
+
+    @GET("/api/carts")
+    Call<Cart> getCart(@Header("Authorization") String authorization);
+
+    @PUT("/api/carts")
+    Call<Cart> updateCart(@Header("Authorization") String authorization, @Body Cart cart);
+
+    @DELETE("/api/carts/items/{bookId}")
+    Call<Cart> deleteCartItem(@Header("Authorization") String authorization, @Path("bookId") int bookId);
+
 }

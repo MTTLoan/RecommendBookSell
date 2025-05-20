@@ -1,7 +1,9 @@
+// controllers/cartController.js
 import mongoose from "mongoose";
 import Cart from "../models/Cart.js";
-import Counter from "../models/Counter.js";
+import Book from "../models/Book.js";
 
+// Hàm thêm vào giỏ hàng (giữ nguyên)
 export const addToCart = async (req, res) => {
   try {
     const user = req.user;
@@ -20,7 +22,6 @@ export const addToCart = async (req, res) => {
     let cart = await Cart.findOne({ userId: user.id });
 
     if (!cart) {
-      // Tăng seq và gán id
       const counterResult = await mongoose.connection.db
         .collection("counters")
         .findOneAndUpdate(
@@ -31,14 +32,12 @@ export const addToCart = async (req, res) => {
 
       console.log("Counter result:", counterResult);
 
-      // Kiểm tra kết quả
       if (!counterResult || typeof counterResult.seq !== "number") {
         throw new Error("Failed to retrieve or increment counter for cartId");
       }
 
       const cartId = counterResult.seq;
 
-      // Tạo giỏ hàng mới
       cart = new Cart({
         id: cartId,
         userId: user.id,
@@ -47,16 +46,13 @@ export const addToCart = async (req, res) => {
         updatedAt: new Date(),
       });
     } else {
-      // Cập nhật giỏ hàng
       items.forEach((newItem) => {
         const existingItemIndex = cart.items.findIndex(
           (item) => item.bookId === newItem.bookId
         );
         if (existingItemIndex >= 0) {
-          // Cập nhật số lượng nếu sản phẩm đã có
           cart.items[existingItemIndex].quantity += newItem.quantity;
         } else {
-          // Thêm sản phẩm mới
           cart.items.push(newItem);
         }
       });
@@ -70,6 +66,128 @@ export const addToCart = async (req, res) => {
     res.status(200).json(updatedCart);
   } catch (error) {
     console.error("Error adding to cart:", error.message);
+    res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
+  }
+};
+
+// Hàm lấy giỏ hàng
+export const getCart = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: "Người dùng không hợp lệ" });
+    }
+
+    const cart = await Cart.findOne({ userId: user.id }).lean();
+
+    if (!cart) {
+      return res.status(404).json({ message: "Giỏ hàng không tồn tại" });
+    }
+
+    // Debug: Log dữ liệu thô
+    console.log("Raw cart data:", cart);
+
+    // Lấy tất cả bookId từ items
+    const bookIds = cart.items.map((item) => item.bookId);
+
+    // Truy vấn collection books để lấy thông tin sách dựa trên id
+    const books = await Book.find({ id: { $in: bookIds } })
+      .select("id name price images")
+      .lean();
+
+    // Tạo map để tra cứu nhanh thông tin sách
+    const bookMap = books.reduce((map, book) => {
+      map[book.id] = book;
+      return map;
+    }, {});
+
+    // Cập nhật items với thông tin sách
+    cart.items = cart.items.map((item) => ({
+      bookId: item.bookId, // Giữ bookId là số
+      quantity: item.quantity,
+      selected: item.selected || false, // Đảm bảo có trường selected
+      book: bookMap[item.bookId] || null, // Thêm trường book chứa thông tin chi tiết
+    }));
+
+    // Loại bỏ các trường không mong muốn trong response
+    const responseData = {
+      id: cart.id,
+      userId: cart.userId,
+      items: cart.items,
+      createdAt: cart.createdAt,
+      updatedAt: cart.updatedAt,
+    };
+
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error("Error fetching cart:", error.message);
+    res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
+  }
+};
+
+// Hàm cập nhật giỏ hàng (sửa số lượng hoặc xóa sản phẩm)
+export const updateCart = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: "Người dùng không hợp lệ" });
+    }
+
+    const { items } = req.body;
+    if (!items || !Array.isArray(items)) {
+      return res
+        .status(400)
+        .json({ message: "Danh sách sản phẩm không hợp lệ" });
+    }
+
+    let cart = await Cart.findOne({ userId: user.id });
+    if (!cart) {
+      return res.status(404).json({ message: "Giỏ hàng không tồn tại" });
+    }
+
+    // Cập nhật danh sách items, bao gồm selected
+    cart.items = items.map((item) => ({
+      bookId: item.bookId,
+      quantity: item.quantity,
+      selected: item.selected || false, // Lưu trạng thái selected
+    }));
+    cart.updatedAt = new Date();
+
+    const updatedCart = await cart.save();
+    res.status(200).json(updatedCart);
+  } catch (error) {
+    console.error("Error updating cart:", error.message);
+    res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
+  }
+};
+// Hàm xóa sản phẩm khỏi giỏ hàng
+export const deleteCartItem = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: "Người dùng không hợp lệ" });
+    }
+
+    const bookId = parseInt(req.params.bookId);
+    let cart = await Cart.findOne({ userId: user.id });
+    if (!cart) {
+      return res.status(404).json({ message: "Giỏ hàng không tồn tại" });
+    }
+
+    const itemIndex = cart.items.findIndex((item) => item.bookId === bookId);
+    if (itemIndex === -1) {
+      return res
+        .status(404)
+        .json({ message: "Sản phẩm không có trong giỏ hàng" });
+    }
+
+    cart.items.splice(itemIndex, 1);
+    cart.updatedAt = new Date();
+
+    const updatedCart = await cart.save();
+    res.status(200).json(updatedCart);
+  } catch (error) {
+    console.error("Error deleting cart item:", error.message);
     res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
   }
 };

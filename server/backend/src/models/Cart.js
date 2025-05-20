@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 
 const CartItemSchema = new mongoose.Schema({
-  bookId: { type: Number, ref: "Book", required: true },
+  bookId: { type: Number, required: true },
   quantity: { type: Number, required: true },
+  selected: { type: Boolean, default: false },
 });
 
 const CartSchema = new mongoose.Schema({
@@ -38,6 +39,8 @@ const syncCounter = async () => {
 // Gọi đồng bộ khi khởi động
 mongoose.connection.once("open", syncCounter);
 
+// Cấu hình để trả về virtual fields trong JSON
 CartSchema.set("toJSON", { virtuals: true });
+CartSchema.set("toObject", { virtuals: true });
 
 export default mongoose.model("Cart", CartSchema);
