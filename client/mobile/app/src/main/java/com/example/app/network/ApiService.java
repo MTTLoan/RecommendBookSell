@@ -61,10 +61,10 @@ public interface ApiService {
     Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
 
     @GET("notifications")
-    Call<List<Notification>> getNotifications(@Query("userId") int userId);
+    Call<List<Notification>> getNotifications(@Header("Authorization") String token);
 
     @PUT("notifications/{id}")
-    Call<Notification> markAsRead(@Path("id") int id);
+    Call<Notification> markAsRead(@Header("Authorization") String token, @Path("id") int id);
 
     @GET("orders/history")
     Call<OrderHistoryResponse> getOrderHistory(@Header("Authorization") String authorization);

@@ -6,20 +6,22 @@ public class Notification {
     private int id;
     private int userId;
     @SerializedName("orderId")
-    private Object orderId; // Có thể là null hoặc số
+    private int orderId;
     private String title;
     private String message;
     private boolean isRead;
     private String createdAt;
+    private String imageUrl;
 
     // Constructor
-    public Notification(int id, int userId, String title, String message, boolean isRead, String createdAt) {
+    public Notification(int id, int userId, String title, String message, boolean isRead, String createdAt, String imageUrl) {
         this.id = id;
         this.userId = userId;
         this.title = title;
         this.message = message;
         this.isRead = isRead;
         this.createdAt = createdAt;
+        this.imageUrl = imageUrl;
     }
 
     // Getters and Setters
@@ -39,11 +41,11 @@ public class Notification {
         this.userId = userId;
     }
 
-    public Object getOrderId() {
+    public int getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(Object orderId) {
+    public void setOrderId(int orderId) {
         this.orderId = orderId;
     }
 
@@ -79,6 +81,14 @@ public class Notification {
         this.createdAt = createdAt;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     @Override
     public String toString() {
         return "Notification{" +
@@ -89,6 +99,7 @@ public class Notification {
                 ", message='" + message + '\'' +
                 ", isRead=" + isRead +
                 ", createdAt='" + createdAt + '\'' +
+                ", imageUrl='" + imageUrl + '\'' +
                 '}';
     }
 }

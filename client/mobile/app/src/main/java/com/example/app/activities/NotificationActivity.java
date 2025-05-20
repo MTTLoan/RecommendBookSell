@@ -1,5 +1,6 @@
 package com.example.app.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,6 +15,7 @@ import com.example.app.R;
 import com.example.app.adapters.NotificationAdapter;
 import com.example.app.models.Notification;
 import com.example.app.network.RetrofitClient;
+import com.example.app.utils.AuthUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,15 +44,20 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
         adapter = new NotificationAdapter(this, notifications, this);
         recyclerView.setAdapter(adapter);
 
-        // Sự kiện nhấn nút quay lại
         ivReturn.setOnClickListener(v -> finish());
 
-        // Lấy dữ liệu từ API với userId ảo là 2
-        fetchNotifications(2);
+        String token = AuthUtils.getToken(this);
+        if (token != null) {
+            fetchNotifications("Bearer " + token);
+        } else {
+            Toast.makeText(this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, LoginActivity.class)); // Chuyển đến màn hình đăng nhập
+            finish();
+        }
     }
 
-    private void fetchNotifications(int userId) {
-        Call<List<Notification>> call = RetrofitClient.getApiService().getNotifications(userId);
+    private void fetchNotifications(String token) {
+        Call<List<Notification>> call = RetrofitClient.getApiService().getNotifications(token);
         call.enqueue(new Callback<List<Notification>>() {
             @Override
             public void onResponse(Call<List<Notification>> call, Response<List<Notification>> response) {
@@ -60,9 +67,8 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
                         notifications.clear();
                         notifications.addAll(fetchedNotifications);
                         adapter.notifyDataSetChanged();
-                        Toast.makeText(NotificationActivity.this, "Đã tải " + notifications.size() + " thông báo cho userId: " + userId, Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(NotificationActivity.this, "Không có thông báo cho userId: " + userId, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(NotificationActivity.this, "Không có thông báo", Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     Log.e(TAG, "onResponse: Error - " + response.message());
@@ -82,21 +88,46 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
             }
         });
     }
-
     @Override
     public void onItemClick(Notification notification) {
-        RetrofitClient.getApiService().markAsRead(notification.getId()).enqueue(new Callback<Notification>() {
+        String token = AuthUtils.getToken(NotificationActivity.this);
+        if (token == null) {
+            Toast.makeText(NotificationActivity.this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(NotificationActivity.this, LoginActivity.class));
+            finish();
+            return;
+        }
+
+        Log.d(TAG, "Marking notification as read - ID: " + notification.getId());
+        RetrofitClient.getApiService().markAsRead("Bearer " + token, notification.getId()).enqueue(new Callback<Notification>() {
             @Override
             public void onResponse(Call<Notification> call, Response<Notification> response) {
                 if (response.isSuccessful()) {
-                    fetchNotifications(notification.getUserId()); // Làm mới danh sách
+                    Log.d(TAG, "Notification marked as read successfully - ID: " + notification.getId());
+                    fetchNotifications("Bearer " + token);
                 } else {
-                    Toast.makeText(NotificationActivity.this, "Lỗi: " + response.message(), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Mark as read error - Code: " + response.code());
+                    try {
+                        Log.e(TAG, "Error body: " + response.errorBody().string());
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed to read error body: " + e.getMessage());
+                    }
+                    if (response.code() == 401) {
+                        Toast.makeText(NotificationActivity.this, "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+                        AuthUtils.clearToken(NotificationActivity.this);
+                        startActivity(new Intent(NotificationActivity.this, LoginActivity.class));
+                        finish();
+                    } else if (response.code() == 404) {
+                        Toast.makeText(NotificationActivity.this, "Thông báo không tồn tại hoặc bạn không có quyền", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(NotificationActivity.this, "Lỗi: " + response.message(), Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<Notification> call, Throwable t) {
+                Log.e(TAG, "Mark as read failure: " + t.getMessage(), t);
                 Toast.makeText(NotificationActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
