@@ -146,3 +146,37 @@ export const updateOrderStatus = async (req, res) => {
     });
   }
 };
+
+export const getOrderById = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: "Người dùng không hợp lệ" });
+    }
+
+    const order = await Order.findOne({ id: req.params.id, userId: user.id });
+    if (!order) {
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy đơn hàng hoặc bạn không có quyền" });
+    }
+
+    const items = await Promise.all(
+      order.items.map(async (item) => {
+        const book = await Book.findOne({ id: item.bookId });
+        return {
+          ...item.toJSON(),
+          book: book ? book.toJSON() : null,
+        };
+      })
+    );
+
+    res.status(200).json({
+      ...order.toJSON(),
+      items,
+    });
+  } catch (error) {
+    console.error("Error fetching order by ID:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};

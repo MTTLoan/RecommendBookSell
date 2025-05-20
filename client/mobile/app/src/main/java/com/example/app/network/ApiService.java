@@ -1,5 +1,6 @@
 package com.example.app.network;
 
+import com.example.app.models.HasReviewsResponse;
 import com.example.app.models.Notification;
 import com.example.app.models.Order;
 import com.example.app.models.Review;
@@ -73,10 +74,17 @@ public interface ApiService {
     @PUT("/api/auth/update-profile")
     Call<UserResponse> updateUserProfile(@Header("Authorization") String token, @Body User user);
 
-    Call<List<Notification>> getNotifications(int userId);
+    @GET("notifications")
+    Call<List<Notification>> getNotifications(@Header("Authorization") String token);
+
+    @PUT("notifications/{id}")
+    Call<Notification> markAsRead(@Header("Authorization") String token, @Path("id") int id);
 
     @GET("orders/history")
     Call<OrderHistoryResponse> getOrderHistory(@Header("Authorization") String authorization);
+
+    @GET("orders/{orderId}")
+    Call<Order> getOrderById(@Header("Authorization") String authorization, @Path("orderId") int orderId);
 
     @PUT("orders/{id}/status")
     Call<Order> updateOrderStatus(@Header("Authorization") String authorization, @Path("id") int orderId, @Body StatusUpdateRequest request);
@@ -94,6 +102,6 @@ public interface ApiService {
     @GET("/api/categories/all-categories")
     Call<CategoryResponse> getCategories();
 
-
-    Call<Notification> markAsRead(int id);
+    @GET("reviews/{orderId}/reviews")
+    Call<HasReviewsResponse> getReviewsForOrder(@Header("Authorization") String token, @Path("orderId") int orderId);
 }
