@@ -1,5 +1,6 @@
 package com.example.app.network;
 
+import com.example.app.models.HasReviewsResponse;
 import com.example.app.models.Notification;
 import com.example.app.models.Order;
 import com.example.app.models.Review;
@@ -60,17 +61,23 @@ public interface ApiService {
     Call<OtpResponse> resendOtp(@Body ResendOtpRequest request);
 
     @GET("notifications")
-    Call<List<Notification>> getNotifications(@Query("userId") int userId);
+    Call<List<Notification>> getNotifications(@Header("Authorization") String token);
 
     @PUT("notifications/{id}")
-    Call<Notification> markAsRead(@Path("id") int id);
+    Call<Notification> markAsRead(@Header("Authorization") String token, @Path("id") int id);
 
     @GET("orders/history")
     Call<OrderHistoryResponse> getOrderHistory(@Header("Authorization") String authorization);
+
+    @GET("orders/{orderId}")
+    Call<Order> getOrderById(@Header("Authorization") String authorization, @Path("orderId") int orderId);
 
     @PUT("orders/{id}/status")
     Call<Order> updateOrderStatus(@Header("Authorization") String authorization, @Path("id") int orderId, @Body StatusUpdateRequest request);
 
     @POST("reviews")
     Call<Review> submitReview(@Header("Authorization") String authorization, @Body Review review);
+
+    @GET("reviews/{orderId}/reviews")
+    Call<HasReviewsResponse> getReviewsForOrder(@Header("Authorization") String token, @Path("orderId") int orderId);
 }

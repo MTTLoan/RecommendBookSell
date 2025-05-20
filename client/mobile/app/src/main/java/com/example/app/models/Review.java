@@ -7,15 +7,17 @@ public class Review implements Parcelable {
     private int id;
     private int userId;
     private int bookId;
+    private int orderId;
     private int rating;
     private String comment;
     private String createdAt; // Đổi sang String để khớp với MongoDB
 
     // Constructor
-    public Review(int id, int userId, int bookId, int rating, String comment, String createdAt) {
+    public Review(int id, int userId, int bookId, int orderId, int rating, String comment, String createdAt) {
         this.id = id;
         this.userId = userId;
         this.bookId = bookId;
+        this.orderId = orderId;
         this.rating = rating;
         this.comment = comment;
         this.createdAt = createdAt;
@@ -25,6 +27,7 @@ public class Review implements Parcelable {
         id = in.readInt();
         userId = in.readInt();
         bookId = in.readInt();
+        orderId = in.readInt();
         rating = in.readInt();
         comment = in.readString();
         createdAt = in.readString();
@@ -52,6 +55,7 @@ public class Review implements Parcelable {
         dest.writeInt(id);
         dest.writeInt(userId);
         dest.writeInt(bookId);
+        dest.writeInt(orderId);
         dest.writeInt(rating);
         dest.writeString(comment);
         dest.writeString(createdAt);
@@ -64,6 +68,8 @@ public class Review implements Parcelable {
     public void setUserId(int userId) { this.userId = userId; }
     public int getBookId() { return bookId; }
     public void setBookId(int bookId) { this.bookId = bookId; }
+    public int getOrderId() { return orderId; }
+    public void setOrderId(int orderId) { this.orderId = orderId; }
     public int getRating() { return rating; }
     public void setRating(int rating) { this.rating = rating; }
     public String getComment() { return comment; }

@@ -150,7 +150,7 @@
                         android:textSize="14sp"
                         android:fontFamily="@font/roboto_regular"
                         android:textColor="@color/black"
-                        app:layout_constraintStart_toEndOf="@id/ivLocation"
+                        app:layout_constraintStart_toEndOf="@id/ivTruck"
                         app:layout_constraintTop_toBottomOf="@id/OrderDate" />
 
                     <!-- Địa chỉ giao hàng -->
@@ -253,7 +253,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="5dp"
-                    android:text="Phí vẩn chuyển"
+                    android:text="Phí vận chuyển"
                     android:textSize="14sp"
                     android:textColor="@color/black"
                     app:layout_constraintTop_toBottomOf="@id/tvTotalGoodsLabel"
@@ -306,7 +306,7 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- Nút Hủy đơn hàng -->
+            <!-- Các nút hành động -->
             <Button
                 android:id="@+id/btnCancelOrder"
                 android:layout_width="0dp"
@@ -318,9 +318,58 @@
                 android:textColor="@android:color/black"
                 android:textSize="14sp"
                 android:textStyle="normal"
+                android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/orderDetail" />
+
+            <Button
+                android:id="@+id/btnReceived"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/button_border"
+                android:text="Đã nhận hàng"
+                android:textColor="@android:color/black"
+                android:textSize="14sp"
+                android:textStyle="normal"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btnCancelOrder" />
+
+            <Button
+                android:id="@+id/btnReturn"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/button_border"
+                android:text="Trả hàng"
+                android:textColor="@android:color/black"
+                android:textSize="14sp"
+                android:textStyle="normal"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btnReceived" />
+
+            <Button
+                android:id="@+id/btnRate"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/button_border"
+                android:text="Đánh giá"
+                android:textColor="@android:color/black"
+                android:textSize="14sp"
+                android:textStyle="normal"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btnReturn" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

@@ -9,10 +9,15 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
 import com.example.app.R;
 import com.example.app.models.Notification;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
     private List<Notification> notifications;
@@ -42,12 +47,32 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
         holder.tvTitle.setText(notification.getTitle());
         holder.tvContent.setText(notification.getMessage());
-        holder.tvTime.setText(notification.getCreatedAt());
+
+        // Định dạng createdAt từ ISO 8601 sang YYYY-MM-DD HH:mm:ss
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
+            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            Date date = inputFormat.parse(notification.getCreatedAt());
+            holder.tvTime.setText(outputFormat.format(date));
+        } catch (ParseException e) {
+            holder.tvTime.setText(notification.getCreatedAt()); // Hiển thị gốc nếu lỗi
+        }
+
+        // Tải hình ảnh bằng Picasso
+        if (notification.getImageUrl() != null && !notification.getImageUrl().isEmpty()) {
+            Picasso.get()
+                    .load(notification.getImageUrl())
+                    .placeholder(R.drawable.placeholder_book)
+                    .error(R.drawable.placeholder_book)
+                    .into(holder.imageBook);
+        } else {
+            holder.imageBook.setImageResource(R.drawable.placeholder_book);
+        }
 
         if (notification.isRead()) {
-            holder.itemView.setBackgroundColor(0xFFFFFFFF); // #FFFFFF (trắng)
+            holder.itemView.setBackgroundColor(0xFFFFFFFF); // Trắng
         } else {
-            holder.itemView.setBackgroundColor(0xFFFFF8F8); // #FFF8F8 (hồng nhạt)
+            holder.itemView.setBackgroundColor(0xFFFFF8F8); // Hồng nhạt
         }
 
         holder.itemView.setOnClickListener(v -> {

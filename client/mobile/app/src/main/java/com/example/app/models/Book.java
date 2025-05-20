@@ -23,7 +23,7 @@ public class Book implements Parcelable {
     private int stockQuantity;
     private int categoryId;
     private String createdAt;
-    private List<String> author; // Mảng tác giả
+    private List<String> author;
 
     public Book(int id, String name, String description, List<Image> images, double price,
                 double averageRating, int ratingCount, int stockQuantity, int categoryId,
