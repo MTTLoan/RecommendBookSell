@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.app.R;
 import com.example.app.adapters.NotificationAdapter;
 import com.example.app.models.Notification;
+import com.example.app.models.Order;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
 
@@ -131,5 +132,45 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
                 Toast.makeText(NotificationActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+
+        // Kiểm tra orderId và chuyển đến OrderActivity nếu có
+        if (notification.getOrderId() > 0) {
+            Log.d(TAG, "Fetching order for orderId: " + notification.getOrderId());
+            RetrofitClient.getApiService().getOrderById("Bearer " + token, notification.getOrderId()).enqueue(new Callback<Order>() {
+                @Override
+                public void onResponse(Call<Order> call, Response<Order> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Order order = response.body();
+                        Log.d(TAG, "Order fetched successfully - ID: " + order.getId());
+                        Intent intent = new Intent(NotificationActivity.this, OrderActivity.class);
+                        intent.putExtra("order", order);
+                        startActivity(intent);
+                    } else {
+                        Log.e(TAG, "Fetch order error - Code: " + response.code());
+                        try {
+                            Log.e(TAG, "Error body: " + response.errorBody().string());
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to read error body: " + e.getMessage());
+                        }
+                        if (response.code() == 401) {
+                            Toast.makeText(NotificationActivity.this, "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+                            AuthUtils.clearToken(NotificationActivity.this);
+                            startActivity(new Intent(NotificationActivity.this, LoginActivity.class));
+                            finish();
+                        } else if (response.code() == 404) {
+                            Toast.makeText(NotificationActivity.this, "Đơn hàng không tồn tại", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(NotificationActivity.this, "Lỗi khi tải đơn hàng: " + response.message(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Order> call, Throwable t) {
+                    Log.e(TAG, "Fetch order failure: " + t.getMessage(), t);
+                    Toast.makeText(NotificationActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 }

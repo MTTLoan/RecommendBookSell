@@ -14,9 +14,10 @@ public class Notification {
     private String imageUrl;
 
     // Constructor
-    public Notification(int id, int userId, String title, String message, boolean isRead, String createdAt, String imageUrl) {
+    public Notification(int id, int userId, int orderId, String title, String message, boolean isRead, String createdAt, String imageUrl) {
         this.id = id;
         this.userId = userId;
+        this.orderId = orderId;
         this.title = title;
         this.message = message;
         this.isRead = isRead;

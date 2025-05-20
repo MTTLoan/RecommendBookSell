@@ -69,6 +69,9 @@ public interface ApiService {
     @GET("orders/history")
     Call<OrderHistoryResponse> getOrderHistory(@Header("Authorization") String authorization);
 
+    @GET("orders/{orderId}")
+    Call<Order> getOrderById(@Header("Authorization") String authorization, @Path("orderId") int orderId);
+
     @PUT("orders/{id}/status")
     Call<Order> updateOrderStatus(@Header("Authorization") String authorization, @Path("id") int orderId, @Body StatusUpdateRequest request);
 

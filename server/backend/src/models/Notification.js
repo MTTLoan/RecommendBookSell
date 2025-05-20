@@ -12,7 +12,7 @@ const notificationSchema = new mongoose.Schema(
       required: true,
     },
     orderId: {
-      type: mongoose.Schema.Types.Mixed,
+      type: Number,
       default: null,
     },
     title: {

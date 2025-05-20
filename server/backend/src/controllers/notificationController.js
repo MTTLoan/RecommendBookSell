@@ -11,7 +11,7 @@ export const getNotifications = async (req, res) => {
     }
 
     const notifications = await Notification.find({ userId: user.id }).sort({
-      createdAt: 1,
+      createdAt: -1,
     });
 
     // Lấy thêm imageUrl từ Book thông qua Order
