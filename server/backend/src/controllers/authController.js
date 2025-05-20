@@ -3,7 +3,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendVerificationOTPEmail } from "./email_verificationController.js";
 import { hashData, verifyHashedData } from "../util/hashData.js";
-import uploadAvatar from "../middleware/uploadToS3.js";
+import { deleteS3File } from "../middleware/uploadToS3.js";
+
 
 
 export const registerController = async (req, res) => {
@@ -378,6 +379,12 @@ export const uploadAvatarController = async (req, res) => {
       return res.status(404).json({ success: false, msg: "Không tìm thấy tài khoản." });
     }
 
+    // Nếu user đã có avatar cũ, xóa khỏi S3
+    if (user.avatar) {
+      await deleteS3File(user.avatar);
+    }
+
+    // Lưu avatar mới
     user.avatar = req.file.location;
     user.updatedAt = new Date();
     await user.save();

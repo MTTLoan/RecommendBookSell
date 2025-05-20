@@ -23,3 +23,23 @@ const uploadAvatar = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 }).single('avatar');
 export default uploadAvatar;
+
+const deleteS3File = async (fileUrl) => {
+  // Tách key từ URL (sau bucket name)
+  const bucket = 'upload-avatar-473';
+  const url = new URL(fileUrl);
+  const key = decodeURIComponent(url.pathname).substring(1); // bỏ dấu `/` đầu
+
+  try {
+    await s3
+      .deleteObject({
+        Bucket: bucket,
+        Key: key,
+      })
+      .promise();
+    console.log(`Đã xóa ảnh cũ: ${key}`);
+  } catch (err) {
+    console.error('Lỗi khi xóa ảnh cũ trên S3:', err.message);
+  }
+};
+export {deleteS3File };
