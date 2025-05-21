@@ -13,8 +13,9 @@ import java.util.Locale;
 public class Order implements Parcelable {
     private int id;
     private int userId;
-    private String orderDate; // Lưu dưới dạng chuỗi ISO 8601
+    private String orderDate;
     private double totalAmount;
+    private int shippingCost;
     private String status;
     private int shippingProvince;
     private int shippingDistrict;
@@ -23,13 +24,14 @@ public class Order implements Parcelable {
     private List<OrderItem> items;
     public Order(){}
 
-    public Order(int id, int userId, String orderDate, double totalAmount, String status,
+    public Order(int id, int userId, String orderDate, double totalAmount, int shippingCost, String status,
                  int shippingProvince, int shippingDistrict, int shippingWard,
                  String shippingDetail, List<OrderItem> items) {
         this.id = id;
         this.userId = userId;
         this.orderDate = orderDate;
         this.totalAmount = totalAmount;
+        this.shippingCost = shippingCost;
         this.status = status;
         this.shippingProvince = shippingProvince;
         this.shippingDistrict = shippingDistrict;
@@ -43,6 +45,7 @@ public class Order implements Parcelable {
         userId = in.readInt();
         orderDate = in.readString();
         totalAmount = in.readDouble();
+        shippingCost = in.readInt();
         status = in.readString();
         shippingProvince = in.readInt();
         shippingDistrict = in.readInt();
@@ -75,6 +78,7 @@ public class Order implements Parcelable {
         dest.writeInt(userId);
         dest.writeString(orderDate);
         dest.writeDouble(totalAmount);
+        dest.writeDouble(shippingCost);
         dest.writeString(status);
         dest.writeInt(shippingProvince);
         dest.writeInt(shippingDistrict);
@@ -83,8 +87,17 @@ public class Order implements Parcelable {
         dest.writeList(items);
     }
 
+    public int getShippingCost() {
+        return shippingCost;
+    }
+
     // Getters
     public int getId() { return id; }
+
+    public void setShippingCost(int shippingCost) {
+        this.shippingCost = shippingCost;
+    }
+
     public int getUserId() { return userId; }
     public String getOrderDate() { return orderDate; }
     public double getTotalAmount() { return totalAmount; }

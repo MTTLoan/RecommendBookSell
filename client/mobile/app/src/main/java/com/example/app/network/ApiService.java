@@ -119,4 +119,6 @@ public interface ApiService {
     @DELETE("/api/carts/items/{bookId}")
     Call<Cart> deleteCartItem(@Header("Authorization") String authorization, @Path("bookId") int bookId);
 
+    @POST("orders")
+    Call<Order> addOrder(@Header("Authorization") String authorization, @Body Order order);
 }

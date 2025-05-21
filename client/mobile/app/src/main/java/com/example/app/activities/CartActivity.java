@@ -2,6 +2,7 @@ package com.example.app.activities;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -18,6 +19,8 @@ import com.example.app.adapters.CartAdapter;
 import com.example.app.models.Book;
 import com.example.app.models.Cart;
 import com.example.app.models.CartItem;
+import com.example.app.models.Order;
+import com.example.app.models.OrderItem;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
@@ -80,6 +83,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
 
         // Xóa các sản phẩm được chọn
         ivDelete.setOnClickListener(v -> deleteSelectedItems());
+
+        // Nút thanh toán
+        btnCheckout.setOnClickListener(v -> proceedToCheckout());
     }
 
     private void displayCart() {
@@ -224,5 +230,43 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     @Override
     public void onCartChanged() {
         updateTotalAmount();
+    }
+
+    private void proceedToCheckout() {
+        List<CartItem> selectedItems = new ArrayList<>();
+        double totalAmount = 0;
+        for (CartItem item : cartItems) {
+            if (item.isSelected()) {
+                selectedItems.add(item);
+                totalAmount += item.getBook().getPrice() * item.getQuantity();
+            }
+        }
+
+        if (selectedItems.isEmpty()) {
+            Toast.makeText(this, "Vui lòng chọn ít nhất một sản phẩm để thanh toán", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Chuyển CartItem thành OrderItem
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (CartItem cartItem : selectedItems) {
+            orderItems.add(new OrderItem(
+                    cartItem.getBookId(),
+                    cartItem.getQuantity(),
+                    cartItem.getBook().getPrice(),
+                    cartItem.getBook()
+            ));
+        }
+
+        // Tạo đối tượng Order
+        Order order = new Order();
+        order.setItems(orderItems);
+        order.setTotalAmount(totalAmount);
+        order.setUserId(AuthUtils.getUserId(this)); // Giả sử AuthUtils có phương thức getUserId
+
+        // Chuyển sang OrderConfirmationActivity
+        Intent intent = new Intent(CartActivity.this, OrderConfirmationActivity.class);
+        intent.putExtra("order", order);
+        startActivity(intent);
     }
 }
