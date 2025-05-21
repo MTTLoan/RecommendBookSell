@@ -1,5 +1,7 @@
 import Order from "../models/Order.js";
 import Book from "../models/Book.js";
+import Notification from "../models/Notification.js";
+import mongoose from "mongoose";
 
 export const getOrderHistory = async (req, res) => {
   try {
@@ -95,6 +97,175 @@ export const getOrderHistory = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Internal server error",
+    });
+  }
+};
+
+export const addOrder = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: "Người dùng không hợp lệ" });
+    }
+
+    const {
+      items,
+      totalAmount,
+      shippingCost,
+      shippingProvince,
+      shippingDistrict,
+      shippingWard,
+      shippingDetail,
+    } = req.body;
+
+    console.log("Adding order:", {
+      userId: user.id,
+      items,
+      totalAmount,
+      shippingCost,
+      shippingProvince,
+      shippingDistrict,
+      shippingWard,
+      shippingDetail,
+    });
+
+    // Kiểm tra dữ liệu đầu vào
+    if (
+      !items ||
+      !Array.isArray(items) ||
+      items.length === 0 ||
+      !totalAmount ||
+      totalAmount <= 0
+    ) {
+      console.log("Invalid input data");
+      return res.status(400).json({
+        success: false,
+        message:
+          "Dữ liệu không hợp lệ: Thiếu items hoặc totalAmount không hợp lệ",
+      });
+    }
+
+    // Kiểm tra tính hợp lệ của items
+    for (const item of items) {
+      if (
+        !item.bookId ||
+        !item.quantity ||
+        item.quantity <= 0 ||
+        !item.unitPrice ||
+        item.unitPrice <= 0
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Dữ liệu item không hợp lệ: Thiếu bookId, quantity hoặc unitPrice",
+        });
+      }
+
+      // Kiểm tra tồn kho sách
+      const book = await Book.findOne({ id: item.bookId });
+      if (!book) {
+        return res.status(404).json({
+          success: false,
+          message: `Không tìm thấy sách với id ${item.bookId}`,
+        });
+      }
+      if (book.stockQuantity < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Sách ${book.name} không đủ tồn kho`,
+        });
+      }
+    }
+
+    // Tăng seq và gán id
+    const counterResult = await mongoose.connection.db
+      .collection("counters")
+      .findOneAndUpdate(
+        { _id: "orderId" },
+        { $inc: { seq: 1 } },
+        { returnDocument: "after", upsert: true }
+      );
+
+    console.log("Counter result:", counterResult);
+
+    // Kiểm tra kết quả
+    if (!counterResult || typeof counterResult.seq !== "number") {
+      throw new Error("Failed to retrieve or increment counter for orderId");
+    }
+
+    const orderId = counterResult.seq;
+
+    // Tạo đơn hàng mới
+    const order = new Order({
+      id: orderId,
+      userId: user.id,
+      orderDate: new Date(),
+      totalAmount,
+      shippingCost: shippingCost || 0,
+      status: "Đang đóng gói", // Trạng thái mặc định
+      shippingProvince: shippingProvince || null,
+      shippingDistrict: shippingDistrict || null,
+      shippingWard: shippingWard || null,
+      shippingDetail: shippingDetail || null,
+      items,
+    });
+
+    console.log("Saving order:", order);
+
+    // Lưu đơn hàng
+    await order.save();
+
+    // Cập nhật tồn kho sách
+    for (const item of items) {
+      await Book.updateOne(
+        { id: item.bookId },
+        { $inc: { stockQuantity: -item.quantity } }
+      );
+    }
+
+    // Tạo thông báo
+    const notificationCounterResult = await mongoose.connection.db
+      .collection("counters")
+      .findOneAndUpdate(
+        { _id: "notificationId" },
+        { $inc: { seq: 1 } },
+        { returnDocument: "after", upsert: true }
+      );
+
+    if (
+      !notificationCounterResult ||
+      typeof notificationCounterResult.seq !== "number"
+    ) {
+      throw new Error(
+        "Failed to retrieve or increment counter for notificationId"
+      );
+    }
+
+    const notificationId = notificationCounterResult.seq;
+
+    const notification = new Notification({
+      id: notificationId,
+      userId: user.id,
+      orderId: orderId,
+      title: "Đơn hàng mới",
+      message: `Đơn hàng #${orderId} của bạn đã được tạo thành công và đang được xử lý.`,
+      isRead: false,
+      createdAt: new Date(),
+    });
+
+    console.log("Saving notification:", notification);
+    await notification.save();
+
+    res.status(201).json({
+      success: true,
+      data: order,
+      notification,
+    });
+  } catch (error) {
+    console.error("Error adding order:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi máy chủ: " + error.message,
     });
   }
 };

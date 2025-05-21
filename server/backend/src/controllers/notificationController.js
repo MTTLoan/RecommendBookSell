@@ -2,6 +2,7 @@ import Notification from "../models/Notification.js";
 import Order from "../models/Order.js";
 import Book from "../models/Book.js";
 import Counter from "../models/Counter.js";
+import mongoose from "mongoose";
 
 export const getNotifications = async (req, res) => {
   try {
@@ -45,41 +46,74 @@ export const getNotifications = async (req, res) => {
   }
 };
 
-export const createNotification = async (req, res) => {
+export const addNotification = async (req, res) => {
   try {
-    const counter = await Counter.findOneAndUpdate(
-      { _id: "notificationId" },
-      { $inc: { seq: 1 } },
-      { new: true, upsert: true }
-    );
-
-    let imageUrl = null;
-    if (req.body.orderId) {
-      const order = await Order.findOne({ id: req.body.orderId });
-      if (order && order.items && order.items.length > 0) {
-        const bookId = order.items[0].bookId;
-        const book = await Book.findOne({ id: bookId });
-        if (book && book.images && book.images.length > 0) {
-          imageUrl = book.images[0].url;
-        }
-      }
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: "Người dùng không hợp lệ" });
     }
 
-    const notification = new Notification({
-      id: counter.seq,
-      userId: req.body.userId,
-      orderId: req.body.orderId || null,
-      title: req.body.title,
-      message: req.body.message,
-      isRead: req.body.isRead || false,
-      createdAt: req.body.createdAt,
-      imageUrl,
+    const { userId, orderId, title, message } = req.body;
+    console.log("Adding notification:", {
+      userId,
+      orderId,
+      title,
+      message,
     });
 
-    const newNotification = await notification.save();
-    res.status(201).json(newNotification);
+    // Kiểm tra dữ liệu đầu vào
+    if (!userId || !title || !message) {
+      console.log("Invalid input data");
+      return res.status(400).json({
+        success: false,
+        message: "Dữ liệu không hợp lệ: Thiếu userId, title hoặc message",
+      });
+    }
+
+    // Tăng seq và gán id
+    const counterResult = await mongoose.connection.db
+      .collection("counters")
+      .findOneAndUpdate(
+        { _id: "notificationId" },
+        { $inc: { seq: 1 } },
+        { returnDocument: "after", upsert: true }
+      );
+
+    console.log("Counter result:", counterResult);
+
+    // Kiểm tra kết quả
+    if (!counterResult || typeof counterResult.seq !== "number") {
+      throw new Error(
+        "Failed to retrieve or increment counter for notificationId"
+      );
+    }
+
+    const notificationId = counterResult.seq;
+
+    // Tạo notification mới
+    const notification = new Notification({
+      id: notificationId,
+      userId,
+      orderId: orderId || null,
+      title,
+      message,
+      isRead: false,
+      createdAt: new Date(),
+    });
+
+    console.log("Saving notification:", notification);
+    await notification.save();
+
+    res.status(201).json({
+      success: true,
+      data: notification,
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("Error adding notification:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi máy chủ: " + error.message,
+    });
   }
 };
 
