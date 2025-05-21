@@ -72,7 +72,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
 
         // Thiết lập RecyclerView
         rvCartItems.setLayoutManager(new LinearLayoutManager(this));
-        cartAdapter = new CartAdapter(this, cartItems, this);
+        cartAdapter = new CartAdapter(this, cartItems, this, authToken);
         rvCartItems.setAdapter(cartAdapter);
 
         // Hiển thị giỏ hàng
@@ -96,6 +96,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                 if (response.isSuccessful() && response.body() != null) {
                     cartItems.clear();
                     cartItems.addAll(response.body().getItems());
+                    Log.d("CartActivity", "Cart Items: " + cartItems); // Thêm log
                     cartAdapter.notifyDataSetChanged();
                     updateTotalAmount();
                 } else {
@@ -111,7 +112,6 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             }
         });
     }
-
     private void deleteSelectedItems() {
         List<CartItem> itemsToDelete = new ArrayList<>();
         Iterator<CartItem> iterator = cartItems.iterator();
@@ -119,7 +119,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
 
         while (iterator.hasNext()) {
             CartItem item = iterator.next();
-            if (item.isSelected()) {
+            if (item.getSelected()) {
                 itemsToDelete.add(item);
                 hasSelectedItems = true;
             }
@@ -130,29 +130,17 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             return;
         }
 
-        // Hiển thị AlertDialog để xác nhận
         new AlertDialog.Builder(this)
                 .setTitle("Xác nhận xóa")
                 .setMessage("Bạn có chắc chắn muốn xóa " + itemsToDelete.size() + " sản phẩm đã chọn không?")
-                .setPositiveButton("Có", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        deleteItemsSequentially(itemsToDelete, 0);
-                    }
-                })
-                .setNegativeButton("Không", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                })
+                .setPositiveButton("Có", (dialog, which) -> deleteItemsSequentially(itemsToDelete, 0))
+                .setNegativeButton("Không", (dialog, which) -> dialog.dismiss())
                 .setCancelable(true)
                 .show();
     }
 
     private void deleteItemsSequentially(List<CartItem> itemsToDelete, int index) {
         if (index >= itemsToDelete.size()) {
-            // Hoàn tất xóa tất cả, cập nhật UI
             cartAdapter.notifyDataSetChanged();
             updateTotalAmount();
             Toast.makeText(CartActivity.this, "Đã xóa " + itemsToDelete.size() + " sản phẩm", Toast.LENGTH_SHORT).show();
@@ -165,12 +153,11 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             @Override
             public void onResponse(Call<Cart> call, Response<Cart> response) {
                 if (response.isSuccessful()) {
-                    // Xóa item khỏi danh sách local sau khi xóa thành công
                     cartItems.removeIf(i -> i.getBookId() == item.getBookId());
-                    deleteItemsSequentially(itemsToDelete, index + 1); // Tiếp tục với item tiếp theo
+                    deleteItemsSequentially(itemsToDelete, index + 1);
                 } else {
                     Toast.makeText(CartActivity.this, "Lỗi khi xóa sản phẩm: " + response.code(), Toast.LENGTH_SHORT).show();
-                    displayCart(); // Tải lại giỏ hàng nếu lỗi
+                    displayCart();
                 }
             }
 
@@ -178,11 +165,12 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             public void onFailure(Call<Cart> call, Throwable t) {
                 Log.e("CartActivity", "Lỗi khi xóa sản phẩm: " + t.getMessage());
                 Toast.makeText(CartActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                displayCart(); // Tải lại giỏ hàng nếu lỗi
+                displayCart();
             }
         });
     }
 
+    // Cập nhật số lượng
     public void updateCartItemQuantity(CartItem cartItem, int newQuantity) {
         if (newQuantity < 1) {
             return; // Không cho phép số lượng < 1
@@ -214,10 +202,37 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         });
     }
 
+    // Cập nhật trạng thái selected
+    public void updateCartItemSelected(CartItem cartItem, boolean newSelected) {
+        cartItem.setSelected(newSelected);
+        Cart updatedCart = new Cart();
+        updatedCart.setItems(cartItems);
+
+        Call<Cart> call = apiService.updateCart("Bearer " + authToken, updatedCart);
+        call.enqueue(new Callback<Cart>() {
+            @Override
+            public void onResponse(Call<Cart> call, Response<Cart> response) {
+                if (response.isSuccessful()) {
+                    cartAdapter.notifyDataSetChanged();
+                    updateTotalAmount();
+                } else {
+                    Toast.makeText(CartActivity.this, "Lỗi khi cập nhật trạng thái: " + response.code(), Toast.LENGTH_SHORT).show();
+                    displayCart(); // Tải lại giỏ hàng nếu lỗi
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Cart> call, Throwable t) {
+                Log.e("CartActivity", "Lỗi khi cập nhật trạng thái: " + t.getMessage());
+                Toast.makeText(CartActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                displayCart(); // Tải lại giỏ hàng nếu lỗi
+            }
+        });
+    }
     private void updateTotalAmount() {
         double total = 0;
         for (CartItem item : cartItems) {
-            if (item.isSelected()) {
+            if (item.getSelected()) {
                 Book book = item.getBook();
                 if (book != null) {
                     total += book.getPrice() * item.getQuantity();
@@ -236,7 +251,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         List<CartItem> selectedItems = new ArrayList<>();
         double totalAmount = 0;
         for (CartItem item : cartItems) {
-            if (item.isSelected()) {
+            if (item.getSelected()) {
                 selectedItems.add(item);
                 totalAmount += item.getBook().getPrice() * item.getQuantity();
             }
@@ -247,7 +262,6 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             return;
         }
 
-        // Chuyển CartItem thành OrderItem
         List<OrderItem> orderItems = new ArrayList<>();
         for (CartItem cartItem : selectedItems) {
             orderItems.add(new OrderItem(
@@ -258,13 +272,11 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             ));
         }
 
-        // Tạo đối tượng Order
         Order order = new Order();
         order.setItems(orderItems);
         order.setTotalAmount(totalAmount);
-        order.setUserId(AuthUtils.getUserId(this)); // Giả sử AuthUtils có phương thức getUserId
+        order.setUserId(AuthUtils.getUserId(this));
 
-        // Chuyển sang OrderConfirmationActivity
         Intent intent = new Intent(CartActivity.this, OrderConfirmationActivity.class);
         intent.putExtra("order", order);
         startActivity(intent);

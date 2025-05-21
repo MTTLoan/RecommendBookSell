@@ -2,6 +2,7 @@ import Order from "../models/Order.js";
 import Book from "../models/Book.js";
 import Notification from "../models/Notification.js";
 import mongoose from "mongoose";
+import { deleteSelectedCartItems } from "./cartController.js";
 
 export const getOrderHistory = async (req, res) => {
   try {
@@ -255,6 +256,10 @@ export const addOrder = async (req, res) => {
 
     console.log("Saving notification:", notification);
     await notification.save();
+
+    // Xóa các sản phẩm đã chọn khỏi giỏ hàng
+    await deleteSelectedCartItems(user.id);
+    console.log("Selected items deleted from cart after order creation");
 
     res.status(201).json({
       success: true,

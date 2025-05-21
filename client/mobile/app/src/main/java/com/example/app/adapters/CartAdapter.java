@@ -1,4 +1,3 @@
-// adapters/CartAdapter.java
 package com.example.app.adapters;
 
 import android.content.Context;
@@ -26,15 +25,17 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     private List<CartItem> cartItems;
     private Context context;
     private OnCartChangeListener listener;
+    private String authToken;
 
     public interface OnCartChangeListener {
         void onCartChanged();
     }
 
-    public CartAdapter(Context context, List<CartItem> cartItems, OnCartChangeListener listener) {
+    public CartAdapter(Context context, List<CartItem> cartItems, OnCartChangeListener listener, String authToken) {
         this.context = context;
         this.cartItems = cartItems;
         this.listener = listener;
+        this.authToken = authToken;
     }
 
     @NonNull
@@ -63,13 +64,14 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             holder.bookTitle.setText(book.getName());
             holder.price.setText(String.format("%,.0fđ", book.getPrice()));
             holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
-            holder.checkBox.setChecked(cartItem.isSelected());
+            holder.checkBox.setChecked(cartItem.getSelected());
         }
 
         // Checkbox listener
         holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             cartItem.setSelected(isChecked);
-            listener.onCartChanged();
+            ((CartActivity) context).updateCartItemSelected(cartItem, isChecked);
+//            listener.onCartChanged();
         });
 
         // Giảm số lượng

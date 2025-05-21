@@ -7,7 +7,7 @@ import android.os.Parcelable;
 public class CartItem implements Parcelable {
     private int bookId;
     private int quantity;
-    private boolean isSelected;
+    private boolean selected;
     private Book book;
 
     public CartItem() {
@@ -17,13 +17,13 @@ public class CartItem implements Parcelable {
         this.bookId = bookId;
         this.quantity = quantity;
         this.book = book;
-        this.isSelected = false;
+        this.selected = false;
     }
 
     protected CartItem(Parcel in) {
         bookId = in.readInt();
         quantity = in.readInt();
-        isSelected = in.readByte() != 0;
+        selected = in.readByte() != 0;
         book = in.readParcelable(Book.class.getClassLoader());
     }
 
@@ -53,7 +53,7 @@ public class CartItem implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(bookId);
         dest.writeInt(quantity);
-        dest.writeByte((byte) (isSelected ? 1 : 0));
+        dest.writeByte((byte) (selected ? 1 : 0));
         dest.writeParcelable(book, flags);
     }
 
@@ -73,12 +73,12 @@ public class CartItem implements Parcelable {
         this.quantity = quantity;
     }
 
-    public boolean isSelected() {
-        return isSelected;
+    public boolean getSelected() {
+        return selected;
     }
 
     public void setSelected(boolean selected) {
-        isSelected = selected;
+        this.selected = selected;
     }
 
     public Book getBook() {

@@ -125,7 +125,6 @@ export const getCart = async (req, res) => {
   }
 };
 
-// Hàm cập nhật giỏ hàng (sửa số lượng hoặc xóa sản phẩm)
 export const updateCart = async (req, res) => {
   try {
     const user = req.user;
@@ -145,11 +144,10 @@ export const updateCart = async (req, res) => {
       return res.status(404).json({ message: "Giỏ hàng không tồn tại" });
     }
 
-    // Cập nhật danh sách items, bao gồm selected
     cart.items = items.map((item) => ({
       bookId: item.bookId,
       quantity: item.quantity,
-      selected: item.selected || false, // Lưu trạng thái selected
+      selected: item.selected || false,
     }));
     cart.updatedAt = new Date();
 
@@ -160,6 +158,7 @@ export const updateCart = async (req, res) => {
     res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
   }
 };
+
 // Hàm xóa sản phẩm khỏi giỏ hàng
 export const deleteCartItem = async (req, res) => {
   try {
@@ -189,5 +188,25 @@ export const deleteCartItem = async (req, res) => {
   } catch (error) {
     console.error("Error deleting cart item:", error.message);
     res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
+  }
+};
+
+// Hàm xóa các sản phẩm đã chọn khỏi giỏ hàng
+export const deleteSelectedCartItems = async (userId) => {
+  try {
+    const cart = await Cart.findOne({ userId });
+    if (!cart) {
+      throw new Error("Giỏ hàng không tồn tại");
+    }
+
+    // Lọc bỏ các sản phẩm có selected: true
+    cart.items = cart.items.filter((item) => !item.selected);
+    cart.updatedAt = new Date();
+
+    const updatedCart = await cart.save();
+    return updatedCart;
+  } catch (error) {
+    console.error("Error deleting selected cart items:", error.message);
+    throw error;
   }
 };

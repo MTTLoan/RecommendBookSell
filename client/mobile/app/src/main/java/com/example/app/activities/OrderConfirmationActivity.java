@@ -66,7 +66,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
     private HashMap<String, Integer> districtMap = new HashMap<>();
 
     // Biến chi phí giao hàng
-    private double shippingCost = 15000; // Mặc định: Tiết kiệm
+    private double shippingCost = 15000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -384,8 +384,8 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         // Chuẩn bị dữ liệu gửi API
         Order newOrder = new Order();
         newOrder.setUserId(order.getUserId());
-        newOrder.setTotalAmount(order.getTotalAmount());
-        newOrder.setShippingCost((int) shippingCost); // Sử dụng phương thức setShippingCost
+        newOrder.setTotalAmount(order.getTotalAmount()+shippingCost);
+        newOrder.setShippingCost((int) shippingCost);
         newOrder.setShippingProvince(provinceMap.get(newProvince));
         newOrder.setShippingDistrict(districtMap.get(newDistrict));
         newOrder.setShippingWard(wardCodes.get(spinnerWard.getSelectedItemPosition()));
