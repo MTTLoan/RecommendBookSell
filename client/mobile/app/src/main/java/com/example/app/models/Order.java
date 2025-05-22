@@ -78,7 +78,7 @@ public class Order implements Parcelable {
         dest.writeInt(userId);
         dest.writeString(orderDate);
         dest.writeDouble(totalAmount);
-        dest.writeDouble(shippingCost);
+        dest.writeInt(shippingCost);
         dest.writeString(status);
         dest.writeInt(shippingProvince);
         dest.writeInt(shippingDistrict);

@@ -26,7 +26,6 @@
         android:layout_marginVertical="20dp"
         android:layout_marginStart="8dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/placeholder_book"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/cbSelect"
         app:layout_constraintTop_toTopOf="parent"

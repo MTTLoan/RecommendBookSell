@@ -54,10 +54,10 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             // Load hình ảnh sách
             if (book.getImages() != null && !book.getImages().isEmpty()) {
                 Picasso.get().load(book.getImages().get(0).getUrl())
-                        .placeholder(R.drawable.placeholder_book)
+                        .placeholder(R.drawable.placeholder_book1)
                         .into(holder.bookImage);
             } else {
-                holder.bookImage.setImageResource(R.drawable.placeholder_book);
+                holder.bookImage.setImageResource(R.drawable.placeholder_book1);
             }
 
             // Hiển thị tiêu đề và giá

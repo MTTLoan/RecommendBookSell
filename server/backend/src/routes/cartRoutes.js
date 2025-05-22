@@ -16,7 +16,7 @@ router.post("/", userJwtMiddleware, addToCart);
 // Route lấy thông tin giỏ hàng
 router.get("/", userJwtMiddleware, getCart);
 
-// Route cập nhật giỏ hàng (sửa số lượng)
+// Route cập nhật giỏ hàng
 router.put("/", userJwtMiddleware, updateCart);
 
 // Route xóa sản phẩm khỏi giỏ hàng
