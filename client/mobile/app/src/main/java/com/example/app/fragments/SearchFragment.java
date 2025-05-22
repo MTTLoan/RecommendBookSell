@@ -2,9 +2,13 @@ package com.example.app.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,22 +19,33 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.app.adapters.CategoryAdapter;
 import com.example.app.R;
 import com.example.app.activities.ListBookActivity;
 import com.example.app.adapters.BookAdapter;
 import com.example.app.adapters.CategoryAdapter;
 import com.example.app.models.Book;
 import com.example.app.models.Category;
-import com.example.app.models.Image;
+import com.example.app.models.response.BookResponse;
+import com.example.app.models.response.CategoryResponse;
+import com.example.app.network.ApiService;
+import com.example.app.network.RetrofitClient;
 import com.example.app.utils.HeaderController;
-
-import java.time.format.DateTimeFormatter;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.slider.RangeSlider;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SearchFragment extends Fragment {
+    private static final String TAG = "SearchFragment";
     private SearchView searchView;
     private ImageView btnFilter;
     private RecyclerView searchResultsRecyclerView;
@@ -39,32 +54,49 @@ public class SearchFragment extends Fragment {
     private BookAdapter searchResultsAdapter;
     private BookAdapter recommendationsAdapter;
     private CategoryAdapter categoryAdapter;
+    private TextView recommendationsTitle;
     private List<Book> bookList;
+    private List<Book> recommendationList;
     private List<Category> categoryList;
     private TextView noResultsText;
+    private ApiService apiService;
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
+    // Filter state
+    private Integer selectedCategoryId = null;
+    private float minPrice = 0f;
+    private float maxPrice = 700000f;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Inflate the fragment layout
         View view = inflater.inflate(R.layout.activity_search, container, false);
 
         // Initialize views
         searchView = view.findViewById(R.id.searchView);
         btnFilter = view.findViewById(R.id.btnFilter);
+        recommendationsTitle = view.findViewById(R.id.recommendationsTitle);
         searchResultsRecyclerView = view.findViewById(R.id.searchResultsRecyclerView);
         recommendationsRecyclerView = view.findViewById(R.id.recommendationsRecyclerView);
         categoryRecyclerView = view.findViewById(R.id.categoryRecyclerView);
         noResultsText = view.findViewById(R.id.noResultsText);
 
-        // Initialize data
-        initData(view);
+        // Initialize API service
+        apiService = RetrofitClient.getApiService();
 
         // Set up RecyclerView for header
         HeaderController.setupHeader(requireActivity());
 
+        // Initialize lists
+        bookList = new ArrayList<>();
+        recommendationList = new ArrayList<>();
+        categoryList = new ArrayList<>();
+
         // Setup RecyclerViews
         setupRecyclerViews();
+
+        // Load data from API: Fetch categories first, then books
+        fetchCategories();
 
         // Setup SearchView
         setupSearchView();
@@ -72,243 +104,113 @@ public class SearchFragment extends Fragment {
         // Setup Filter Button
         setupFilterButton();
 
-        // Optional: Clear search when back button is pressed
+        // Setup Recommendations Title click
+        setupRecommendationsTitle();
+
+        // Clear search when back button is pressed
         searchView.setOnCloseListener(() -> {
             clearSearch();
-            return false; // Return false to allow default behavior
+            return false;
         });
 
         return view;
     }
 
-    private void initData(View view) {
-        // Sample category data
-        categoryList = new ArrayList<>();
-        categoryList.add(new Category(1, "Sách thiếu nhi", "Fictional books", "https://cdn.baolaocai.vn/images/27cb6a3dc6bec6a269f35257fe14bcd812e6142cc69115636526ea totals/c/1-4750.jpg"));
-        categoryList.add(new Category(2, "Sách văn học", "Non-fictional books", "https://product.hstatic.net/1000237375/product/thiet_ke_chua_co_ten__52__cf9dd8d7f0b0416fa7d7691daa840b8e_master.png"));
-        categoryList.add(new Category(3, "Sách kinh tế", "Science books", "https://cdnphoto.dantri.com.vn/-y7D2Z9iYLqKVO9e1QRpXH7CHnY=/zoom/1200_630/2023/10/12/img5095-1697109683474.jpg"));
+    private void fetchCategories() {
+        Call<CategoryResponse> call = apiService.getCategories();
+        call.enqueue(new Callback<CategoryResponse>() {
+            @Override
+            public void onResponse(Call<CategoryResponse> call, Response<CategoryResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getCategories() != null) {
+                    categoryList = response.body().getCategories();
+                    categoryAdapter.setCategories(categoryList);
+                    searchResultsAdapter.setCategories(categoryList);
+                    recommendationsAdapter.setCategories(categoryList);
+                    Log.d(TAG, "Fetched categories: " + categoryList.size() + ", Categories: " + categoryList.toString());
+                    fetchBooks(null);
+                } else {
+                    Log.e(TAG, "Failed to fetch categories: " + response.code() + " - " + response.message());
+                    Toast.makeText(getContext(), "Không thể tải danh mục", Toast.LENGTH_SHORT).show();
+                    categoryList = new ArrayList<>();
+                    categoryAdapter.setCategories(categoryList);
+                    searchResultsAdapter.setCategories(categoryList);
+                    recommendationsAdapter.setCategories(categoryList);
+                    fetchBooks(null);
+                }
+            }
 
-        // Sample book data
-        List<Book> bookList = new ArrayList<>();
+            @Override
+            public void onFailure(Call<CategoryResponse> call, Throwable t) {
+                Log.e(TAG, "API call failed: " + t.getMessage());
+                Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                categoryList = new ArrayList<>();
+                categoryAdapter.setCategories(categoryList);
+                searchResultsAdapter.setCategories(categoryList);
+                recommendationsAdapter.setCategories(categoryList);
+                fetchBooks(null);
+            }
+        });
+    }
 
-        // DateTimeFormatter for parsing "yyyy-MM-dd HH:mm:ss"
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private void fetchBooks(Integer categoryId) {
+        Call<BookResponse> call = apiService.getBooks(categoryId);
+        call.enqueue(new Callback<BookResponse>() {
+            @Override
+            public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getBooks() != null) {
+                    bookList = response.body().getBooks();
+                    recommendationList = getTopRatedRecommendations(bookList, 5);
+                    recommendationsAdapter.updateList(recommendationList);
+                    if (categoryId == null) {
+                        searchResultsRecyclerView.setVisibility(View.GONE);
+                        noResultsText.setVisibility(View.GONE);
+                    } else {
+                        searchResultsAdapter.updateList(bookList);
+                    }
+                    Log.d(TAG, "Fetched books: " + bookList.size() + ", Recommendations: " + recommendationList.size());
+                } else {
+                    Log.e(TAG, "Failed to fetch books: " + response.code() + " - " + response.message());
+                    Toast.makeText(getContext(), "Không thể tải sách", Toast.LENGTH_SHORT).show();
+                    bookList = new ArrayList<>();
+                    recommendationList = new ArrayList<>();
+                    recommendationsAdapter.updateList(recommendationList);
+                }
+            }
 
-        // Book 1
-        List<Image> images1 = new ArrayList<>();
-        images1.add(new Image("https://salt.tikicdn.com/ts/product/73/24/11/1d84888511d73e6f5da2057115dcc4d8.png",
-                "1d84888511d73e6f5da2057115dcc4d8.png"));
-        String createdAt1 = "2025-04-28 02:27:21";
-        bookList.add(new Book(
-                1,
-                "Cùng con trưởng thành - Mình không thích bị cô lập",
-                "Lời nói đầu   Bé mới tầm 1 tuổi đã cần đọc sách chưa? ...",
-                images1,
-                28000.0,
-                3.5,
-                2,
-                10,
-                1,
-                createdAt1,
-                Collections.singletonList("Tô Bảo")
-        ));
+            @Override
+            public void onFailure(Call<BookResponse> call, Throwable t) {
+                Log.e(TAG, "API call failed: " + t.getMessage());
+                Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                bookList = new ArrayList<>();
+                recommendationList = new ArrayList<>();
+                recommendationsAdapter.updateList(recommendationList);
+            }
+        });
+    }
 
-        // Book 2
-        List<Image> images2 = new ArrayList<>();
-        images2.add(new Image("https://salt.tikicdn.com/ts/product/5b/21/12/3d905ef72b7de07171761e4b1819543c.jpg",
-                "789abc123def456ghi789jkl.png"));
-        String createdAt2 = "2025-04-29 10:15:30";
-        bookList.add(new Book(
-                2,
-                "Rèn luyện Kỹ Năng Sống dành cho học sinh - 25 thói quen tốt để thành công",
-                "Rèn Luyện Kĩ Năng Sống Dành Cho Học Sinh ...",
-                images2,
-                35000.0,
-                4.0,
-                5,
-                15,
-                1,
-                createdAt2,
-                Collections.singletonList("Nguyễn Nhật Ánh")
-        ));
-
-        // Book 3
-        List<Image> images3 = new ArrayList<>();
-        images3.add(new Image("https://salt.tikicdn.com/ts/product/16/72/77/dff96564663b63ba96b2c74b60261dcd.jpg",
-                "345mno678pqr901stu234vwx.png"));
-        String createdAt3 = "2025-04-30 14:20:45";
-        bookList.add(new Book(
-                3,
-                "Xứ Sở Miên Man",
-                "Xứ Sở Miên Man   Giới thiệu tác giả ...",
-                images3,
-                45000.0,
-                4.5,
-                10,
-                20,
-                1,
-                createdAt3,
-                Collections.singletonList("Nhật Sơn")
-        ));
-
-        // Book 4
-        List<Image> images4 = new ArrayList<>();
-        images4.add(new Image("https://salt.tikicdn.com/ts/product/56/bc/59/f63f4561ee47a86e1843e671fc6355e5.jpg",
-                "123yz456abc789def012ghi.png"));
-        String createdAt4 = "2025-05-01 09:30:00";
-        bookList.add(new Book(
-                4,
-                "Tuổi Thơ Dữ Dội - Tập 2",
-                "“Tuổi Thơ Dữ Dội” là một câu chuyện hay ...",
-                images4,
-                52000.0,
-                4.2,
-                8,
-                12,
-                2,
-                createdAt4,
-                Collections.singletonList("Mai Anh")
-        ));
-
-        // Book 5
-        List<Image> images5 = new ArrayList<>();
-        images5.add(new Image("https://salt.tikicdn.com/ts/product/0f/f9/70/e273b6980de4f6f550329aafe91578d8.jpg",
-                "567jkl890mno123pqr456stu.png"));
-        String createdAt5 = "2025-05-02 16:45:10";
-        bookList.add(new Book(
-                5,
-                "Búp Sen Xanh",
-                "Câu chuyện khoa học về vòng tuần hoàn của nước...",
-                images5,
-                30000.0,
-                3.8,
-                3,
-                18,
-                3,
-                createdAt5,
-                Collections.singletonList("Sơn Tùng")
-        ));
-
-        // Book 6
-        List<Image> images6 = new ArrayList<>();
-        images6.add(new Image("https://salt.tikicdn.com/ts/product/f2/01/28/35b7bf7dcaf02091c69fbbd4f9bb929f.jpg",
-                "1d84888511d73e6f5da2057115dcc4d8.png"));
-        String createdAt6 = "2025-04-28 02:27:21";
-        bookList.add(new Book(
-                6,
-                "Chuyện Con Mèo Dạy Hải Âu Bay",
-                "Sinh năm 1949 tại Chile ...",
-                images6,
-                28000.0,
-                3.5,
-                2,
-                10,
-                2,
-                createdAt6,
-                Collections.singletonList("Nguyễn Nhật Ánh")
-        ));
-
-        // Book 7
-        List<Image> images7 = new ArrayList<>();
-        images7.add(new Image("https://salt.tikicdn.com/ts/product/75/96/cf/8be7ccb29bb999c9b9aed8e65c75b291.jpg",
-                "789abc123def456ghi789jkl.png"));
-        String createdAt7 = "2025-04-29 10:15:30";
-        bookList.add(new Book(
-                7,
-                "Những Con Mèo Sau Bức Tường Hoa",
-                "Thông tin sản phẩm ...",
-                images7,
-                35000.0,
-                4.0,
-                5,
-                15,
-                1,
-                createdAt7,
-                Collections.singletonList("Hà Mi")
-        ));
-
-        // Book 8
-        List<Image> images8 = new ArrayList<>();
-        images8.add(new Image("https://salt.tikicdn.com/ts/product/a7/24/37/42434f74d352fade0090a0d3790b0e9b.jpg",
-                "345mno678pqr901stu234vwx.png"));
-        String createdAt8 = "2025-04-30 14:20:45";
-        bookList.add(new Book(
-                8,
-                "Bộ ba phép thuật - Úm ba la ánh sáng hiện ra",
-                "Bộ sách tranh kể về chuyến phiêu lưu ...",
-                images8,
-                45000.0,
-                4.5,
-                10,
-                20,
-                1,
-                createdAt8,
-                Collections.singletonList("Tô Bảo")
-        ));
-
-        // Book 9
-        List<Image> images9 = new ArrayList<>();
-        images9.add(new Image("https://salt.tikicdn.com/ts/product/e7/da/4a/8e75769f26664050a3f60fa150efb0f4.jpg",
-                "123yz456abc789def012ghi.png"));
-        String createdAt9 = "2025-05-01 09:30:00";
-        bookList.add(new Book(
-                9,
-                "WHO? Chuyện Kể Về Danh Nhân Thế Giới",
-                "\"WHO? Chuyện Kể Về Danh Nhân Thế Giới ...",
-                images9,
-                52000.0,
-                4.2,
-                8,
-                12,
-                3,
-                createdAt9,
-                Collections.singletonList("Nguyễn Sơn")
-        ));
-
-        // Book 10
-        List<Image> images10 = new ArrayList<>();
-        images10.add(new Image("https://salt.tikicdn.com/ts/product/67/77/6e/915e36b7629c4792218f19b57a8868e4.jpg",
-                "567jkl890mno123pqr456stu.png"));
-        String createdAt10 = "2025-05-02 16:45:10";
-        bookList.add(new Book(
-                10,
-                "100 Kỹ Năng Sinh Tồn",
-                "\"100 Kỹ Năng Sinh Tồn ...",
-                images10,
-                30000.0,
-                3.8,
-                3,
-                18,
-                3,
-                createdAt10,
-                Collections.singletonList("Nguyễn Nhật Ánh")
-        ));
-        // Set up click listener for recommendationsTitle
-        TextView recommendationsTitle = view.findViewById(R.id.recommendationsTitle);
-        if (recommendationsTitle != null) {
-            recommendationsTitle.setOnClickListener(v -> {
-                Intent intent = new Intent(requireContext(), ListBookActivity.class);
-                intent.putExtra("category_id", 1); // 0 for "Đề xuất dành riêng cho bạn" (all books)
-                intent.putExtra("category_name", "Đề xuất dành riêng cho bạn");
-                startActivity(intent);
-            });
+    private List<Book> getTopRatedRecommendations(List<Book> books, int count) {
+        if (books == null || books.isEmpty()) return new ArrayList<>();
+        List<Book> topRatedBooks = new ArrayList<>();
+        for (Book book : books) {
+            if (book.getAverageRating() == 5.0) {
+                topRatedBooks.add(book);
+            }
         }
+        Collections.shuffle(topRatedBooks, new Random());
+        return topRatedBooks.subList(0, Math.min(count, topRatedBooks.size()));
     }
 
     private void setupRecyclerViews() {
-        // Search Results RecyclerView (2 books per row)
-        searchResultsRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2)); // 2 columns
-        searchResultsAdapter = new BookAdapter(requireContext(), new ArrayList<>(), categoryList); // Start with empty list
+        searchResultsRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
+        searchResultsAdapter = new BookAdapter(requireContext(), new ArrayList<>(), categoryList);
         searchResultsRecyclerView.setAdapter(searchResultsAdapter);
 
-        // Recommendations RecyclerView (initially shows all books)
         recommendationsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        recommendationsAdapter = new BookAdapter(requireContext(), bookList, categoryList);
+        recommendationsAdapter = new BookAdapter(requireContext(), recommendationList != null ? recommendationList : new ArrayList<>(), categoryList);
         recommendationsRecyclerView.setAdapter(recommendationsAdapter);
 
-        // Category RecyclerView
         categoryRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
-        categoryAdapter = new CategoryAdapter(requireContext(), categoryList);
+        categoryAdapter = new CategoryAdapter(requireContext(), categoryList != null ? categoryList : new ArrayList<>());
         categoryRecyclerView.setAdapter(categoryAdapter);
     }
 
@@ -324,51 +226,205 @@ public class SearchFragment extends Fragment {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                filterBooks(query);
+                searchHandler.removeCallbacks(searchRunnable);
+                searchBooks(query);
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                filterBooks(newText);
+                if (searchRunnable != null) {
+                    searchHandler.removeCallbacks(searchRunnable);
+                }
+                searchRunnable = () -> searchBooks(newText);
+                searchHandler.postDelayed(searchRunnable, 500);
                 return true;
             }
         });
     }
 
     private void setupFilterButton() {
-        btnFilter.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Filter clicked", Toast.LENGTH_SHORT).show();
-            // Implement filter dialog or activity here
+        btnFilter.setOnClickListener(v -> showFilterBottomSheet());
+    }
+
+    private void showFilterBottomSheet() {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
+        View bottomSheetView = LayoutInflater.from(getContext()).inflate(R.layout.filter_dialog, null);
+        bottomSheetDialog.setContentView(bottomSheetView);
+
+        // Initialize views
+        ImageView ivBack = bottomSheetView.findViewById(R.id.ivBack);
+        TextView tvReset = bottomSheetView.findViewById(R.id.tvReset);
+        ChipGroup chipGroup = bottomSheetView.findViewById(R.id.chipGroup);
+        RangeSlider sliderPrice = bottomSheetView.findViewById(R.id.sliderPrice);
+        TextView tvPriceRange = bottomSheetView.findViewById(R.id.tvPriceRange);
+        Button btnApply = bottomSheetView.findViewById(R.id.btnApply);
+
+        // Populate ChipGroup with categories
+        for (Category category : categoryList) {
+            Chip chip = new Chip(requireContext());
+            chip.setText(category.getName());
+            chip.setCheckable(true);
+            chip.setChipBackgroundColorResource(R.color.chip_background_selector); // Define in res/color
+            chip.setTextColor(getResources().getColorStateList(R.color.chip_text_selector)); // Define in res/color
+            chip.setId(category.getId());
+            chipGroup.addView(chip);
+            if (selectedCategoryId != null && category.getId() == selectedCategoryId) {
+                chip.setChecked(true);
+            }
+        }
+
+        // Set initial price range
+        sliderPrice.setValues(minPrice, maxPrice);
+        updatePriceRangeText(tvPriceRange, minPrice, maxPrice);
+
+        // Price Slider Listener
+        sliderPrice.addOnChangeListener((slider, value, fromUser) -> {
+            List<Float> values = slider.getValues();
+            float newMinPrice = values.get(0);
+            float newMaxPrice = values.get(1);
+            updatePriceRangeText(tvPriceRange, newMinPrice, newMaxPrice);
+        });
+
+        // ChipGroup Listener
+        chipGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            selectedCategoryId = checkedId == View.NO_ID ? null : checkedId;
+        });
+
+        // Reset Button
+        tvReset.setOnClickListener(v -> {
+            selectedCategoryId = null;
+            minPrice = 0f;
+            maxPrice = 700000f;
+            chipGroup.clearCheck();
+            sliderPrice.setValues(0f, 700000f);
+            updatePriceRangeText(tvPriceRange, minPrice, maxPrice);
+            String currentQuery = searchView.getQuery().toString().trim();
+            if (!currentQuery.isEmpty() || selectedCategoryId != null || minPrice > 0 || maxPrice < 700000f) {
+                searchBooks(currentQuery);
+            } else {
+                clearSearch();
+            }
+        });
+
+        // Apply Button
+        btnApply.setOnClickListener(v -> {
+            List<Float> values = sliderPrice.getValues();
+            minPrice = values.get(0);
+            maxPrice = values.get(1);
+            String currentQuery = searchView.getQuery().toString().trim();
+            if (!currentQuery.isEmpty() || selectedCategoryId != null || minPrice > 0 || maxPrice < 700000f) {
+                searchBooks(currentQuery);
+            } else {
+                clearSearch();
+            }
+            bottomSheetDialog.dismiss();
+        });
+
+        // Back Button
+        ivBack.setOnClickListener(v -> bottomSheetDialog.dismiss());
+
+        // Show the bottom sheet
+        bottomSheetDialog.show();
+
+        // Back Button
+        ivBack.setOnClickListener(v -> bottomSheetDialog.dismiss());
+
+        // Show the bottom sheet
+        bottomSheetDialog.show();
+    }
+
+    private void updatePriceRangeText(TextView tvPriceRange, float min, float max) {
+        NumberFormat formatter = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
+        String priceRange = formatter.format(min) + " - " + formatter.format(max) + "đ";
+        tvPriceRange.setText(priceRange);
+    }
+
+    private void setupRecommendationsTitle() {
+        recommendationsTitle.setOnClickListener(v -> {
+            if (recommendationList == null || recommendationList.isEmpty()) {
+                Toast.makeText(getContext(), "Đang tải sách đề xuất, vui lòng thử lại sau.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Intent intent = new Intent(requireContext(), ListBookActivity.class);
+            intent.putExtra("category_id", 0);
+            intent.putExtra("category_name", "Đề xuất dành riêng cho bạn");
+            intent.putExtra("book_list", new ArrayList<>(recommendationList));
+            startActivity(intent);
         });
     }
 
-    private void filterBooks(String query) {
-        List<Book> filteredList = new ArrayList<>();
-        for (Book book : bookList) {
-            if (book.getName().toLowerCase().contains(query.toLowerCase()) ) {
-                filteredList.add(book);
-            }
+    private void searchBooks(String query) {
+        if (query == null) {
+            query = ""; // Handle null query to avoid NPE
+        }
+        String trimmedQuery = query.trim();
+        if (trimmedQuery.isEmpty() && selectedCategoryId == null && minPrice == 0f && maxPrice == 700000f) {
+            clearSearch();
+            return;
         }
 
-        if (query.isEmpty()) {
-            clearSearch(); // Clear search results when query is empty
-        } else {
-            if (filteredList.isEmpty()) {
+        Log.d(TAG, "SearchBooks - Query: " + trimmedQuery);
+        Log.d(TAG, "SearchBooks - CategoryId: " + selectedCategoryId);
+        Log.d(TAG, "SearchBooks - Price Range: " + minPrice + " to " + maxPrice);
+
+        Call<BookResponse> call = apiService.searchBooks(trimmedQuery, selectedCategoryId, minPrice, maxPrice);
+        call.enqueue(new Callback<BookResponse>() {
+            @Override
+            public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
+                if (response.isSuccessful()) {
+                    BookResponse bookResponse = response.body();
+                    if (bookResponse != null) {
+                        List<Book> filteredList = bookResponse.getBooks();
+                        Log.d(TAG, "Response Body: success=" + (bookResponse.isSuccess() ? "true" : "false") +
+                                ", msg=" + (bookResponse.getMsg() != null ? bookResponse.getMsg() : "null") +
+                                ", books=" + (filteredList != null ? filteredList.size() : "null"));
+                        if (filteredList != null && !filteredList.isEmpty()) {
+                            noResultsText.setVisibility(View.GONE);
+                            searchResultsRecyclerView.setVisibility(View.VISIBLE);
+                            searchResultsAdapter.updateList(filteredList);
+                        } else {
+                            noResultsText.setVisibility(View.VISIBLE);
+                            searchResultsRecyclerView.setVisibility(View.GONE);
+                            searchResultsAdapter.updateList(new ArrayList<>());
+                            Toast.makeText(getContext(), bookResponse.getMsg() != null ? bookResponse.getMsg() : "Không tìm thấy sách phù hợp", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Log.e(TAG, "Response body is null");
+                        noResultsText.setVisibility(View.VISIBLE);
+                        searchResultsRecyclerView.setVisibility(View.GONE);
+                        searchResultsAdapter.updateList(new ArrayList<>());
+                        Toast.makeText(getContext(), "Không thể tìm kiếm sách: Dữ liệu trả về trống", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Log.e(TAG, "Failed to search books: " + response.code() + " - " + response.message());
+                    if (response.errorBody() != null) {
+                        try {
+                            Log.e(TAG, "Error body: " + response.errorBody().string());
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error reading error body: " + e.getMessage());
+                        }
+                    }
+                    noResultsText.setVisibility(View.VISIBLE);
+                    searchResultsRecyclerView.setVisibility(View.GONE);
+                    searchResultsAdapter.updateList(new ArrayList<>());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BookResponse> call, Throwable t) {
+                Log.e(TAG, "Search API call failed: " + t.getMessage());
                 noResultsText.setVisibility(View.VISIBLE);
                 searchResultsRecyclerView.setVisibility(View.GONE);
-            } else {
-                noResultsText.setVisibility(View.GONE);
-                searchResultsRecyclerView.setVisibility(View.VISIBLE);
-                searchResultsAdapter.updateList(filteredList);
+                searchResultsAdapter.updateList(new ArrayList<>());
+                Toast.makeText(getContext(), "Lỗi kết nối khi tìm kiếm", Toast.LENGTH_SHORT).show();
             }
-        }
+        });
     }
 
     private void clearSearch() {
         noResultsText.setVisibility(View.GONE);
         searchResultsRecyclerView.setVisibility(View.GONE);
-        searchResultsAdapter.updateList(new ArrayList<>());
         searchView.clearFocus();
         searchView.setQuery("", false);
     }
@@ -378,6 +434,14 @@ public class SearchFragment extends Fragment {
         super.onResume();
         if (!searchView.getQuery().toString().isEmpty()) {
             clearSearch();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (searchRunnable != null) {
+            searchHandler.removeCallbacks(searchRunnable);
         }
     }
 }

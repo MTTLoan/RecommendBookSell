@@ -16,19 +16,33 @@ import com.example.app.R;
 import com.example.app.activities.BookDetailActivity;
 import com.example.app.models.Book;
 import com.example.app.models.Category;
+import com.example.app.models.Image;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder> {
     private Context context;
     private List<Book> bookList;
-    private List<Category> categoryList;
+    private Map<Integer, String> categoryMap; // Map để tra cứu categoryName nhanh
 
     public BookAdapter(Context context, List<Book> bookList, List<Category> categoryList) {
         this.context = context;
         this.bookList = bookList != null ? bookList : new ArrayList<>();
-        this.categoryList = categoryList != null ? categoryList : new ArrayList<>();
+        // Chuyển categoryList thành Map để tra cứu nhanh
+        this.categoryMap = new HashMap<>();
+        updateCategoryMap(categoryList);
+    }
+
+    private void updateCategoryMap(List<Category> categoryList) {
+        categoryMap.clear();
+        if (categoryList != null) {
+            for (Category category : categoryList) {
+                categoryMap.put(category.getId(), category.getName());
+            }
+        }
     }
 
     public void setBooks(List<Book> books) {
@@ -37,7 +51,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
     }
 
     public void setCategories(List<Category> categories) {
-        this.categoryList = categories != null ? categories : new ArrayList<>();
+        updateCategoryMap(categories);
         notifyDataSetChanged();
     }
 
@@ -51,25 +65,16 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
     @Override
     public void onBindViewHolder(@NonNull BookViewHolder holder, int position) {
         Book book = bookList.get(position);
-        // Find category name by categoryId
-        String categoryName = "Unknown Category";
-        for (Category category : categoryList) {
-            if (category.getId() == book.getCategoryId()) {
-                categoryName = category.getName();
-                break;
-            }
-        }
-        holder.textCategory.setText(categoryName);
-        holder.textTitle.setText(book.getName());
-        List<String> authors = book.getAuthor();
-        String authorsText = TextUtils.join(", ", authors);
-        holder.textAuthor.setText(authorsText);
-        holder.textPrice.setText(String.format("%,.0f đ", book.getPrice()));
+        holder.textTitle.setText(book.getName() != null ? book.getName() : "Unknown Title");
 
-        // Load image using Glide
-        if (!book.getImages().isEmpty()) {
+        // Xử lý giá
+        holder.textPrice.setText(book.getPrice() > 0 ? String.format("%,.0f đ", book.getPrice()) : "N/A");
+
+        // Load hình ảnh bằng Glide
+        List<Image> images = book.getImages();
+        if (images != null && !images.isEmpty() && images.get(0).getUrl() != null) {
             Glide.with(context)
-                    .load(book.getImages().get(0).getUrl())
+                    .load(images.get(0).getUrl())
                     .centerCrop()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .error(R.drawable.placeholder_book)
@@ -93,21 +98,19 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
 
     public static class BookViewHolder extends RecyclerView.ViewHolder {
         ImageView imageBook;
-        TextView textCategory, textTitle, textAuthor, textPrice;
+        TextView textTitle, textPrice;
 
         public BookViewHolder(@NonNull View itemView) {
             super(itemView);
             imageBook = itemView.findViewById(R.id.imageBook);
-            textCategory = itemView.findViewById(R.id.textCategory);
             textTitle = itemView.findViewById(R.id.textTitle);
-            textAuthor = itemView.findViewById(R.id.textAuthor);
             textPrice = itemView.findViewById(R.id.textPrice);
         }
     }
 
     public void updateList(List<Book> newBookList) {
         bookList.clear();
-        bookList.addAll(newBookList);
+        bookList.addAll(newBookList != null ? newBookList : new ArrayList<>());
         notifyDataSetChanged();
     }
 }

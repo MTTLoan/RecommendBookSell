@@ -30,14 +30,18 @@ import com.example.app.models.response.BookResponse;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Headers;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -76,6 +80,14 @@ public interface ApiService {
     @PUT("/api/auth/update-profile")
     Call<UserResponse> updateUserProfile(@Header("Authorization") String token, @Body User user);
 
+    // Tải ảnh avatar lên server
+    @Multipart
+    @POST("/api/auth/upload-avatar")
+    Call<UserResponse> uploadAvatar(
+            @Header("Authorization") String authHeader,
+            @Part MultipartBody.Part avatar
+    );
+
     @GET("notifications")
     Call<List<Notification>> getNotifications(@Header("Authorization") String token);
 
@@ -100,6 +112,13 @@ public interface ApiService {
     Call<BookDetailResponse> getBookDetail(@Path("id") int bookId);
     @GET("/api/books/book-detail/{bookId}/reviews")
     Call<ReviewResponse> getBookReviews(@Path("bookId") int bookId);
+    @GET("/api/books/search")
+    Call<BookResponse> searchBooks(
+            @Query("query") String query,
+            @Query("categoryId") Integer categoryId,
+            @Query("minPrice") Float minPrice,
+            @Query("maxPrice") Float maxPrice
+    );
 
     @GET("/api/categories/all-categories")
     Call<CategoryResponse> getCategories();

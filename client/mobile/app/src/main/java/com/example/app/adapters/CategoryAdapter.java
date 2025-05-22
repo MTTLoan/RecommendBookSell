@@ -17,6 +17,7 @@ import com.example.app.activities.ListBookActivity;
 import com.example.app.models.Category;
 import com.example.app.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
@@ -60,6 +61,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     @Override
     public int getItemCount() {
         return categoryList.size();
+    }
+
+    public void setCategories(List<Category> newCategoryList) {
+        categoryList.clear();
+        categoryList.addAll(newCategoryList != null ? newCategoryList : new ArrayList<>());
+        notifyDataSetChanged();
     }
 
     public static class CategoryViewHolder extends RecyclerView.ViewHolder {

@@ -3,6 +3,9 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendVerificationOTPEmail } from "./email_verificationController.js";
 import { hashData, verifyHashedData } from "../util/hashData.js";
+import { deleteS3File } from "../middleware/uploadToS3.js";
+
+
 
 export const registerController = async (req, res) => {
   const { username, fullName, email, phoneNumber, password } = req.body;
@@ -323,7 +326,6 @@ export const updateProfileController = async (req, res) => {
       addressWard,
       addressDetail,
       birthday,
-      avatar,
       gender,
     } = req.body;
 
@@ -345,7 +347,6 @@ export const updateProfileController = async (req, res) => {
     if (addressDetail !== undefined) user.addressDetail = addressDetail;
     if (birthday !== undefined)
       user.birthday = birthday ? new Date(birthday) : null;
-    if (avatar !== undefined) user.avatar = avatar;
     if (gender !== undefined) user.gender = gender;
 
     user.updatedAt = new Date();
@@ -359,6 +360,43 @@ export const updateProfileController = async (req, res) => {
       user,
     });
   } catch (error) {
+    console.error("Lỗi cập nhật hồ sơ:", error.message);
+    return res.status(500).json({
+      success: false,
+      msg: "Cập nhật hồ sơ thất bại! Lỗi server.",
+    });
+  }
+};
+
+export const uploadAvatarController = async (req, res) => {
+  try {
+    if (!req.file || !req.file.location) {
+      console.log("No file or location found in req.file");
+      return res.status(400).json({ success: false, msg: "Không có file avatar được gửi lên." });
+    }
+
+    const user = await User.findOne({ id: req.user.id });
+    if (!user) {
+      return res.status(404).json({ success: false, msg: "Không tìm thấy tài khoản." });
+    }
+
+    // Nếu user đã có avatar cũ, xóa khỏi S3
+    if (user.avatar) {
+      await deleteS3File(user.avatar);
+    }
+
+    // Lưu avatar mới
+    user.avatar = req.file.location;
+    user.updatedAt = new Date();
+    await user.save();
+
+    return res.status(200).json({ success: true, msg: "Cập nhật avatar thành công!", avatar: user.avatar });
+  } catch (error) {
+    console.error("Lỗi cập nhật avatar:", error.message, error.stack);
+    return res.status(500).json({ success: false, msg: "Cập nhật avatar thất bại! Lỗi server." });
+  }
+};
+
     console.error("Forgot password error:", error); 
     res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
   }

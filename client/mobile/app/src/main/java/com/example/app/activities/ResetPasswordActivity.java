@@ -94,8 +94,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         });
-        setupPasswordToggle(etPassword, R.drawable.visibility_24px, R.drawable.visibility_off_24px);
-        setupPasswordToggle(etConfirmPassword, R.drawable.visibility_24px, R.drawable.visibility_off_24px);
+        setupPasswordToggle(etPassword, R.drawable.ic_visibility_24px, R.drawable.ic_visibility_off_24px);
+        setupPasswordToggle(etConfirmPassword, R.drawable.ic_visibility_24px, R.drawable.ic_visibility_off_24px);
     }
 
     private void setupPasswordToggle(EditText editText, int iconShow, int iconHide) {
