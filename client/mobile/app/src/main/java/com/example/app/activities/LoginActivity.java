@@ -117,6 +117,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         User user = response.body();
                         AuthUtils.saveToken(LoginActivity.this, user.getToken());
+                        Toast.makeText(LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(LoginActivity.this, Menu.class));
                         finish();
                     } else {

@@ -147,7 +147,7 @@ export const searchBooks = async (req, res) => {
         books.length > 0
           ? "Tìm kiếm sách thành công."
           : "Không tìm thấy sách phù hợp.",
-      books: books,
+      book: books,
     });
   } catch (error) {
     console.error("Lỗi tìm kiếm sách:", error.message);

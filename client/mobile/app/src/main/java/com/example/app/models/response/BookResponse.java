@@ -7,7 +7,7 @@ import java.util.List;
 public class BookResponse {
     private boolean success;
     private String msg;
-    @SerializedName("book") // Map to the "book" key in JSON
+    @SerializedName("book")
     private List<Book> books; // Change to List<Book> to match the array
 
     public boolean isSuccess() {
