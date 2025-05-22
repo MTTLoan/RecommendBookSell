@@ -30,9 +30,11 @@ import com.example.app.utils.HeaderController;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -48,6 +50,7 @@ public class HomeFragment extends Fragment {
     private final Map<Integer, RecyclerView> recyclerViewMap = new HashMap<>();
     private final Map<Integer, BookAdapter> adapterMap = new HashMap<>();
     private final List<Category> categoryList = new ArrayList<>();
+    private final Map<Integer, List<Book>> bookListMap = new HashMap<>(); // Store book lists for each category
 
     private ApiService apiService;
 
@@ -114,12 +117,7 @@ public class HomeFragment extends Fragment {
         titleView.setOnClickListener(v -> openListBookActivity(categoryId));
     }
 
-    // Trong HomeFragment.java
     private void openListBookActivity(int categoryId) {
-        if (categoryList.isEmpty()) {
-            Toast.makeText(getContext(), "Đang tải danh mục, vui lòng thử lại sau.", Toast.LENGTH_SHORT).show();
-            return;
-        }
         Intent intent = new Intent(requireContext(), ListBookActivity.class);
         intent.putExtra("category_id", categoryId);
         String name = categoryId == CATEGORY_RECOMMENDATION
@@ -130,6 +128,17 @@ public class HomeFragment extends Fragment {
                 .findFirst()
                 .orElse("Unknown");
         intent.putExtra("category_name", name);
+
+        // For recommendations, pass the filtered book list
+        if (categoryId == CATEGORY_RECOMMENDATION) {
+            List<Book> recommendationList = bookListMap.getOrDefault(categoryId, new ArrayList<>());
+            if (recommendationList.isEmpty()) {
+                Toast.makeText(getContext(), "Đang tải sách đề xuất, vui lòng thử lại sau.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            intent.putExtra("book_list", new ArrayList<>(recommendationList));
+        }
+
         startActivity(intent);
     }
 
@@ -169,7 +178,13 @@ public class HomeFragment extends Fragment {
             @Override
             public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    adapter.setBooks(response.body().getBooks());
+                    List<Book> books = response.body().getBooks();
+                    if (categoryId == CATEGORY_RECOMMENDATION) {
+                        // Filter books with averageRating == 5 (up to 5, shuffled)
+                        books = getTopRatedRecommendations(books, 5);
+                    }
+                    bookListMap.put(categoryId, books); // Store the book list
+                    adapter.setBooks(books);
                 } else {
                     showApiError("Không thể lấy sách cho danh mục " + categoryId + ".", response);
                 }
@@ -180,6 +195,24 @@ public class HomeFragment extends Fragment {
                 showFailureError("sách cho danh mục " + categoryId, t);
             }
         });
+    }
+
+    private List<Book> getTopRatedRecommendations(List<Book> books, int count) {
+        if (books == null || books.isEmpty()) return new ArrayList<>();
+
+        // Filter books with averageRating == 5
+        List<Book> topRatedBooks = new ArrayList<>();
+        for (Book book : books) {
+            if (book.getAverageRating() == 5.0) { // Assuming getAverageRating() returns the averageRating
+                topRatedBooks.add(book);
+            }
+        }
+
+        // Shuffle the list to ensure variety in recommendations
+        Collections.shuffle(topRatedBooks, new Random());
+
+        // Return up to 'count' books
+        return topRatedBooks.subList(0, Math.min(count, topRatedBooks.size()));
     }
 
     private void showApiError(String baseMessage, Response<?> response) {

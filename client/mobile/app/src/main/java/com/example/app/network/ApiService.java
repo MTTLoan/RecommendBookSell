@@ -110,6 +110,13 @@ public interface ApiService {
     Call<BookDetailResponse> getBookDetail(@Path("id") int bookId);
     @GET("/api/books/book-detail/{bookId}/reviews")
     Call<ReviewResponse> getBookReviews(@Path("bookId") int bookId);
+    @GET("/api/books/search")
+    Call<BookResponse> searchBooks(
+            @Query("query") String query,
+            @Query("categoryId") Integer categoryId,
+            @Query("minPrice") Float minPrice,
+            @Query("maxPrice") Float maxPrice
+    );
 
     @GET("/api/categories/all-categories")
     Call<CategoryResponse> getCategories();

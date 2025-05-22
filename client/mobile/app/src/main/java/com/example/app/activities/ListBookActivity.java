@@ -6,11 +6,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.app.R;
 import com.example.app.adapters.BookAdapter;
 import com.example.app.models.Book;
@@ -19,10 +17,8 @@ import com.example.app.models.response.BookResponse;
 import com.example.app.models.response.CategoryResponse;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -35,7 +31,7 @@ public class ListBookActivity extends AppCompatActivity {
     private ImageView ivReturn;
     private TextView tvTitle;
     private ApiService apiService;
-    private List<Category> categoryList = new ArrayList<>();
+    private List<Category> categoryList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,19 +43,24 @@ public class ListBookActivity extends AppCompatActivity {
         ivReturn = findViewById(R.id.ivReturn);
         tvTitle = findViewById(R.id.tvTitle);
 
-        // Get category ID and name from Intent
-        int categoryId = getIntent().getIntExtra("category_id", 0); // Default to 0 (all books)
+        // Get data from Intent
+        int categoryId = getIntent().getIntExtra("category_id", 0);
         String categoryName = getIntent().getStringExtra("category_name");
+        List<Book> bookListFromIntent = (List<Book>) getIntent().getSerializableExtra("book_list");
+
+        // Set title, default to "Đề xuất dành riêng cho bạn" for recommendations
         if (categoryName == null || categoryName.equals("Unknown")) {
-            categoryName = "Đang tải danh mục...";
+            categoryName = categoryId == 0 ? "Đề xuất dành riêng cho bạn" : "Đang tải danh mục...";
         }
         tvTitle.setText(categoryName);
 
+        // Set return button listener
         ivReturn.setOnClickListener(v -> finish());
 
         // Initialize lists
         bookList = new ArrayList<>();
         filteredBookList = new ArrayList<>();
+        categoryList = new ArrayList<>();
 
         // Setup RecyclerView
         listBookAdapter = new BookAdapter(this, filteredBookList, categoryList);
@@ -70,8 +71,15 @@ public class ListBookActivity extends AppCompatActivity {
         // Initialize ApiService
         apiService = RetrofitClient.getApiService();
 
-        // Fetch categories first
-        fetchCategories(categoryId);
+        // If book_list is provided (e.g., recommendations from SearchFragment), use it
+        if (bookListFromIntent != null && !bookListFromIntent.isEmpty()) {
+            filteredBookList.clear();
+            filteredBookList.addAll(bookListFromIntent);
+            listBookAdapter.notifyDataSetChanged();
+            fetchCategories(categoryId); // Fetch categories for category names
+        } else {
+            fetchCategories(categoryId);
+        }
     }
 
     private void fetchCategories(int categoryId) {
@@ -81,43 +89,49 @@ public class ListBookActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     categoryList.clear();
                     categoryList.addAll(response.body().getCategories());
-                    listBookAdapter.setCategories(new ArrayList<>(categoryList)); // Cập nhật adapter với danh mục
+                    listBookAdapter.setCategories(new ArrayList<>(categoryList)); // Update adapter with categories
 
-                    // Cập nhật tiêu đề nếu danh mục được tìm thấy
-                    Category category = categoryList.stream()
-                            .filter(c -> c.getId() == categoryId)
-                            .findFirst()
-                            .orElse(null);
-                    if (category != null) {
-                        tvTitle.setText(category.getName());
+                    // Update title only for non-recommendation categories
+                    if (categoryId != 0) {
+                        Category category = categoryList.stream()
+                                .filter(c -> c.getId() == categoryId)
+                                .findFirst()
+                                .orElse(null);
+                        if (category != null) {
+                            tvTitle.setText(category.getName());
+                        }
                     }
 
-                    // Fetch books after categories are loaded
-                    fetchBooks(categoryId);
+                    // Fetch books only if no book_list was provided
+                    if (getIntent().getSerializableExtra("book_list") == null) {
+                        fetchBooks(categoryId);
+                    }
                 } else {
                     showApiError("Không thể lấy danh mục.", response);
-                    fetchBooks(categoryId); // Tiếp tục tải sách nếu danh mục thất bại
+                    if (getIntent().getSerializableExtra("book_list") == null) {
+                        fetchBooks(categoryId);
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<CategoryResponse> call, Throwable t) {
                 showFailureError("danh mục", t);
-                fetchBooks(categoryId); // Tiếp tục tải sách nếu có lỗi
+                if (getIntent().getSerializableExtra("book_list") == null) {
+                    fetchBooks(categoryId);
+                }
             }
         });
     }
 
     private void fetchBooks(int categoryId) {
-        Call<BookResponse> call = apiService.getBooks(categoryId == 0 ? null : categoryId); // Truyền null nếu categoryId là 0
+        Call<BookResponse> call = apiService.getBooks(categoryId == 0 ? null : categoryId);
         call.enqueue(new Callback<BookResponse>() {
             @Override
             public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getBooks() != null) {
                     filteredBookList.clear();
                     filteredBookList.addAll(response.body().getBooks());
-
-                    // Update adapter
                     listBookAdapter.notifyDataSetChanged();
 
                     if (filteredBookList.isEmpty()) {

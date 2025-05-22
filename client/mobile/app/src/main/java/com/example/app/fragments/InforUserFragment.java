@@ -7,7 +7,6 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,11 +40,10 @@ import com.example.app.utils.AuthUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -181,24 +179,15 @@ public class InforUserFragment extends Fragment {
         boolean cameraPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
         boolean storagePermission;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
-            storagePermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED;
-        } else {
-            storagePermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-        }
+        // Android 15 (API 36) yêu cầu quyền chi tiết hơn
+        storagePermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED;
 
         Log.d(TAG, "Camera permission: " + cameraPermission + ", Storage permission: " + storagePermission);
         return cameraPermission && storagePermission;
     }
 
     private void requestPermissions() {
-        String[] permissions;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
-            permissions = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES};
-        } else {
-            permissions = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
-        }
-
+        String[] permissions = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES};
         ActivityCompat.requestPermissions(requireActivity(), permissions, REQUEST_PERMISSIONS);
     }
 
@@ -217,9 +206,8 @@ public class InforUserFragment extends Fragment {
     }
 
     private void openCamera() {
-        Log.d(TAG, "Opening camera");
-        Intent takePictureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        if (cameraIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
             File photoFile = null;
             try {
                 photoFile = createImageFile();
@@ -230,14 +218,12 @@ public class InforUserFragment extends Fragment {
             }
             if (photoFile != null) {
                 imageUri = FileProvider.getUriForFile(requireContext(),
-                        requireContext().getApplicationContext().getPackageName() + ".provider",
-                        photoFile);
-                takePictureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, imageUri);
-                takePictureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                captureImageLauncher.launch(takePictureIntent);
+                        requireContext().getPackageName() + ".provider", photoFile);
+                cameraIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, imageUri);
+                cameraIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                captureImageLauncher.launch(cameraIntent);
             }
         } else {
-            Log.w(TAG, "No camera app found");
             Toast.makeText(getContext(), "Không tìm thấy ứng dụng camera", Toast.LENGTH_SHORT).show();
         }
     }
