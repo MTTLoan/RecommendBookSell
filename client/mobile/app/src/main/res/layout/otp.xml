@@ -25,7 +25,7 @@
         android:layout_height="24dp"
         android:layout_marginStart="12dp"
         android:contentDescription="@string/back"
-        android:src="@drawable/arrow_back_ios_24px"
+        android:src="@drawable/ic_arrow_back_ios_24px"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/registerHeader"
         app:tint="@color/white" />
@@ -36,6 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="12dp"
         android:text="@string/login"
+        android:fontFamily="@font/quicksand_medium"
         android:textColor="@color/white"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -51,7 +52,7 @@
         android:text="@string/signup"
         android:textColor="@android:color/white"
         android:textSize="32sp"
-        android:textStyle="bold"
+        android:fontFamily="@font/quicksand_bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ivReturn" />
 
@@ -63,6 +64,7 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="10dp"
         android:text="@string/subSignup"
+        android:fontFamily="@font/quicksand_medium"
         android:textColor="@android:color/white"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -92,7 +94,7 @@
             android:text="@string/confirmOTP"
             android:textColor="@android:color/black"
             android:textSize="24sp"
-            android:textStyle="bold"
+            android:fontFamily="@font/quicksand_bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             tools:ignore="MissingConstraints" />
@@ -109,6 +111,7 @@
             android:textColor="@android:color/black"
             android:textSize="16sp"
             android:gravity="center"
+            android:fontFamily="@font/quicksand_medium"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvTitleOTP" />
@@ -124,7 +127,7 @@
             android:padding="@dimen/common_padding"
             android:textColor="@drawable/text_colors"
             android:textSize="18sp"
-            android:textStyle="bold"
+            android:fontFamily="@font/quicksand_bold"
             app:cursorColor="@color/line_selected"
             app:cursorWidth="2dp"
             app:hideLineWhenFilled="true"
@@ -150,6 +153,7 @@
             android:layout_marginStart="64dp"
             android:layout_marginTop="20dp"
             android:text="@string/noreceiveOTP"
+            android:fontFamily="@font/quicksand_regular"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/firstPinView" />
@@ -163,9 +167,9 @@
             android:layout_marginTop="20dp"
             android:padding="0dp"
             android:text="@string/resend"
+            android:fontFamily="@font/quicksand_bold"
             android:textColor="@color/red"
             android:textSize="14sp"
-            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@id/tvQAResendOTP"
@@ -180,6 +184,7 @@
             android:layout_marginTop="25dp"
             android:background="@drawable/button_border"
             android:text="@string/cancel"
+            android:fontFamily="@font/quicksand_bold"
             android:textColor="@android:color/black"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvQAResendOTP" />
@@ -193,6 +198,7 @@
             android:background="@drawable/btn_fill"
             android:backgroundTint="@color/green"
             android:text="@string/next"
+            android:fontFamily="@font/quicksand_bold"
             android:textColor="@android:color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.789"
@@ -207,6 +213,7 @@
             android:paddingBottom="2dp"
             android:text="@string/policy"
             android:textColor="@android:color/black"
+            android:fontFamily="@font/quicksand_regular"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />

@@ -17,7 +17,7 @@
             android:id="@+id/imageContainer"
             android:layout_width="0dp"
             android:layout_height="138dp"
-            android:background="@color/light_green"
+            android:background="@color/white"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -49,17 +49,6 @@
             app:layout_constraintVertical_bias="0.583">
 
             <TextView
-                android:id="@+id/textCategory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/roboto_light"
-                android:text="Thể loại"
-                android:textColor="@color/txt_subtitle"
-                android:textSize="8sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
                 android:id="@+id/textTitle"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -67,39 +56,26 @@
                 android:ellipsize="end"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
-                android:fontFamily="@font/roboto_semibold"
+                android:fontFamily="@font/quicksand_semibold"
                 android:maxLines="2"
                 android:minLines="2"
                 android:text="Tên sách"
                 android:textSize="12sp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/textCategory" />
-
-            <TextView
-                android:id="@+id/textAuthor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:fontFamily="@font/roboto_regular"
-                android:text="Tác giả"
-                android:textColor="#444444"
-                android:textSize="10sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/textTitle" />
+                app:layout_constraintStart_toStartOf="parent" />
 
             <TextView
                 android:id="@+id/textPrice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:fontFamily="@font/roboto_semibold"
+                android:fontFamily="@font/quicksand_bold"
                 android:text="Giá"
                 android:textColor="#000000"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/textAuthor" />
+                app:layout_constraintTop_toBottomOf="@id/textTitle" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

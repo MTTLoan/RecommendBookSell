@@ -23,7 +23,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:contentDescription="@string/back"
-            android:src="@drawable/arrow_back_ios_24px"
+            android:src="@drawable/ic_arrow_back_ios_24px"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/header"
             app:tint="@color/black" />
@@ -36,7 +36,7 @@
             android:text="THÔNG TIN NGƯỜI DÙNG"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:fontFamily="@font/roboto_bold"
+            android:fontFamily="@font/quicksand_bold"
             android:textColor="@android:color/black"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -63,6 +63,7 @@
                 android:layout_height="wrap_content"
                 android:text="Thông tin sẽ được lưu lại cho lần mua tiếp theo. Nhập vào đúng thông tin của bạn."
                 android:textSize="14sp"
+                android:fontFamily="@font/quicksand_medium"
                 android:textColor="@android:color/darker_gray"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -109,6 +110,7 @@
                     android:layout_height="wrap_content"
                     android:hint="Họ và tên"
                     android:inputType="text"
+                    android:fontFamily="@font/quicksand_medium"
                     android:text="Mai Thi Thanh Loan" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -136,6 +138,7 @@
                     android:layout_height="wrap_content"
                     android:hint="Số điện thoại"
                     android:inputType="phone"
+                    android:fontFamily="@font/quicksand_medium"
                     android:text="0123456789" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -161,6 +164,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Ngày sinh"
+                    android:fontFamily="@font/quicksand_medium"
                     android:focusable="false"
                     android:clickable="true"
                     android:text="01/01/1990" />
@@ -182,10 +186,11 @@
                     android:id="@+id/spinnerProvince"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:contentDescription="Chọn tỉnh/thành phố"
+                    android:fontFamily="@font/quicksand_medium"
                     android:minHeight="48dp"
                     android:padding="8dp"
-                    android:prompt="@string/prompt_province"
-                    android:contentDescription="Chọn tỉnh/thành phố" />
+                    android:prompt="@string/prompt_province" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Spinner chọn quận/huyện -->
@@ -206,6 +211,7 @@
                     android:layout_height="wrap_content"
                     android:minHeight="48dp"
                     android:padding="8dp"
+                    android:fontFamily="@font/quicksand_medium"
                     android:prompt="@string/prompt_district"
                     android:contentDescription="Chọn quận/huyện" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -229,6 +235,7 @@
                     android:minHeight="48dp"
                     android:padding="8dp"
                     android:prompt="@string/prompt_ward"
+                    android:fontFamily="@font/quicksand_medium"
                     android:contentDescription="Chọn phường/xã" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -254,6 +261,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Địa chỉ"
+                    android:fontFamily="@font/quicksand_medium"
                     android:inputType="text"
                     android:text="37 đường số 8" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -263,6 +271,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Nam"
+                android:fontFamily="@font/quicksand_medium"
                 android:checked="true"
                 app:layout_constraintTop_toBottomOf="@id/tilAddress"
                 app:layout_constraintStart_toStartOf="parent"
@@ -273,6 +282,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Nữ"
+                android:fontFamily="@font/quicksand_medium"
                 app:layout_constraintTop_toTopOf="@id/rbMale"
                 app:layout_constraintStart_toEndOf="@id/rbMale"
                 android:layout_marginStart="32dp" />
@@ -282,8 +292,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="LƯU"
-                android:backgroundTint="#757575"
+                android:backgroundTint="@color/green"
                 android:textColor="@android:color/white"
+                android:fontFamily="@font/quicksand_bold"
                 app:layout_constraintTop_toBottomOf="@id/rbMale"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

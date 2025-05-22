@@ -55,15 +55,15 @@ public class PersonalInfoActivity extends AppCompatActivity {
     private User currentUser;
 
     // Dữ liệu từ API provinces.open-api.vn
-    private List<String> provinceNames = new ArrayList<>();
-    private List<Integer> provinceCodes = new ArrayList<>();
-    private List<String> districtNames = new ArrayList<>();
-    private List<Integer> districtCodes = new ArrayList<>();
-    private List<String> wardNames = new ArrayList<>();
-    private List<Integer> wardCodes = new ArrayList<>();
-    private HashMap<String, Integer> provinceMap = new HashMap<>();
-    private HashMap<String, Integer> districtMap = new HashMap<>();
-    private HashMap<String, Integer> wardMap = new HashMap<>();
+    private final List<String> provinceNames = new ArrayList<>();
+    private final List<Integer> provinceCodes = new ArrayList<>();
+    private final List<String> districtNames = new ArrayList<>();
+    private final List<Integer> districtCodes = new ArrayList<>();
+    private final List<String> wardNames = new ArrayList<>();
+    private final List<Integer> wardCodes = new ArrayList<>();
+    private final HashMap<String, Integer> provinceMap = new HashMap<>();
+    private final HashMap<String, Integer> districtMap = new HashMap<>();
+    private final HashMap<String, Integer> wardMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,7 +175,8 @@ public class PersonalInfoActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
         });
 
         // Xử lý nút Lưu
