@@ -100,7 +100,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                     cartAdapter.notifyDataSetChanged();
                     updateTotalAmount();
                 } else {
-                    Toast.makeText(CartActivity.this, "Không thể tải giỏ hàng: " + response.code(), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(CartActivity.this, "Không thể tải giỏ hàng: " + response.code(), Toast.LENGTH_SHORT).show();
                     Log.e("CartActivity", "Response error: " + response.message());
                 }
             }
@@ -108,7 +108,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             @Override
             public void onFailure(Call<Cart> call, Throwable t) {
                 Log.e("CartActivity", "Lỗi kết nối: " + t.getMessage());
-                Toast.makeText(CartActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(CartActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -188,7 +188,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                     cartAdapter.notifyDataSetChanged();
                     updateTotalAmount();
                 } else {
-                    Toast.makeText(CartActivity.this, "Lỗi khi cập nhật số lượng: " + response.code(), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(CartActivity.this, "Lỗi khi cập nhật số lượng: " + response.code(), Toast.LENGTH_SHORT).show();
                     displayCart(); // Tải lại giỏ hàng nếu lỗi
                 }
             }
@@ -196,7 +196,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             @Override
             public void onFailure(Call<Cart> call, Throwable t) {
                 Log.e("CartActivity", "Lỗi khi cập nhật số lượng: " + t.getMessage());
-                Toast.makeText(CartActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(CartActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 displayCart(); // Tải lại giỏ hàng nếu lỗi
             }
         });
@@ -216,7 +216,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                     cartAdapter.notifyDataSetChanged();
                     updateTotalAmount();
                 } else {
-                    Toast.makeText(CartActivity.this, "Lỗi khi cập nhật trạng thái: " + response.code(), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(CartActivity.this, "Lỗi khi cập nhật trạng thái: " + response.code(), Toast.LENGTH_SHORT).show();
                     displayCart(); // Tải lại giỏ hàng nếu lỗi
                 }
             }
@@ -224,7 +224,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             @Override
             public void onFailure(Call<Cart> call, Throwable t) {
                 Log.e("CartActivity", "Lỗi khi cập nhật trạng thái: " + t.getMessage());
-                Toast.makeText(CartActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(CartActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 displayCart(); // Tải lại giỏ hàng nếu lỗi
             }
         });
