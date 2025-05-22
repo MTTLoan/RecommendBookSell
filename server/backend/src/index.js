@@ -12,7 +12,7 @@ import cartRoutes from "./routes/cartRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import forgotPasswordRoutes from "./routes/forgotPassword.js";
 import bookRoutes from "./routes/book.js";
-import categoryRoutes from "./routes/category.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 
 dotenv.config();
 const app = express();

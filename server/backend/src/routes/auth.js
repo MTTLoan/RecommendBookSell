@@ -7,10 +7,7 @@ import {
   googleAuthController,
   changePasswordController,
   getProfileController,
-  updateProfileController,
-  adminUpdateUserController, 
-  adminDeleteUserController,
-  adminGetAllUsersController
+  updateProfileController
 } from "../controllers/authController.js";
 import {
   registerValidator,
@@ -29,9 +26,5 @@ router.post("/logout", user_jwt, logoutController);
 router.post("/change-password", user_jwt, changePasswordValidator, changePasswordController);
 router.get("/profile", user_jwt, getProfileController);
 router.put('/update-profile', user_jwt, updateProfileValidator, updateProfileController);
-router.put("/admin/user/:id", user_jwt, adminUpdateUserController);
-router.delete("/admin/user/:id", user_jwt, adminDeleteUserController);
-// router.get("/admin/users", user_jwt, adminGetAllUsersController);
-router.get("/admin/users", adminGetAllUsersController);
 
 export default router;

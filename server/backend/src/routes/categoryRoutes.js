@@ -10,6 +10,8 @@ import {
 
 const router = express.Router();
 
+router.get('/category-stats', getCategoryStats);
+
 // Lấy danh sách danh mục
 router.get('/all-categories', getCategories);
 
@@ -19,6 +21,5 @@ router.get('/:id', getCategoryById);
 router.post('/add-category', createCategory);
 router.put('/update-category/:id', updateCategory);
 router.delete('/delete-category/:id', deleteCategory);
-router.get('/category-stats', getCategoryStats);
 
 export default router;

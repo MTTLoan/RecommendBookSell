@@ -4,24 +4,71 @@ import Book from '../models/Book.js';
 
 export const getCategoryStats = async (req, res) => {
   try {
+    console.log('Request received:', req.url, req.query);
+    console.log('Full req.query:', req.query);
+    const categoryId = req.query.categoryId ? parseInt(req.query.categoryId) : null;
+    console.log('Raw categoryId from query:', req.query.categoryId);
+    console.log('Parsed categoryId:', categoryId);
+
+    if (categoryId && isNaN(categoryId)) {
+      return res.status(400).json({
+        success: false,
+        msg: 'ID danh mục không hợp lệ. Vui lòng cung cấp một số hợp lệ.',
+      });
+    }
+
+    const matchStage = categoryId ? { categoryId: categoryId } : {};
     const stats = await Book.aggregate([
       {
+        $match: matchStage
+      },
+      {
         $group: {
-          _id: "$categoryId",
+          _id: '$categoryId',
           quantity: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: { $toInt: '$_id' },
+          quantity: 1
         }
       }
     ]);
-    res.json({ stats });
+
+    if (categoryId && stats.length === 0) {
+      const categoryExists = await Category.findOne({ id: categoryId });
+      if (!categoryExists) {
+        return res.status(404).json({
+          success: false,
+          msg: 'Không tìm thấy danh mục với ID này.',
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        msg: 'Lấy thống kê danh mục thành công.',
+        stats: [{ _id: categoryId, quantity: 0 }]
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      msg: 'Lấy thống kê danh mục thành công.',
+      stats
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Lỗi lấy thống kê danh mục:', error.message);
+    return res.status(500).json({
+      success: false,
+      msg: `Lỗi server: ${error.message}`,
+    });
   }
 };
 
 // Hàm lấy id tự tăng
 async function getNextCategoryId() {
   const counter = await Counter.findByIdAndUpdate(
-    { _id: 'categoryid' },
+    { _id: 'categoryId' },
     { $inc: { seq: 1 } },
     { new: true, upsert: true }
   );
@@ -50,6 +97,15 @@ export const getCategories = async (req, res) => {
 export const getCategoryById = async (req, res) => {
   try {
     const categoryId = parseInt(req.params.id);
+    
+    // Kiểm tra nếu categoryId là NaN hoặc không phải số
+    if (isNaN(categoryId)) {
+      return res.status(400).json({
+        success: false,
+        msg: 'ID danh mục không hợp lệ. Vui lòng cung cấp một số hợp lệ.',
+      });
+    }
+
     const category = await Category.findOne({ id: categoryId });
 
     if (!category) {
