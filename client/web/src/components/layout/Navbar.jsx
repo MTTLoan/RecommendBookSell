@@ -1,32 +1,28 @@
+import React from 'react';
 import '../../styles/navbar.css';
-import defaultAvatar from '../../assets/images/default_avatar.png';
-import { useNavigate } from 'react-router-dom';
+import defaultAvatar from '../../assets/images/default-avatar.jpg';
 
-export default function Navbar({ user }) {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
-
-  const avatarSrc = user?.avatar ? user.avatar : defaultAvatar;
-
-  return (
-    <div className="navbar">
-      <div className="navbar-left">
-        <span className="material-symbols-outlined menu-toggle">arrow_drop_down</span>
-      </div>
-      <div className="navbar-right">
-        <img src={avatarSrc} alt="User Avatar" className="avatar" />
-        <div className="user-info">
-          <p className="full-name">{user.fullName}</p>
-          <p className="username">{user.username}</p>
-        </div>
-        <button className="logout-btn" onClick={handleLogout} title="Đăng xuất">
-          <span className="material-symbols-outlined">logout</span>
-        </button>
-      </div>
+const Navbar = ({ user, onLogout }) => (
+  <nav className="navbar">
+    <div className="navbar-left">
     </div>
-  );
-}
+    <div className="navbar-right">
+      <div className="navbar-user">
+        <img
+          src={user?.avatar || defaultAvatar}
+          alt="avatar"
+          className="navbar-avatar"
+        />
+        <div className="navbar-user-info">
+          <span className="navbar-username">{user?.username || 'Admin'}</span>
+          <span className="navbar-fullname">{user?.fullName || 'Administrator'}</span>
+        </div>
+      </div>
+      <button className="navbar-logout" onClick={onLogout} title="Đăng xuất">
+        <span className="material-symbols-outlined navbar-logout-icon">logout</span>
+      </button>
+    </div>
+  </nav>
+);
+
+export default Navbar;

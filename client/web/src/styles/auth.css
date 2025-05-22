@@ -57,7 +57,7 @@
 }
 
 .auth-title {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: 30px;
   font-weight: 700;
   color: #1f2937;
@@ -74,7 +74,7 @@
 }
 
 .auth-forgot-password {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: 14px;
   display: flex;
   justify-content: flex-end;
@@ -83,7 +83,7 @@
 }
 
 .auth-forgot-password a {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Quicksand', sans-serif;
   color: #3fbf48;
   font-size: 14px;
   text-decoration: none;
@@ -95,7 +95,7 @@
 }
 
 label {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Quicksand', sans-serif;
   margin-bottom: 6px;
   display: block;
   font-size: 14px;
@@ -132,7 +132,7 @@ label {
 }
 
 .input-wrapper input::placeholder {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: 14px;
   color: #737373;
 }
@@ -180,7 +180,7 @@ label {
 
 
 button {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Quicksand', sans-serif;
   background-color: #3fbf48;
   color: #ffffff;
   border: none;
@@ -198,84 +198,4 @@ button:hover {
 input::-ms-reveal,
 input::-ms-clear {
   display: none;
-}
-
-.dashboard-layout {
-  display: flex;
-  height: 100vh;
-}
-
-.sidebar {
-  width: 250px;
-  background-color: #f4f4f4;
-  padding: 1rem;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-}
-
-.sidebar ul li {
-  margin-bottom: 1rem;
-}
-
-.sidebar ul li a {
-  text-decoration: none;
-  color: #333;
-  font-weight: bold;
-}
-
-.sidebar ul li a:hover {
-  color: #3fbf48;
-}
-
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 20px;
-  background-color: #f8f9fa;
-}
-
-.navbar-left .navbar-title {
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.navbar-right {
-  display: flex;
-  align-items: center;
-}
-
-.navbar-user {
-  display: flex;
-  align-items: center;
-  margin-right: 15px;
-}
-
-.navbar-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin-right: 10px;
-}
-
-.navbar-fullname {
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.navbar-logout {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #333;
-}
-
-.dashboard-content {
-  flex: 1;
-  padding: 2rem;
-  background-color: #fff;
 }

@@ -56,14 +56,13 @@ app.use("/api/reviews", reviewRoutes);
 
 app.use(errorHandler);
 
-// const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-// tui dùng 5000/api/... á
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`API URL: http://localhost:${PORT}/api`);
-});
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+//   console.log(`API URL: http://localhost:${PORT}/api`);
+// });
 
-const dashboardRoutes = require('./routes/dashboard');
-app.use('/api/dashboard', dashboardRoutes);
+// import dashboardRoutes from './routes/dashboard.js';
+// app.use('/api/dashboard', dashboardRoutes);

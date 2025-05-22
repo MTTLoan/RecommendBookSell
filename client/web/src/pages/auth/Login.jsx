@@ -10,7 +10,7 @@ import '../../styles/auth.css';
 const Login = () => {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
-    username: '',
+    identifier: '',
     password: '',
   });
   const [error, setError] = useState('');
@@ -60,8 +60,8 @@ const Login = () => {
               <Input
                 label="Tên đăng nhập"
                 type="text"
-                name="username"
-                value={credentials.username}
+                name="identifier"
+                value={credentials.identifier}
                 onChange={handleChange}
                 placeholder="Nhập tên đăng nhập"
                 required

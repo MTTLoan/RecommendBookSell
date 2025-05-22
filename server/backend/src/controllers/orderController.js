@@ -1,5 +1,6 @@
 import Order from "../models/Order.js";
 import Book from "../models/Book.js";
+import User from "../models/User.js";
 
 export const getOrderHistory = async (req, res) => {
   try {
@@ -178,5 +179,98 @@ export const getOrderById = async (req, res) => {
   } catch (error) {
     console.error("Error fetching order by ID:", error.message);
     res.status(500).json({ message: error.message });
+  }
+};
+
+// Sửa thông tin đơn hàng (chỉ cho phép sửa nếu đơn hàng chưa giao/hủy)
+export const updateOrder = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const isAdmin = req.user.role === 'admin';
+    const orderId = parseInt(req.params.id);
+    const updateData = req.body;
+
+    // Tìm đơn hàng
+    const order = isAdmin
+      ? await Order.findOne({ id: orderId })
+      : await Order.findOne({ id: orderId, userId: userId });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng",
+      });
+    }
+
+    // Chỉ cho phép sửa nếu trạng thái chưa phải "Đã giao" hoặc "Đã hủy"
+    if (["Đã giao", "Đã hủy"].includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Không thể sửa đơn hàng đã giao hoặc đã hủy",
+      });
+    }
+
+    // Cập nhật đơn hàng
+    Object.assign(order, updateData, { updatedAt: new Date() });
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      data: order,
+    });
+  } catch (error) {
+    console.error("Error updating order:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// xem các đơn hàng đã hủy là đơn hàng bị xóa
+export const getAllOrders = async (req, res) => {
+  try {
+    // Lấy tất cả đơn hàng
+    const orders = await Order.find();
+
+    // Lấy tất cả user và book liên quan
+    const userIds = [...new Set(orders.map(o => o.userId))];
+    const bookIds = [
+      ...new Set(
+        orders.flatMap(o => o.items.map(i => i.bookId))
+      ),
+    ];
+
+        const users = await User.find({ id: { $in: userIds } });
+    const books = await Book.find({ id: { $in: bookIds } });
+
+    // Map userId -> user
+    const userMap = {};
+    users.forEach(u => { userMap[u.id] = u; });
+
+    // Map bookId -> book
+    const bookMap = {};
+    books.forEach(b => { bookMap[b.id] = b; });
+
+        // Gộp dữ liệu cho từng đơn hàng
+    const result = orders.map(order => ({
+      id: order.id,
+      orderDate: order.orderDate,
+      totalAmount: order.totalAmount,
+      status: order.status,
+      customer: userMap[order.userId]?.fullName || 'Ẩn',
+      items: order.items.map(item => ({
+        bookId: item.bookId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        bookName: bookMap[item.bookId]?.name || '',
+        bookImage: bookMap[item.bookId]?.images?.[0]?.url || bookMap[item.bookId]?.images?.[0] || '',
+      })),
+    }));
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    console.error('getAllOrders error:', error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };

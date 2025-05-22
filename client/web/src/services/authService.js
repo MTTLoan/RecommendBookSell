@@ -125,3 +125,8 @@ export const getCurrentUser = () => {
   const user = localStorage.getItem('user');
   return user ? JSON.parse(user) : null;
 }; 
+
+export const fetchAllCustomers = async () => {
+  const res = await api.get(`${API_BASE_URL}/auth/admin/users`);
+  return res.data.users || [];
+};

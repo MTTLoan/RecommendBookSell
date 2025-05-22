@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Input = ({ type, name, value, onChange, placeholder, required }) => {
+const Input = ({ label, type, name, value, onChange, placeholder, required }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -27,8 +27,10 @@ const Input = ({ type, name, value, onChange, placeholder, required }) => {
   };
 
   return (
-    <div className="input-wrapper">
-      <label htmlFor={name}>{getLabelText(name)}</label>
+    <div className="input-wrapper" style={{ fontFamily: "'Quicksand', sans-serif" }}>
+      <label htmlFor={name} style={{ fontFamily: "'Quicksand', sans-serif" }}>
+        {label || getLabelText(name)}
+      </label>
 
       <input
         type={type === 'password' && showPassword ? 'text' : type}
@@ -38,6 +40,7 @@ const Input = ({ type, name, value, onChange, placeholder, required }) => {
         onChange={onChange}
         placeholder={placeholder}
         required={required}
+        style={{ fontFamily: "'Quicksand', sans-serif" }}
       />
 
       {/* Icon xác thực */}
@@ -54,6 +57,7 @@ const Input = ({ type, name, value, onChange, placeholder, required }) => {
           className="password-icon"
           onClick={togglePasswordVisibility}
           title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+          style={{ fontFamily: "'Quicksand', sans-serif" }}
         >
           <span className="material-symbols-outlined">
             {showPassword ? 'visibility_off' : 'visibility'}

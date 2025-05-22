@@ -1,56 +1,66 @@
+import React from 'react';
 import { NavLink } from 'react-router-dom';
-import React, { useState } from 'react';
-import logo from '../../assets/images/logo.png';
+import logoImage from '../../assets/images/logo.png'; // Import logo
 import '../../styles/sidebar.css';
 
-const menu = [
-  { section: 'CHUNG', items: [
-    { label: 'Tổng quan', icon: 'home', to: '/dashboard' },
-    { label: 'Sản phẩm', icon: 'storefront', to: '/products' },
-    { label: 'Danh mục', icon: 'list', to: '/categories' },
-    { label: 'Đơn hàng', icon: 'description', to: '/orders' },
-    { label: 'Khách hàng', icon: 'group', to: '/customers' },
-    { label: 'Báo cáo hệ thống đề xuất', icon: 'show_chart', to: '/recommendation-report' },
-  ]},
-  { section: 'CÔNG CỤ', items: [
-    { label: 'Cài đặt tài khoản', icon: 'settings', to: '/settings' },
-  ]}
-];
-
-export default function Sidebar() {
-  const [isVisible, setIsVisible] = useState(false);
-
-  const toggleSidebar = () => {
-    setIsVisible(!isVisible);
-  };
-
-  return (
-    <>
-    <div className={`sidebar${isVisible ? 'visible' : 'hidden'}`}>
-      <div className="logo">
-        <img src={logo} alt="Logo" />
-      </div>
-      {menu.map(({ section, items }) => (
-        <div key={section}>
-          <p className="section">{section}</p>
-          {items.map(({ label, icon, to }) => (
-            <NavLink
-              key={label}
-              to={to}
-              className={({ isActive }) =>
-                `nav-link ${isActive ? 'active' : ''}`
-              }
-            >
-              <span className="material-symbols-outlined">{icon}</span>
-              <span>{label}</span>
-            </NavLink>
-          ))}
-        </div>
-      ))}
+const Sidebar = () => (
+  <aside className="sidebar">
+    <div className="sidebar-logo">
+      <img src={logoImage} alt="Logo" className="sidebar-logo-image" />
     </div>
-    <span className="material-symbols-outlined menu-toggle" onClick={toggleSidebar}>
-    menu_open
-  </span>
-</>
-  );
-}
+    <div className="side-general">
+      <h2>CHUNG</h2>
+      <ul className="sidebar-menu">
+        <li>
+          <NavLink to="/dashboard" activeClassName="active">
+            <span className="material-symbols-outlined sidebar-icon">home</span>
+            Tổng quan
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/products" activeClassName="active">
+            <span className="material-symbols-outlined sidebar-icon">storefront</span>
+            Sản phẩm
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/categories" activeClassName="active">
+            <span className="material-symbols-outlined sidebar-icon">list</span>
+            Danh mục
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/orders" activeClassName="active">
+            <span className="material-symbols-outlined sidebar-icon">description</span>
+            Đơn hàng
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/customers" activeClassName="active">
+            <span className="material-symbols-outlined sidebar-icon">group</span>
+            Khách hàng
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/reports" activeClassName="active">
+            <span className="material-symbols-outlined sidebar-icon">show_chart</span>
+            Báo cáo hệ thống đề xuất
+          </NavLink>
+        </li>
+      </ul>
+    </div>
+    <div className="side-general">
+      <h2>CÔNG CỤ</h2>
+      <ul className="sidebar-menu">
+        <li>
+          <NavLink to="/settings" activeClassName="active">
+            <span className="material-symbols-outlined sidebar-icon">settings</span>
+            Cài đặt tài khoản
+          </NavLink>
+        </li>
+      </ul>
+    </div>
+  </aside>
+);
+
+export default Sidebar;
