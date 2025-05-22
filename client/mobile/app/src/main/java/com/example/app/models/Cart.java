@@ -1,6 +1,6 @@
 package com.example.app.models;
 
-import java.time.LocalDateTime;
+import java.lang.String;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,15 +12,15 @@ public class Cart {
 
     private List<CartItem> items = new ArrayList<>();
 
-    private LocalDateTime createdAt;
+    private String createdAt;
 
-    private LocalDateTime updatedAt;
+    private String updatedAt;
 
     // Constructor
     public Cart() {
     }
 
-    public Cart(int id, int userId, List<CartItem> items, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Cart(int id, int userId, List<CartItem> items, String createdAt, String updatedAt) {
         this.id = id;
         this.userId = userId;
         this.items = items != null ? items : new ArrayList<>();
@@ -53,19 +53,19 @@ public class Cart {
         this.items = items != null ? items : new ArrayList<>();
     }
 
-    public LocalDateTime getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public String getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
+    public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
     }
 }

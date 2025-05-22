@@ -8,6 +8,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import verifyEmailRoutes from "./routes/verifyEmail.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import forgotPasswordRoutes from "./routes/forgotPassword.js";
 import bookRoutes from "./routes/book.js";
@@ -45,6 +46,9 @@ app.use("/api/orders", orderRoutes);
 
 // review routes
 app.use("/api/reviews", reviewRoutes);
+
+// cart routes
+app.use("/api/carts", cartRoutes);
 
 app.use(errorHandler);
 

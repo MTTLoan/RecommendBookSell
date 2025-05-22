@@ -8,6 +8,7 @@ public class AuthUtils {
     private static final String PREF_NAME = "AuthPrefs";
     private static final String KEY_TOKEN = "token";
     private static final String KEY_IDENTIFIER = "identifier";
+    private static final String KEY_USER_ID = "user_id";
 
     public static void saveToken(Context context, String token) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -38,5 +39,24 @@ public class AuthUtils {
         String identifier = prefs.getString(KEY_IDENTIFIER, null);
         Log.d("AuthUtils", "Identifier retrieved: " + (identifier != null ? identifier : "null"));
         return identifier;
+    }
+
+    public static void saveUserId(Context context, int userId) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt(KEY_USER_ID, userId).apply();
+        Log.d("AuthUtils", "User ID saved: " + userId);
+    }
+
+    public static int getUserId(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        int userId = prefs.getInt(KEY_USER_ID, -1); // -1 là giá trị mặc định nếu không tìm thấy
+        Log.d("AuthUtils", "User ID retrieved: " + userId);
+        return userId;
+    }
+
+    public static void clearUserId(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().remove(KEY_USER_ID).apply();
+        Log.d("AuthUtils", "User ID cleared");
     }
 }

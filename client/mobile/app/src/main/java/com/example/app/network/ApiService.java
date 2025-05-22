@@ -1,5 +1,6 @@
 package com.example.app.network;
 
+import com.example.app.models.Cart;
 import com.example.app.models.HasReviewsResponse;
 import com.example.app.models.Notification;
 import com.example.app.models.Order;
@@ -33,6 +34,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Headers;
@@ -123,4 +125,19 @@ public interface ApiService {
 
     @GET("reviews/{orderId}/reviews")
     Call<HasReviewsResponse> getReviewsForOrder(@Header("Authorization") String token, @Path("orderId") int orderId);
+
+    @POST("/api/carts")
+    Call<Cart> addToCart(@Header("Authorization") String authorization, @Body Cart cart);
+
+    @GET("/api/carts")
+    Call<Cart> getCart(@Header("Authorization") String authorization);
+
+    @PUT("/api/carts")
+    Call<Cart> updateCart(@Header("Authorization") String authorization, @Body Cart cart);
+
+    @DELETE("/api/carts/items/{bookId}")
+    Call<Cart> deleteCartItem(@Header("Authorization") String authorization, @Path("bookId") int bookId);
+
+    @POST("orders")
+    Call<Order> addOrder(@Header("Authorization") String authorization, @Body Order order);
 }

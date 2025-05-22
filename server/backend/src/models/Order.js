@@ -11,6 +11,7 @@ const OrderSchema = new mongoose.Schema(
     id: { type: Number, required: true, unique: true },
     userId: { type: Number, ref: "User", required: true },
     orderDate: { type: Date, required: true },
+    shippingCost: { type: Number, required: false },
     totalAmount: { type: Number, required: true },
     status: { type: String, required: true },
     shippingProvince: { type: Number, required: false },
@@ -48,24 +49,6 @@ const syncCounter = async () => {
 
 // Gọi đồng bộ khi khởi động
 mongoose.connection.once("open", syncCounter);
-
-// Pre-save hook để gán id tự tăng
-OrderSchema.pre("save", async function (next) {
-  if (this.isNew) {
-    try {
-      const Counter = mongoose.model("Counter");
-      const counter = await Counter.findOneAndUpdate(
-        { _id: "orderId" },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-      );
-      this.id = counter.seq;
-    } catch (error) {
-      return next(error);
-    }
-  }
-  next();
-});
 
 // Đảm bảo virtuals được bao gồm trong JSON output
 OrderSchema.set("toJSON", { virtuals: true });

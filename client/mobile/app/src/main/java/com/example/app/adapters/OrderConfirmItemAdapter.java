@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.app.R;
 import com.example.app.models.OrderItem;
 import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 public class OrderConfirmItemAdapter extends RecyclerView.Adapter<OrderConfirmItemAdapter.OrderItemViewHolder> {
@@ -30,15 +31,19 @@ public class OrderConfirmItemAdapter extends RecyclerView.Adapter<OrderConfirmIt
     @Override
     public void onBindViewHolder(@NonNull OrderItemViewHolder holder, int position) {
         OrderItem item = orderItems.get(position);
-//        holder.tvBookName.setText(item.getBookName());
+        holder.tvBookName.setText(item.getBook().getName());
         holder.tvQuantity.setText("SL: " + item.getQuantity());
         holder.tvPrice.setText(String.format("%,d VNĐ", (int) item.getUnitPrice()));
-//        Picasso.get().load(item.getImageUrl()).into(holder.ivBookImage);
 
-//        // Thêm contentDescription cho mục
-//        holder.itemView.setContentDescription(
-//                "Sản phẩm: " + item.getBookName() + ", Số lượng: " + item.getQuantity() + ", Giá: " + String.format("%,d VNĐ", (int) item.getUnitPrice())
-//        );
+        // Load ảnh sách
+        if (item.getBook().getImages() != null && !item.getBook().getImages().isEmpty()) {
+            Picasso.get().load(item.getBook().getImages().get(0).getUrl()).into(holder.ivBookImage);
+        }
+
+        // Thêm contentDescription cho mục
+        holder.itemView.setContentDescription(
+                "Sản phẩm: " + item.getBook().getName() + ", Số lượng: " + item.getQuantity() + ", Giá: " + String.format("%,d VNĐ", (int) item.getUnitPrice())
+        );
     }
 
     @Override
