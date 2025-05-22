@@ -2,11 +2,13 @@ package com.example.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
@@ -19,6 +21,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.app.R;
 import com.example.app.adapters.OrderConfirmItemAdapter;
 import com.example.app.models.Order;
+import com.example.app.models.OrderItem;
+import com.example.app.models.User;
+import com.example.app.models.response.UserResponse;
+import com.example.app.network.ApiService;
+import com.example.app.network.RetrofitClient;
+import com.example.app.utils.AuthUtils;
 import com.google.android.material.textfield.TextInputEditText;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,10 +35,12 @@ import java.util.List;
 import java.util.regex.Pattern;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class OrderConfirmationActivity extends AppCompatActivity {
     private TextInputEditText etUserFullName, etUserPhoneNumber, etDetailedAddress;
@@ -38,11 +48,14 @@ public class OrderConfirmationActivity extends AppCompatActivity {
     private TextView tvTotalAmount;
     private RecyclerView rvOrderItems;
     private Button btnPlaceOrder;
+    private ImageView ivReturn;
     private RadioGroup rgShippingMethods;
     private RadioButton rbFastShipping, rbEconomyShipping;
     private Order order;
+    private ApiService apiService;
+    private String authToken;
 
-    // Dữ liệu từ API
+    // Dữ liệu từ API địa chỉ
     private List<String> provinceNames = new ArrayList<>();
     private List<Integer> provinceCodes = new ArrayList<>();
     private List<String> districtNames = new ArrayList<>();
@@ -53,14 +66,14 @@ public class OrderConfirmationActivity extends AppCompatActivity {
     private HashMap<String, Integer> districtMap = new HashMap<>();
 
     // Biến chi phí giao hàng
-    private double shippingCost = 15000; // Mặc định: Tiết kiệm
+    private double shippingCost = 15000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_confirmation);
 
-        // Ánh xạ view
+        // Khởi tạo views
         etUserFullName = findViewById(R.id.etUserFullName);
         etUserPhoneNumber = findViewById(R.id.etUserPhoneNumber);
         spinnerProvince = findViewById(R.id.spinnerProvince);
@@ -70,42 +83,42 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         tvTotalAmount = findViewById(R.id.tv_total_amount);
         rvOrderItems = findViewById(R.id.rv_order_items);
         btnPlaceOrder = findViewById(R.id.btn_place_order);
+        ivReturn = findViewById(R.id.ivReturn);
         rgShippingMethods = findViewById(R.id.rg_shipping_methods);
         rbFastShipping = findViewById(R.id.rb_fast_shipping);
         rbEconomyShipping = findViewById(R.id.rb_economy_shipping);
 
-        // Lấy dữ liệu Order từ Intent
-        try {
-            Bundle bundle = getIntent().getExtras();
-            if (bundle != null) {
-                order = (Order) bundle.getSerializable("order");
-            }
-            if (order == null) {
-                throw new IllegalStateException("Order không được tìm thấy trong Intent");
-            }
+        // Khởi tạo ApiService
+        apiService = RetrofitClient.getApiService();
 
-            // Đặt giá trị mặc định từ Order
-//            etUserFullName.setText(order.getUserFullName() != null ? order.getUserFullName() : "");
-//            etUserPhoneNumber.setText(order.getUserPhoneNumber() != null ? order.getUserPhoneNumber() : "");
-            etDetailedAddress.setText(order.getShippingDetail() != null ? order.getShippingDetail() : "37 đường số 8");
-        } catch (Exception e) {
-            Toast.makeText(this, "Lỗi khi nhận dữ liệu đơn hàng: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        // Lấy token xác thực
+        authToken = AuthUtils.getToken(this);
+        if (authToken == null) {
+            Toast.makeText(this, "Vui lòng đăng nhập để đặt hàng", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        // Hiển thị danh sách sản phẩm
+        // Nhận dữ liệu order từ Intent
+        order = getIntent().getParcelableExtra("order");
+        if (order == null) {
+            Toast.makeText(this, "Dữ liệu đơn hàng không hợp lệ", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // Thiết lập RecyclerView cho danh sách sản phẩm
         rvOrderItems.setLayoutManager(new LinearLayoutManager(this));
         OrderConfirmItemAdapter adapter = new OrderConfirmItemAdapter(order.getItems());
         rvOrderItems.setAdapter(adapter);
 
-        // Hiển thị tổng giá trị ban đầu
-        updateTotalPrice();
+        // Tải thông tin người dùng
+        loadUserProfile();
 
-        // Lấy danh sách tỉnh/thành phố từ API
+        // Lấy danh sách tỉnh/thành phố
         fetchProvinces();
 
-        // Xử lý khi chọn tỉnh/thành phố
+        // Xử lý sự kiện chọn tỉnh/thành phố
         spinnerProvince.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -118,7 +131,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        // Xử lý khi chọn quận/huyện
+        // Xử lý sự kiện chọn quận/huyện
         spinnerDistrict.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -131,7 +144,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        // Xử lý khi chọn hình thức giao hàng
+        // Xử lý sự kiện chọn hình thức giao hàng
         rgShippingMethods.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.rb_fast_shipping) {
                 shippingCost = 20000; // Nhanh
@@ -144,18 +157,51 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         // Chọn mặc định "Tiết kiệm"
         rbEconomyShipping.setChecked(true);
 
+        // Xử lý nút quay lại
+        ivReturn.setOnClickListener(v -> finish());
+
         // Xử lý nút Đặt hàng
-        btnPlaceOrder.setOnClickListener(v -> showConfirmationDialog());
+        btnPlaceOrder.setOnClickListener(v -> validateAndPlaceOrder());
+    }
+
+    private void loadUserProfile() {
+        Call<UserResponse> call = apiService.getUserProfile("Bearer " + authToken);
+        call.enqueue(new Callback<UserResponse>() {
+            @Override
+            public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    User user = response.body().getUser();
+                    etUserFullName.setText(user.getFullName());
+                    etUserPhoneNumber.setText(user.getPhoneNumber());
+                    etDetailedAddress.setText(user.getAddressDetail());
+
+                    // Cập nhật spinner sau khi lấy danh sách tỉnh/thành phố
+                    fetchProvinces(user);
+                } else {
+                    Toast.makeText(OrderConfirmationActivity.this, "Không thể tải thông tin người dùng", Toast.LENGTH_SHORT).show();
+                    Log.e("OrderConfirmation", "Response error: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserResponse> call, Throwable t) {
+                Toast.makeText(OrderConfirmationActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("OrderConfirmation", "Error: " + t.getMessage());
+            }
+        });
     }
 
     private void fetchProvinces() {
+        fetchProvinces(null);
+    }
+
+    private void fetchProvinces(User user) {
         new Thread(() -> {
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder()
                     .url("https://provinces.open-api.vn/api/p/")
                     .build();
-            try {
-                Response response = client.newCall(request).execute();
+            try (okhttp3.Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
                 String jsonData = response.body().string();
                 JSONArray provincesArray = new JSONArray(jsonData);
@@ -178,11 +224,14 @@ public class OrderConfirmationActivity extends AppCompatActivity {
                     provinceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinnerProvince.setAdapter(provinceAdapter);
 
-                    // Đặt giá trị mặc định dựa trên Order
-                    int defaultProvinceCode = order.getShippingProvince(); // 79 (TP. Hồ Chí Minh)
-                    int provinceIndex = provinceCodes.indexOf(defaultProvinceCode);
-                    if (provinceIndex != -1) {
-                        spinnerProvince.setSelection(provinceIndex);
+                    // Đặt giá trị mặc định
+                    if (user != null && user.getAddressProvince() != -1) {
+                        int provinceIndex = provinceCodes.indexOf(user.getAddressProvince());
+                        if (provinceIndex != -1) {
+                            spinnerProvince.setSelection(provinceIndex);
+                        } else {
+                            spinnerProvince.setSelection(provinceNames.indexOf("TP. Hồ Chí Minh"));
+                        }
                     } else {
                         spinnerProvince.setSelection(provinceNames.indexOf("TP. Hồ Chí Minh"));
                     }
@@ -191,7 +240,6 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             } catch (IOException | JSONException e) {
                 runOnUiThread(() -> {
                     Toast.makeText(OrderConfirmationActivity.this, "Lỗi khi lấy danh sách tỉnh/thành phố: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    // Dữ liệu mặc định nếu API thất bại
                     provinceNames.clear();
                     provinceNames.add("TP. Hồ Chí Minh");
                     provinceMap.put("TP. Hồ Chí Minh", 79);
@@ -209,8 +257,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             Request request = new Request.Builder()
                     .url("https://provinces.open-api.vn/api/p/" + provinceCode + "?depth=2")
                     .build();
-            try {
-                Response response = client.newCall(request).execute();
+            try (okhttp3.Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
                 String jsonData = response.body().string();
                 JSONObject provinceData = new JSONObject(jsonData);
@@ -234,11 +281,14 @@ public class OrderConfirmationActivity extends AppCompatActivity {
                     districtAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinnerDistrict.setAdapter(districtAdapter);
 
-                    // Đặt giá trị mặc định dựa trên Order
-                    int defaultDistrictCode = order.getShippingDistrict(); // 774 (Quận Thủ Đức)
-                    int districtIndex = districtCodes.indexOf(defaultDistrictCode);
-                    if (districtIndex != -1) {
-                        spinnerDistrict.setSelection(districtIndex);
+                    // Đặt giá trị mặc định
+                    if (order.getShippingDistrict() != 0) {
+                        int districtIndex = districtCodes.indexOf(order.getShippingDistrict());
+                        if (districtIndex != -1) {
+                            spinnerDistrict.setSelection(districtIndex);
+                        } else {
+                            spinnerDistrict.setSelection(districtNames.indexOf("Quận Thủ Đức"));
+                        }
                     } else {
                         spinnerDistrict.setSelection(districtNames.indexOf("Quận Thủ Đức"));
                     }
@@ -247,7 +297,6 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             } catch (IOException | JSONException e) {
                 runOnUiThread(() -> {
                     Toast.makeText(OrderConfirmationActivity.this, "Lỗi khi lấy danh sách quận/huyện: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    // Dữ liệu mặc định nếu API thất bại
                     districtNames.clear();
                     districtNames.add("Quận Thủ Đức");
                     districtMap.put("Quận Thủ Đức", 774);
@@ -265,8 +314,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             Request request = new Request.Builder()
                     .url("https://provinces.open-api.vn/api/d/" + districtCode + "?depth=2")
                     .build();
-            try {
-                Response response = client.newCall(request).execute();
+            try (okhttp3.Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
                 String jsonData = response.body().string();
                 JSONObject districtData = new JSONObject(jsonData);
@@ -288,8 +336,8 @@ public class OrderConfirmationActivity extends AppCompatActivity {
                     wardAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinnerWard.setAdapter(wardAdapter);
 
-                    // Đặt giá trị mặc định dựa trên Order
-                    int defaultWardCode = order.getShippingWard(); // 26124 (Phường Linh Trung)
+                    // Đặt giá trị mặc định
+                    int defaultWardCode = order.getShippingWard();
                     int wardIndex = wardCodes.indexOf(defaultWardCode);
                     if (wardIndex != -1) {
                         spinnerWard.setSelection(wardIndex);
@@ -301,7 +349,6 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             } catch (IOException | JSONException e) {
                 runOnUiThread(() -> {
                     Toast.makeText(OrderConfirmationActivity.this, "Lỗi khi lấy danh sách phường/xã: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    // Dữ liệu mặc định nếu API thất bại
                     wardNames.clear();
                     wardNames.add("Phường Linh Trung");
                     wardCodes.add(26124);
@@ -313,7 +360,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void showConfirmationDialog() {
+    private void validateAndPlaceOrder() {
         // Lấy dữ liệu đã chỉnh sửa
         String newFullName = etUserFullName.getText().toString().trim();
         String newPhoneNumber = etUserPhoneNumber.getText().toString().trim();
@@ -334,22 +381,53 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             return;
         }
 
-        // Chuẩn bị thông tin hiển thị trên dialog
-        double finalTotal = order.getTotalAmount() + shippingCost;
-        String shippingMethod = rbFastShipping.isChecked() ? "Nhanh (20.000 VNĐ)" : "Tiết kiệm (15.000 VNĐ)";
+        // Chuẩn bị dữ liệu gửi API
+        Order newOrder = new Order();
+        newOrder.setUserId(order.getUserId());
+        newOrder.setTotalAmount(order.getTotalAmount()+shippingCost);
+        newOrder.setShippingCost((int) shippingCost);
+        newOrder.setShippingProvince(provinceMap.get(newProvince));
+        newOrder.setShippingDistrict(districtMap.get(newDistrict));
+        newOrder.setShippingWard(wardCodes.get(spinnerWard.getSelectedItemPosition()));
+        newOrder.setShippingDetail(newDetailedAddress);
+        newOrder.setItems(order.getItems());
 
+        // Gửi yêu cầu tạo đơn hàng
+        Call<Order> call = apiService.addOrder("Bearer " + authToken, newOrder);
+        call.enqueue(new Callback<Order>() {
+            @Override
+            public void onResponse(Call<Order> call, Response<Order> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    showConfirmationDialog(response.body());
+                } else {
+                    Toast.makeText(OrderConfirmationActivity.this, "Lỗi khi đặt hàng: " + response.message(), Toast.LENGTH_SHORT).show();
+                    Log.e("OrderConfirmation", "Response error: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Order> call, Throwable t) {
+                Toast.makeText(OrderConfirmationActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("OrderConfirmation", "Error: " + t.getMessage());
+            }
+        });
+    }
+
+    private void showConfirmationDialog(Order createdOrder) {
         // Tạo dialog với layout tùy chỉnh
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_order_confirmation, null);
         builder.setView(dialogView);
 
+        // Ánh xạ các view trong dialog
+        Button btnHome = dialogView.findViewById(R.id.btn_dialog_home);
+        Button btnOrders = dialogView.findViewById(R.id.btn_dialog_orders);
+
         // Tạo dialog
         AlertDialog dialog = builder.create();
 
         // Xử lý nút Trang chủ
-        Button btnHome = dialogView.findViewById(R.id.btn_dialog_home);
         btnHome.setOnClickListener(v -> {
-            // Quay về Trang chủ
             dialog.dismiss();
             Intent intent = new Intent(OrderConfirmationActivity.this, Menu.class);
             intent.putExtra("fragment_to_show", "home");
@@ -358,9 +436,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         });
 
         // Xử lý nút Đơn mua
-        Button btnOrders = dialogView.findViewById(R.id.btn_dialog_orders);
         btnOrders.setOnClickListener(v -> {
-            // Chuyển đến màn hình Đơn mua với OrderHistoryFragment
             dialog.dismiss();
             Intent intent = new Intent(OrderConfirmationActivity.this, Menu.class);
             intent.putExtra("fragment_to_show", "orders");
@@ -372,12 +448,8 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         dialog.setCancelable(false);
         dialog.show();
 
-        // Cập nhật order với dữ liệu mới (sau khi xác nhận)
-//        order.setUserFullName(newFullName);
-//        order.setUserPhoneNumber(newPhoneNumber);
-
-        // Gửi tổng giá bao gồm chi phí giao hàng
-        Toast.makeText(this, "Đặt hàng thành công với tổng giá: " + String.format("%,d VNĐ", (int) finalTotal), Toast.LENGTH_SHORT).show();
+        // Hiển thị thông báo
+        Toast.makeText(this, "Đặt hàng thành công!", Toast.LENGTH_SHORT).show();
     }
 
     private void updateTotalPrice() {

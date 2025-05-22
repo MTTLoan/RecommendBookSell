@@ -27,14 +27,6 @@ const notificationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    createdAt: {
-      type: Date,
-      required: true,
-    },
-    imageUrl: {
-      type: String,
-      required: false,
-    },
   },
   {
     timestamps: true,

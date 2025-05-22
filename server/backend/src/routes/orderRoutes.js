@@ -3,6 +3,7 @@ import {
   getOrderHistory,
   updateOrderStatus,
   getOrderById,
+  addOrder,
   getAllOrders,
   updateOrder
 } from "../controllers/orderController.js";
@@ -18,6 +19,9 @@ router.put("/:id/status", userJwtMiddleware, updateOrderStatus);
 
 // Route lấy thông tin đơn hàng theo ID
 router.get("/:id", userJwtMiddleware, getOrderById);
+
+// Route thêm đơn hàng mới
+router.post("/", userJwtMiddleware, addOrder);
 
 // Sửa đơn hàng (hay dùng sửa status thôi?)
 router.put("/:id", userJwtMiddleware, updateOrder);
