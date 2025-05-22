@@ -1,4 +1,4 @@
-
+import user_jwt from "../middleware/user_jwt.js";
 import express from "express";
 import {
   adminUpdateUserController, 
@@ -10,7 +10,6 @@ const router = express.Router();
 
 router.put("/admin/user/:id", user_jwt, adminUpdateUserController);
 router.delete("/admin/user/:id", user_jwt, adminDeleteUserController);
-// router.get("/admin/users", user_jwt, adminGetAllUsersController);
-router.get("/admin/users", adminGetAllUsersController);
+router.get("/admin/users", user_jwt, adminGetAllUsersController);
 
 export default router;
