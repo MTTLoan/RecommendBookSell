@@ -1,5 +1,6 @@
 package com.example.app.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,6 +16,8 @@ import com.example.app.R;
 import com.example.app.adapters.BookImageAdapter;
 import com.example.app.adapters.DisplayReviewAdapter;
 import com.example.app.models.Book;
+import com.example.app.models.Cart;
+import com.example.app.models.CartItem;
 import com.example.app.models.Category;
 import com.example.app.models.Image;
 import com.example.app.models.Review;
@@ -23,6 +26,7 @@ import com.example.app.models.response.CategoryResponse;
 import com.example.app.models.response.ReviewResponse;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
+import com.example.app.utils.AuthUtils;
 import com.example.app.utils.HeaderController;
 
 import org.json.JSONObject;
@@ -73,8 +77,7 @@ public class BookDetailActivity extends AppCompatActivity {
         }
 
         setupQuantityButtons();
-        btnAddToCart.setOnClickListener(v ->
-                Toast.makeText(this, "Đã thêm " + quantity + " sản phẩm vào giỏ hàng", Toast.LENGTH_SHORT).show());
+        setupAddToCartButton();
 
         fetchCategories();
         fetchBookDetail();
@@ -123,6 +126,61 @@ public class BookDetailActivity extends AppCompatActivity {
                 quantity--;
                 tvQuantity.setText(String.valueOf(quantity));
             }
+        });
+    }
+
+    private void setupAddToCartButton() {
+        btnAddToCart.setOnClickListener(v -> {
+            String token = AuthUtils.getToken(BookDetailActivity.this);
+            if (token == null) {
+                Toast.makeText(BookDetailActivity.this, "Vui lòng đăng nhập để thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(BookDetailActivity.this, LoginActivity.class));
+                return;
+            }
+
+            // Tạo CartItem
+            CartItem cartItem = new CartItem(bookId, quantity);
+            List<CartItem> items = new ArrayList<>();
+            items.add(cartItem);
+
+            // Tạo Cart
+            Cart cart = new Cart();
+            cart.setItems(items);
+
+            // Gọi API thêm vào giỏ hàng
+            apiService.addToCart("Bearer " + token, cart).enqueue(new Callback<Cart>() {
+                @Override
+                public void onResponse(Call<Cart> call, Response<Cart> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Toast.makeText(BookDetailActivity.this, "Đã thêm " + quantity + " sản phẩm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                        Log.d("BookDetailActivity", "Added to cart: " + response.body().toString());
+                    } else {
+                        String errorMsg = "Lỗi khi thêm vào giỏ hàng";
+                        try {
+                            if (response.errorBody() != null) {
+                                JSONObject errorJson = new JSONObject(response.errorBody().string());
+                                if (errorJson.has("message")) {
+                                    errorMsg = errorJson.getString("message");
+                                }
+                            }
+                        } catch (Exception e) {
+                            Log.e("BookDetailActivity", "Error parsing error body", e);
+                        }
+                        Toast.makeText(BookDetailActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                        if (response.code() == 401) {
+                            AuthUtils.clearToken(BookDetailActivity.this);
+                            startActivity(new Intent(BookDetailActivity.this, LoginActivity.class));
+                            finish();
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Cart> call, Throwable t) {
+                    Log.e("BookDetailActivity", "Add to cart failed: " + t.getMessage(), t);
+                    Toast.makeText(BookDetailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
     }
 

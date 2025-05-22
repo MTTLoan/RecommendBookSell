@@ -13,25 +13,29 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.app.R;
-import com.example.app.models.Cart;
+import com.example.app.activities.CartActivity;
+import com.example.app.models.Book;
+import com.example.app.models.CartItem;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
 
-    private List<Cart> cartList;
+    private List<CartItem> cartItems;
     private Context context;
     private OnCartChangeListener listener;
+    private String authToken;
 
     public interface OnCartChangeListener {
         void onCartChanged();
     }
 
-    public CartAdapter(Context context, List<Cart> cartList, OnCartChangeListener listener) {
+    public CartAdapter(Context context, List<CartItem> cartItems, OnCartChangeListener listener, String authToken) {
         this.context = context;
-        this.cartList = cartList;
+        this.cartItems = cartItems;
         this.listener = listener;
+        this.authToken = authToken;
     }
 
     @NonNull
@@ -43,45 +47,52 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
-        Cart cartItem = cartList.get(position);
+        CartItem cartItem = cartItems.get(position);
+        Book book = cartItem.getBook();
 
-//        // Load image using Picasso (use placeholder since it's mock data)
-//        Picasso.get().load(cartItem.getImageUrl())
-//                .placeholder(R.drawable.placeholder_book)
-//                .into(holder.bookImage);
+        if (book != null) {
+            // Load hình ảnh sách
+            if (book.getImages() != null && !book.getImages().isEmpty()) {
+                Picasso.get().load(book.getImages().get(0).getUrl())
+                        .placeholder(R.drawable.placeholder_book1)
+                        .into(holder.bookImage);
+            } else {
+                holder.bookImage.setImageResource(R.drawable.placeholder_book1);
+            }
 
-//        holder.bookTitle.setText(cartItem.getTitle());
-//        holder.price.setText(String.format("%,.0fđ", cartItem.getPrice()));
-//        holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
-//        holder.checkBox.setChecked(cartItem.isSelected());
+            // Hiển thị tiêu đề và giá
+            holder.bookTitle.setText(book.getName());
+            holder.price.setText(String.format("%,.0fđ", book.getPrice()));
+            holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
+            holder.checkBox.setChecked(cartItem.getSelected());
+        }
 
         // Checkbox listener
         holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-//            cartItem.setSelected(isChecked);
-            listener.onCartChanged();
+            cartItem.setSelected(isChecked);
+            ((CartActivity) context).updateCartItemSelected(cartItem, isChecked);
+//            listener.onCartChanged();
         });
 
-        // Decrease quantity
+        // Giảm số lượng
         holder.decreaseButton.setOnClickListener(v -> {
-//            int qty = cartItem.getQuantity();
-//            if (qty > 1) {
-//                cartItem.setQuantity(qty - 1);
-//                holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
-//                listener.onCartChanged();
-//            }
+            int qty = cartItem.getQuantity();
+            if (qty > 1) {
+                ((CartActivity) context).updateCartItemQuantity(cartItem, qty - 1);
+                holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
+            }
         });
 
-        // Increase quantity
+        // Tăng số lượng
         holder.increaseButton.setOnClickListener(v -> {
-//            cartItem.setQuantity(cartItem.getQuantity() + 1);
-//            holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
-            listener.onCartChanged();
+            ((CartActivity) context).updateCartItemQuantity(cartItem, cartItem.getQuantity() + 1);
+            holder.quantity.setText(String.valueOf(cartItem.getQuantity()));
         });
     }
 
     @Override
     public int getItemCount() {
-        return cartList.size();
+        return cartItems.size();
     }
 
     public static class CartViewHolder extends RecyclerView.ViewHolder {

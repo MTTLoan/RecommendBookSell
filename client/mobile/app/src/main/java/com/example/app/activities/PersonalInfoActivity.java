@@ -238,7 +238,7 @@ public class PersonalInfoActivity extends AppCompatActivity {
                     spinnerProvince.setAdapter(provinceAdapter);
 
                     // Đặt giá trị mặc định từ currentUser nếu có
-                    if (currentUser != null && currentUser.getAddressProvince() != null) {
+                    if (currentUser != null && currentUser.getAddressProvince() != -1) {
                         Integer provinceCode = currentUser.getAddressProvince();
                         for (int i = 0; i < provinceCodes.size(); i++) {
                             if (provinceCodes.get(i).equals(provinceCode)) {
@@ -299,7 +299,7 @@ public class PersonalInfoActivity extends AppCompatActivity {
                     updateDistrictSpinner();
 
                     // Đặt giá trị mặc định từ currentUser nếu có
-                    if (currentUser != null && currentUser.getAddressDistrict() != null) {
+                    if (currentUser != null && currentUser.getAddressDistrict() != -1) {
                         Integer districtCode = currentUser.getAddressDistrict();
                         for (int i = 0; i < districtCodes.size(); i++) {
                             if (districtCodes.get(i).equals(districtCode)) {
@@ -358,7 +358,7 @@ public class PersonalInfoActivity extends AppCompatActivity {
                     updateWardSpinner();
 
                     // Đặt giá trị mặc định từ currentUser nếu có
-                    if (currentUser != null && currentUser.getAddressWard() != null) {
+                    if (currentUser != null && currentUser.getAddressWard() != -1) {
                         Integer wardCode = currentUser.getAddressWard();
                         for (int i = 0; i < wardCodes.size(); i++) {
                             if (wardCodes.get(i).equals(wardCode)) {

@@ -3,14 +3,14 @@ package com.example.app.models;
 import java.util.Date;
 
 public class  User {
-    private Integer id;
+    private int id;
     private String username;
     private String fullName;
     private String email;
     private String phoneNumber;
-    private Integer addressProvince;
-    private Integer addressDistrict;
-    private Integer addressWard;
+    private int addressProvince;
+    private int addressDistrict;
+    private int addressWard;
     private String addressDetail;
     private String password;
     private String role;
@@ -21,11 +21,11 @@ public class  User {
     private String avatar;
     private String token;
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -61,27 +61,27 @@ public class  User {
         this.phoneNumber = phoneNumber;
     }
 
-    public Integer getAddressProvince() {
+    public int getAddressProvince() {
         return addressProvince;
     }
 
-    public void setAddressProvince(Integer addressProvince) {
+    public void setAddressProvince(int addressProvince) {
         this.addressProvince = addressProvince;
     }
 
-    public Integer getAddressDistrict() {
+    public int getAddressDistrict() {
         return addressDistrict;
     }
 
-    public void setAddressDistrict(Integer addressDistrict) {
+    public void setAddressDistrict(int addressDistrict) {
         this.addressDistrict = addressDistrict;
     }
 
-    public Integer getAddressWard() {
+    public int getAddressWard() {
         return addressWard;
     }
 
-    public void setAddressWard(Integer addressWard) {
+    public void setAddressWard(int addressWard) {
         this.addressWard = addressWard;
     }
 
