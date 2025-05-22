@@ -280,7 +280,6 @@ public class InforUserFragment extends Fragment {
                                         .load(newAvatarUrl)
                                         .placeholder(R.drawable.avt)
                                         .apply(RequestOptions.circleCropTransform())
-                                        .error(R.drawable.avt)
                                         .into(ivAvatar);
                             }
                             fetchUserProfile(token); // Đồng bộ lại profile
@@ -405,12 +404,8 @@ public class InforUserFragment extends Fragment {
                         if (photoUrl != null && !photoUrl.isEmpty()) {
                             Glide.with(InforUserFragment.this)
                                     .load(photoUrl)
-                                    .placeholder(R.drawable.avt)
                                     .apply(RequestOptions.circleCropTransform())
-                                    .error(R.drawable.avt)
                                     .into(ivAvatar);
-                        } else {
-                            ivAvatar.setImageResource(R.drawable.avt);
                         }
                     } else {
                         String msg = userResponse.getMessage() != null ? userResponse.getMessage() : "Không tìm thấy thông tin hồ sơ";
