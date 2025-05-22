@@ -5,12 +5,15 @@ import {
   getCategoryStats,
   createCategory,
   updateCategory,
-  deleteCategory
+  deleteCategory,
+  searchCategories
 } from '../controllers/categoryController.js';
 
 const router = express.Router();
 
 router.get('/category-stats', getCategoryStats);
+
+router.get('/search', searchCategories);
 
 // Lấy danh sách danh mục
 router.get('/all-categories', getCategories);

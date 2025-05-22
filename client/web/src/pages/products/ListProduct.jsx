@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
 import Sidebar from '../../components/layout/Sidebar';
 import Table from '../../components/layout/Table';
-import { fetchBooks, deleteBook } from '../../services/bookService';
+import { fetchBooks, deleteBook, searchBooks } from '../../services/bookService';
 import '../../styles/listproduct.css';
 
 const ListProduct = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
+  const [searchValue, setSearchValue] = useState('');
   const [deleteId, setDeleteId] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +44,44 @@ const ListProduct = () => {
         : [...prevSelected, id]
     );
   };
+
+  const handleSearch = async (query) => {
+  setLoading(true);
+  try {
+    if (!query) {
+      // Nếu không có từ khóa, load lại tất cả sách
+      const books = await fetchBooks();
+      setProducts(
+        books.map((b) => ({
+          id: b.id,
+          name: b.name,
+          image: b.images?.[0]?.url || '',
+          price: b.price + ' VND',
+          quantity: b.stockQuantity,
+          dateAdded: new Date(b.createdAt).toLocaleDateString('vi-VN'),
+          status: b.stockQuantity > 0 ? 'Còn hàng' : 'Hết hàng',
+        }))
+      );
+    } else {
+      // Nếu có từ khóa, gọi API tìm kiếm
+      const books = await searchBooks(query);
+      setProducts(
+        books.map((b) => ({
+          id: b.id,
+          name: b.name,
+          image: b.images?.[0]?.url || '',
+          price: b.price + ' VND',
+          quantity: b.stockQuantity,
+          dateAdded: new Date(b.createdAt).toLocaleDateString('vi-VN'),
+          status: b.stockQuantity > 0 ? 'Còn hàng' : 'Hết hàng',
+        }))
+      );
+    }
+  } catch (err) {
+    setProducts([]);
+  }
+  setLoading(false);
+};
 
   const handleAddProduct = () => {
     navigate('/products/add');
@@ -98,7 +137,7 @@ const confirmDelete = async () => {
         <div className="product-info">
           <img src={product.image} alt={product.name} className="product-image" />
           <div className="product-details">
-            <p className="product-id">{product.id}</p>
+            
             <p className="product-name">{product.name}</p>
           </div>
         </div>
@@ -188,6 +227,9 @@ const confirmDelete = async () => {
           onAdd={handleAddProduct}
           showHeader={true}
           showSearch={true}
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+          onSearch={handleSearch}
           showFilter={true}
           showDownload={true}
           showAddButton={true}

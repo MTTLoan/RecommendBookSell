@@ -4,22 +4,41 @@ import Sidebar from '../../components/layout/Sidebar';
 import Table from '../../components/layout/Table';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
 import '../../styles/customer.css';
-import { fetchAllCustomers } from '../../services/authService';
+import { fetchAllCustomers, searchCustomers } from '../../services/authService';
 
 
 const ListCustomer = () => {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchValue, setSearchValue] = useState('');
+
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async () => {
+const loadData = async () => {
+  setLoading(true);
+  try {
+    const res = await fetchAllCustomers();
+    const users = res.users || res;
+    setCustomers(users);
+  } catch {
+    setCustomers([]);
+  }
+  setLoading(false);
+};
+
+  const handleSearch = async (query) => {
+    setSearchValue(query);
     setLoading(true);
     try {
-      const users = await fetchAllCustomers();
-      setCustomers(users);
+      if (!query) {
+        await loadData();
+      } else {
+        const users = await searchCustomers(query);
+        setCustomers(users);
+      }
     } catch {
       setCustomers([]);
     }
@@ -104,6 +123,9 @@ const ListCustomer = () => {
           showCheckbox={true}
           showSort={true}
           downloadButtonText="Xuất file"
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+          onSearch={handleSearch}
         />
       </main>
     </div>

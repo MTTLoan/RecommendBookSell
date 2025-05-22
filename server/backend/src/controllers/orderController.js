@@ -450,3 +450,66 @@ export const getAllOrders = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// Tìm kiếm đơn hàng theo tên sản phẩm
+export const searchOrdersByBookName = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.status(400).json({ success: false, message: "Thiếu từ khóa tìm kiếm." });
+    }
+
+    // Tìm các bookId có tên chứa từ khóa
+    const books = await Book.find({ name: { $regex: q, $options: "i" } }).select("id name images");
+    const bookIds = books.map(b => b.id);
+
+    if (bookIds.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    // Tìm các đơn hàng có items chứa bookId này
+    const orders = await Order.find({ "items.bookId": { $in: bookIds } });
+
+    // Lấy thông tin user liên quan
+    const userIds = [...new Set(orders.map(o => o.userId))];
+    const users = await User.find({ id: { $in: userIds } });
+    const userMap = {};
+    users.forEach(u => { userMap[u.id] = u; });
+
+    // Map bookId -> book
+    const bookMap = {};
+    books.forEach(b => { bookMap[Number(b.id)] = b; });
+
+    // Chỉ lấy các item khớp bookId
+    const result = orders.map(order => {
+      // Lọc chỉ các item khớp bookId
+      const matchedItems = order.items
+        .filter(item => bookIds.includes(item.bookId))
+        .map(item => {
+          const book = bookMap[Number(item.bookId)];
+          return {
+            ...item.toObject(),
+            bookName: book?.name || '',
+            bookImage:
+              Array.isArray(book?.images) && book.images.length > 0
+                ? book.images[0].url
+                : '',
+          };
+        });
+
+      return {
+        id: order.id,
+        orderDate: order.orderDate,
+        totalAmount: order.totalAmount,
+        status: order.status,
+        customer: userMap[order.userId]?.fullName || 'Ẩn',
+        items: matchedItems,
+      };
+    }).filter(order => order.items.length > 0); // Chỉ trả về đơn hàng có item khớp
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    console.error("searchOrdersByBookName error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

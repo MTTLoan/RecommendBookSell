@@ -4,7 +4,7 @@ import Sidebar from '../../components/layout/Sidebar';
 import Table from '../../components/layout/Table';
 import '../../styles/listcategory.css';
 import { useNavigate } from 'react-router-dom';
-import { fetchCategories, addCategory, updateCategory, deleteCategory, fetchCategoryStats } from '../../services/categoryService';
+import { fetchCategories, searchCategories, addCategory, updateCategory, deleteCategory, fetchCategoryStats } from '../../services/categoryService';
 
 const ListCategory = () => {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ const ListCategory = () => {
   const [showDelete, setShowDelete] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [newCategory, setNewCategory] = useState({ name: '', imageUrl: '' });
+  const [searchValue, setSearchValue] = useState(""); // Thêm state này
 
   useEffect(() => {
     loadData();
@@ -68,6 +69,33 @@ const loadData = async () => {
     loadData();
   };
 
+const handleSearch = async (query) => {
+  setSearchValue(query);
+  setLoading(true);
+  try {
+    if (!query) {
+      await loadData();
+    } else {
+      const cats = await searchCategories(query);
+      const statsRes = await fetchCategoryStats();
+      const statsMap = {};
+      (statsRes.stats || []).forEach(s => {
+        statsMap[s._id] = s.quantity;
+      });
+      setCategories(
+        (cats || []).map(cat => ({
+          ...cat,
+          id: Number(cat.id || cat._id),
+          bookCount: statsMap[cat.id] || 0
+        }))
+      );
+    }
+  } catch {
+    setCategories([]);
+  }
+  setLoading(false);
+};
+
   const columns = [
     {
       key: 'name',
@@ -80,7 +108,6 @@ const loadData = async () => {
             style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 8, border: '1px solid #eee' }}
           />
           <div>
-            <div style={{ fontSize: 13, color: '#888' }}>{cat.id}</div>
             <div style={{ fontWeight: 600 }}>{cat.name}</div>
           </div>
         </div>
@@ -137,6 +164,9 @@ const loadData = async () => {
             addButtonText="Thêm danh mục"
             downloadButtonText="Xuất file"
             onAdd={() => setShowAdd(true)}
+            searchValue={searchValue}
+            setSearchValue={setSearchValue}
+            onSearch={handleSearch}
           />
         )}
       </main>

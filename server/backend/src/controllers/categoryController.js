@@ -205,3 +205,29 @@ export const deleteCategory = async (req, res) => {
     });
   }
 };
+
+export const searchCategories = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        msg: "Thiếu từ khóa tìm kiếm.",
+      });
+    }
+    const categories = await Category.find({
+      name: { $regex: q, $options: "i" }
+    });
+    return res.status(200).json({
+      success: true,
+      msg: "Tìm kiếm danh mục thành công.",
+      categories,
+    });
+  } catch (error) {
+    console.error("Lỗi tìm kiếm danh mục:", error.message);
+    return res.status(500).json({
+      success: false,
+      msg: `Lỗi server: ${error.message}`,
+    });
+  }
+};

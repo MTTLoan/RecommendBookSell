@@ -127,16 +127,17 @@ export const peekNextBookIdApi = async (req, res) => {
 // Thêm sách mới
 export const createBook = async (req, res) => {
   try {
-    const { name, description, price, stockQuantity, images, categoryId } = req.body;
-    const bookId = await getNextBookId(); // Lấy id tự tăng
+    const { name, description, price, stockQuantity, images, categoryId, authors } = req.body;
+    const id = await getNextBookId(); // Lấy id tự tăng
     const newBook = new Book({
-      bookId,
+      id, // Đúng trường id
       name,
       description,
       price,
       stockQuantity,
       images,
       categoryId,
+      authors,
       createdAt: new Date(),
     });
     await newBook.save();
@@ -204,3 +205,23 @@ export const deleteBook = async (req, res) => {
     });
   }
 };
+
+export const searchBooks = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.status(400).json({ success: false, msg: "Thiếu từ khóa tìm kiếm." });
+    }
+    // Chỉ tìm theo tên (name), không tìm theo id
+    const query = {
+      name: { $regex: q, $options: "i" }
+    };
+
+    const books = await Book.find(query);
+    res.json({ success: true, books });
+  } catch (error) {
+    console.error("Lỗi tìm kiếm sách:", error);
+    res.status(500).json({ success: false, msg: "Lỗi server khi tìm kiếm sản phẩm." });
+  }
+};
+

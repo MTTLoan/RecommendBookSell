@@ -6,6 +6,9 @@ const Table = ({
   data,
   columns,
   onAdd,
+  searchValue,
+  setSearchValue,
+  onSearch,
   showHeader = true,
   showSearch = true,
   showFilter = true,
@@ -41,26 +44,30 @@ const Table = ({
     setSortConfig({ key, direction });
   };
 
-const sortedData = [...paginatedData].sort((a, b) => {
-  if (sortConfig.key) {
-    // Tìm column đang sort
-    const col = columns.find(c => c.key === sortConfig.key);
-    if (col && typeof col.sorter === 'function') {
-      // Dùng hàm sorter custom nếu có
-      return sortConfig.direction === 'asc'
-        ? col.sorter(a, b)
-        : -col.sorter(a, b);
-    } else {
-      // So sánh mặc định
-      if (sortConfig.direction === 'asc') {
-        return a[sortConfig.key] > b[sortConfig.key] ? 1 : -1;
+  const sortedData = [...paginatedData].sort((a, b) => {
+    if (sortConfig.key) {
+      const col = columns.find(c => c.key === sortConfig.key);
+      if (col && typeof col.sorter === 'function') {
+        return sortConfig.direction === 'asc'
+          ? col.sorter(a, b)
+          : -col.sorter(a, b);
       } else {
-        return a[sortConfig.key] < b[sortConfig.key] ? 1 : -1;
+        // Nếu sort theo id (mã), so sánh số
+        if (sortConfig.key === 'id') {
+          return sortConfig.direction === 'asc'
+            ? Number(a.id) - Number(b.id)
+            : Number(b.id) - Number(a.id);
+        }
+        // So sánh mặc định
+        if (sortConfig.direction === 'asc') {
+          return a[sortConfig.key] > b[sortConfig.key] ? 1 : -1;
+        } else {
+          return a[sortConfig.key] < b[sortConfig.key] ? 1 : -1;
+        }
       }
     }
-  }
-  return 0;
-});
+    return 0;
+  });
 
   // Xử lý chọn tất cả
   const handleSelectAll = (isChecked) => {
@@ -101,6 +108,21 @@ const sortedData = [...paginatedData].sort((a, b) => {
     setIsFilterDropdownOpen(false);
   };
 
+    // Xử lý tìm kiếm
+const handleSearchInput = (e) => {
+  setSearchValue(e.target.value);
+};
+
+const handleSearchKeyDown = (e) => {
+  if (e.key === 'Enter' && onSearch) {
+    onSearch(searchValue);
+  }
+};
+
+const handleSearchClick = () => {
+  if (onSearch) onSearch(searchValue);
+};
+
   return (
     <div className="table-container">
       {/* Header tên bảng */}
@@ -118,8 +140,15 @@ const sortedData = [...paginatedData].sort((a, b) => {
               type="text"
               className="search-input"
               placeholder="Tìm kiếm"
+              value={searchValue}
+              onChange={handleSearchInput}
+              onKeyDown={handleSearchKeyDown}
             />
-            <span className="material-symbols-outlined search-icon">search</span>
+            <span className="material-symbols-outlined search-icon"
+              style={{ cursor: 'pointer' }}
+              onClick={handleSearchClick}
+            >
+              search</span>
           </div>
         )}
 

@@ -127,6 +127,11 @@ export const getCurrentUser = () => {
 }; 
 
 export const fetchAllCustomers = async () => {
-  const res = await api.get(`${API_BASE_URL}/auth/admin/users`);
+  const res = await api.get(`${API_BASE_URL}/user/admin/users`);
+  return res.data.users || [];
+};
+
+export const searchCustomers = async (query) => {
+  const res = await axios.get(`${API_BASE_URL}/user/search?q=${encodeURIComponent(query)}`);
   return res.data.users || [];
 };

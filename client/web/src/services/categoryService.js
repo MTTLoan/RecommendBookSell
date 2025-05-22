@@ -25,3 +25,8 @@ export const deleteCategory = async (id) => {
   const res = await axios.delete(`${API_BASE_URL}/categories/delete-category/${Number(id)}`);
   return res.data.category;
 };
+
+export const searchCategories = async (query) => {
+  const res = await axios.get(`${API_BASE_URL}/categories/search?q=${encodeURIComponent(query)}`);
+  return res.data.categories || [];
+};

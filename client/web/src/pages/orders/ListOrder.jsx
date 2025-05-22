@@ -3,12 +3,13 @@ import Navbar from '../../components/layout/Navbar';
 import Sidebar from '../../components/layout/Sidebar';
 import Table from '../../components/layout/Table';
 import '../../styles/order.css';
-import { fetchAllOrders } from '../../services/orderService';
+import { fetchAllOrders, searchOrders } from '../../services/orderService';
 
 
 const ListOrder = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchValue, setSearchValue] = useState('');
 
     useEffect(() => {
     loadData();
@@ -19,6 +20,22 @@ const ListOrder = () => {
     try {
       const res = await fetchAllOrders();
       setOrders(res.data || []);
+    } catch {
+      setOrders([]);
+    }
+    setLoading(false);
+  };
+
+    const handleSearch = async (query) => {
+    setSearchValue(query);
+    setLoading(true);
+    try {
+      if (!query) {
+        await loadData();
+      } else {
+        const res = await searchOrders(query);
+        setOrders(res.data?.data || []);
+      }
     } catch {
       setOrders([]);
     }
@@ -41,7 +58,6 @@ const ListOrder = () => {
             style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 8, border: '1px solid #eee' }}
           />
           <div className="product-details">
-            <p className="product-id">{order.id}</p>
             <p className="product-name">{firstItem?.bookName || ''}</p>
           </div>
         </div>
@@ -112,6 +128,9 @@ const ListOrder = () => {
             showCheckbox={true}
             showSort={true}
             downloadButtonText="Xuất file"
+            searchValue={searchValue}
+            setSearchValue={setSearchValue}
+            onSearch={handleSearch}
           />
         )}
       </main>

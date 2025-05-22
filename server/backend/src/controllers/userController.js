@@ -1,5 +1,28 @@
 import User from "../models/User.js";
 
+export const adminSearchUsersController = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ success: false, msg: "Bạn không có quyền thực hiện thao tác này." });
+    }
+    const { q } = req.query;
+    if (!q) {
+      return res.status(400).json({ success: false, msg: "Thiếu từ khóa tìm kiếm." });
+    }
+    const users = await User.find({
+      role: "user",
+      $or: [
+        { username: { $regex: q, $options: "i" } },
+        { fullName: { $regex: q, $options: "i" } }
+      ]
+    }).select("-password");
+    return res.status(200).json({ success: true, users });
+  } catch (error) {
+    console.error("Lỗi tìm kiếm user:", error.message);
+    res.status(500).json({ success: false, msg: "Lỗi server khi tìm kiếm user." });
+  }
+};
+
 export const adminGetAllUsersController = async (req, res) => {
   try {
     if (req.user.role !== "admin") {

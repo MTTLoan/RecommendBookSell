@@ -13,6 +13,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import forgotPasswordRoutes from "./routes/forgotPassword.js";
 import bookRoutes from "./routes/book.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -57,6 +58,8 @@ app.use("/api/reviews", reviewRoutes);
 
 // cart routes
 app.use("/api/carts", cartRoutes);
+
+app.use("/api/user", userRoutes);
 
 app.use(errorHandler);
 
