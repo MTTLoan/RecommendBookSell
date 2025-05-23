@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import Counter from './Counter.js';
 
 const ImageSchema = new mongoose.Schema({
   url: { type: String, required: true },
@@ -47,6 +48,5 @@ BookSchema.set("toJSON", { virtuals: true });
 
 // Tắt _id mặc định và không index nó
 BookSchema.set("id", false);
-BookSchema.set("_id", false);
 
 export default mongoose.model("Book", BookSchema, "books"); // Collection name là "books"

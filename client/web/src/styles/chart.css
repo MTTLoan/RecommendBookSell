@@ -1,0 +1,126 @@
+.chart-container {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .chart-title h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+  }
+  
+  .chart-subtitle {
+    font-size: 12px;
+    color: #888;
+  }
+  
+  .chart-actions {
+    display: flex;
+    align-items: center;
+  }
+  
+  .chart-filter {
+    position: relative;
+  }
+  
+  .filter-button {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+    gap: 10px;
+  }
+  
+  .filter-button:hover {
+    background-color: #ecfff4;
+    color: #3fbf48;
+  }
+  
+  .filter-icon {
+    font-size: 20px;
+    color: inherit;
+  }
+  
+  .filter-text {
+    font-size: 14px;
+    color: inherit;
+    gap: 10px
+  }
+  
+  .filter-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 10px 0;
+    margin: 5px 0 0;
+    z-index: 1000;
+    width: 150px;
+  }
+  
+  .filter-dropdown li {
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .filter-dropdown li:hover {
+    background-color: #ecfff4;
+    color: #3fbf48;
+  }
+  
+  .chart-download {
+    background-color: #fff;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .chart-download:hover {
+    background-color: #ecfff4;
+    color: #3fbf48;
+  }
+  
+  .download-icon {
+    font-size: 20px;
+    color: inherit;
+  }
+  
+  .chart-body {
+    text-align: center;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px dashed #ddd;
+  }

@@ -1,0 +1,340 @@
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px; /* Bo tròn bảng */
+    overflow: hidden; /* Đảm bảo bo tròn không bị ảnh hưởng */
+    border: 1px solid #ddd;
+    margin: 0 auto; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    font-family: 'Quicksand', sans-serif;
+  }
+
+.table-container {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+/* Navigation bar */
+.table-navigation {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+  border: 1px solid #dddd;
+  padding: 5px 5px;
+  border-radius: 12px;
+}
+
+.nav-tab {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.3s, font-weight 0.3s;
+  padding: 5px;
+}
+
+.nav-tab.active {
+  color: #3fbf48;
+  font-weight: bold;
+  background-color: #ecfff4;
+}
+
+.nav-tab:hover {
+  color: #3fbf48;
+  background-color: #ecfff4;
+  font-weight: bold;
+}
+
+  .table-title h2 {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+    color: #333;
+  }
+  
+  .table th .sort-icon {
+    font-size: 14px;
+    margin-left: 5px;
+    cursor: pointer;
+    color: #888;
+  }
+  
+  .table th .sort-icon:hover {
+    color: #3fbf48;
+  }
+  
+  .table-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    font-family: 'Quicksand', sans-serif;
+  }
+  
+  .search-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 500px !important;
+    font-family: 'Quicksand', sans-serif;
+  }
+  
+  .search-icon {
+    position: absolute;
+    right: 10px;
+    font-size: 20px;
+    color: #888;
+    cursor: pointer;
+  }
+
+  .table-scroll {
+  max-height: 500px;
+  overflow: auto;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background: #f0f0f0;
+  z-index: 2;
+}
+
+  .table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .pagination .page-item.active .page-link {
+    background-color: #3fbf48;
+    border-color: #3fbf48;
+    color: #fff;
+  }
+
+  /* Phân trang bên trái */
+.pagination-left {
+    font-size: 14px;
+    color: #333;
+  }
+  
+  /* Phân trang bên phải */
+  .pagination-right {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    gap: 10px;
+  }
+  
+  .page-select {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    cursor: pointer;
+  }
+  
+  .page-button {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .page-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  
+  .page-button:hover:not(:disabled) {
+    background-color: #ecfff4;
+    color: #3fbf48;
+  }
+
+  .table-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+  
+  .table-filter {
+    position: relative;
+  }
+
+  .table-filter span {
+    margin-left: 5px;
+  }
+  
+  .filter-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    background-color: #fff !important;
+    border: 1px solid #333;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .filter-button:hover {
+    background-color: #ecfff4;
+    color: #3fbf48;
+  }
+  
+  .filter-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 10px 0;
+    margin: 5px 0 0;
+    z-index: 1000;
+    width: 150px;
+  }
+  
+  .filter-dropdown li {
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .filter-dropdown li:hover {
+    background-color: #ecfff4;
+    color: #3fbf48;
+  }
+  
+  .table-download {
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #333;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .table-download span {
+    margin-left: 5px;
+  }
+  
+  .table-download:hover {
+    background-color: #fff;
+    color: #3fbf48;
+  }
+
+  .add-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #3fbf48 !important;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px 10px; /* Đảm bảo nút đủ rộng */
+    border-radius: 8px;
+    transition: background-color 0.3s, color 0.3s;
+    white-space: nowrap; /* Ngăn chữ bị xuống dòng */
+  }
+  
+  .add-button span {
+    margin-left: 5px;
+  }
+  
+  .add-button:hover {
+    background-color: #ecfff4 !important;
+    color: #3fbf48 !important;
+  }
+
+  .add-icon {
+    color: inherit;
+  }
+  
+  .table {
+    width: 100%;
+    border: solid 1px #888;
+    border-radius: 12px;
+    border-collapse: collapse;
+  }
+  
+  .table th {
+    background-color: #f0f0f0;
+    color: #333;
+    font-weight: 600;
+    text-align: left;
+    padding: 10px;
+    position: relative;
+  }
+  
+  .table td {
+    padding: 10px;
+    color: #555;
+    border-top: 1px solid #ddd;
+  }
+  
+  .table tr:hover td {
+    background-color: #f9f9f9;
+  }
+  
+  .sort-icon {
+    font-size: 16px;
+    margin-left: 5px;
+    cursor: pointer;
+    color: #888;
+  }
+  
+  .sort-icon:hover {
+    color: #3fbf48;
+  }
+
+  /* Dòng được chọn */
+.selected-row {
+    background-color: #ecfff4; /* Màu nền cho dòng được chọn */
+    transition: background-color 0.3s ease, color 0.3s; /* Hiệu ứng chuyển đổi mượt mà */
+  }
+  
+  .selected-row:hover {
+    background-color: #c2ffdb !important; /* Màu nền khi hover trên dòng được chọn */
+  }

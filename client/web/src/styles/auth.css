@@ -1,0 +1,201 @@
+.auth-container {
+  display: flex;
+  height: 100vh;
+  background-color: #ecfff4;
+}
+
+.auth-form-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2.5rem;
+  background-color: #ecfff4;
+}
+
+.auth-image-container {
+  flex: 1;
+  background-size: cover;
+  background-position: center;
+  height: 100%;
+  background-repeat: no-repeat;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .auth-container {
+    flex-direction: column;
+  }
+
+  .auth-form-container,
+  .auth-image-container {
+    width: 100%;
+  }
+
+  .auth-image-container {
+    height: auto;
+  }
+
+  .input-wrapper input {
+    font-size: 0.9rem; /* Giảm kích thước font */
+    padding: 12px 36px 12px 10px; /* Điều chỉnh padding */
+  }
+}
+
+.auth-form-wrapper {
+  width: 100%;
+  max-width: 28rem;
+  background-color: #ecfff4;
+}
+
+.auth-logo img {
+  max-width: 100%; /* Logo sẽ không vượt quá chiều rộng của form */
+  height: auto; /* Tự động điều chỉnh chiều cao theo tỷ lệ */
+  display: block;
+  margin: 0 auto;
+}
+
+.auth-title {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: #1f2937;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.auth-error {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-radius: 0.5rem;
+}
+
+.auth-forgot-password {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 14px;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.auth-forgot-password a {
+  font-family: 'Quicksand', sans-serif;
+  color: #3fbf48;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.auth-forgot-password a:hover {
+  color: #3fbf48;
+  text-decoration: underline;
+}
+
+label {
+  font-family: 'Quicksand', sans-serif;
+  margin-bottom: 6px;
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 25;
+  font-family: 'Material Symbols Outlined';
+}
+
+
+.input-wrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 15px 40px 15px 12px;
+  border: 2px solid #d1d1d1;
+  border-radius: 12px;
+  font-size: 1rem;
+  outline: none;
+  background-color: #ecfff4;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.input-wrapper input::placeholder {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 14px;
+  color: #737373;
+}
+
+.input-wrapper input:focus {
+  border-color: #3fbf48;
+}
+
+.input-wrapper .input-icon,
+.input-wrapper .password-icon {
+  position: absolute;
+  fill: none;
+  top: 70%;
+  right: 12px;
+  transform: translateY(-50%);
+  height: 24px;
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.input-wrapper .input-icon {
+  color: #b0b0b0;
+  pointer-events: none;
+}
+
+.input-wrapper .input-icon.valid {
+  color: #3fbf48;
+}
+
+.input-wrapper .password-icon {
+  color: #b0b0b0;
+  border: 0px solid #b0b0b0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.input-wrapper .password-icon:hover {
+  color: #3fbf48;
+  border-color: #3fbf48;
+}
+
+
+button {
+  font-family: 'Quicksand', sans-serif;
+  background-color: #3fbf48;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  width: 100%;
+}
+
+button:hover {
+  background-color: #37a93f;
+}
+
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}

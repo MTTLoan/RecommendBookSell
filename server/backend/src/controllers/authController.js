@@ -96,6 +96,7 @@ export const loginController = async (req, res) => {
 
     // Kiểm tra mật khẩu
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match:', isMatch ? 'Yes' : 'No'); // Log kết quả so sánh mật khẩu
 
     if (!isMatch) {
       return res.status(400).json({
@@ -395,3 +396,34 @@ export const uploadAvatarController = async (req, res) => {
     return res.status(500).json({ success: false, msg: "Cập nhật avatar thất bại! Lỗi server." });
   }
 };
+
+export const resetPasswordController = async (req, res) => {
+    const { token, password } = req.body;
+  
+    try {
+      const passwordReset = await PasswordReset.findOne({
+        token,
+        expiresAt: { $gt: Date.now() }, // Token chưa hết hạn
+      });
+  
+      if (!passwordReset) {
+        return res.status(400).json({ message: "Token không hợp lệ hoặc đã hết hạn." });
+      }
+  
+      const user = await User.findById(passwordReset.userId);
+      if (!user) {
+        return res.status(404).json({ message: "Người dùng không tồn tại." });
+      }
+  
+      // Cập nhật mật khẩu
+      user.password = await bcrypt.hash(password, 10);
+      await user.save();
+  
+      // Xóa yêu cầu khôi phục mật khẩu sau khi sử dụng
+      await PasswordReset.deleteOne({ _id: passwordReset._id });
+  
+      res.json({ message: "Mật khẩu đã được cập nhật." });
+    } catch (error) {
+      res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
+    }
+  };

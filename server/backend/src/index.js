@@ -12,13 +12,22 @@ import cartRoutes from "./routes/cartRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import forgotPasswordRoutes from "./routes/forgotPassword.js";
 import bookRoutes from "./routes/book.js";
-import categoryRoutes from "./routes/category.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // Cho phép cả localhost và 127.0.0.1
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
+
+// app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 connectDB();
 
@@ -50,7 +59,17 @@ app.use("/api/reviews", reviewRoutes);
 // cart routes
 app.use("/api/carts", cartRoutes);
 
+app.use("/api/user", userRoutes);
+
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+//   console.log(`API URL: http://localhost:${PORT}/api`);
+// });
+
+// import dashboardRoutes from './routes/dashboard.js';
+// app.use('/api/dashboard', dashboardRoutes);

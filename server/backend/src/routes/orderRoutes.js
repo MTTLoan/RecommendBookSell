@@ -4,6 +4,9 @@ import {
   updateOrderStatus,
   getOrderById,
   addOrder,
+  getAllOrders,
+  updateOrder,
+  searchOrdersByBookName
 } from "../controllers/orderController.js";
 import userJwtMiddleware from "../middleware/user_jwt.js";
 
@@ -11,6 +14,8 @@ const router = express.Router();
 
 // Route lấy lịch sử đơn hàng
 router.get("/history", userJwtMiddleware, getOrderHistory);
+
+router.get('/search', searchOrdersByBookName);
 
 // Route cập nhật trạng thái đơn hàng
 router.put("/:id/status", userJwtMiddleware, updateOrderStatus);
@@ -20,5 +25,10 @@ router.get("/:id", userJwtMiddleware, getOrderById);
 
 // Route thêm đơn hàng mới
 router.post("/", userJwtMiddleware, addOrder);
+
+// Sửa đơn hàng (hay dùng sửa status thôi?)
+router.put("/:id", userJwtMiddleware, updateOrder);
+
+router.get("/", getAllOrders);
 
 export default router;
