@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
 import Sidebar from '../../components/layout/Sidebar';
 import Table from '../../components/layout/Table';
-import { fetchBooks, deleteBook, searchBooks } from '../../services/bookService';
+import { fetchBooks, deleteBook, searchNameBooks } from '../../services/bookService';
 import '../../styles/listproduct.css';
 
 const ListProduct = () => {
@@ -64,7 +64,7 @@ const ListProduct = () => {
       );
     } else {
       // Nếu có từ khóa, gọi API tìm kiếm
-      const books = await searchBooks(query);
+      const books = await searchNameBooks(query);
       setProducts(
         books.map((b) => ({
           id: b.id,

@@ -397,11 +397,6 @@ export const uploadAvatarController = async (req, res) => {
   }
 };
 
-    console.error("Forgot password error:", error); 
-    res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
-  }
-};
-
 export const resetPasswordController = async (req, res) => {
     const { token, password } = req.body;
   

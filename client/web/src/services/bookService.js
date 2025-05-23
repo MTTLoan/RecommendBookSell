@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../utils/constants';
 
 const API_URL = 'http://localhost:5000/api/books/all-book';
 
-export const searchBooks = async (query) => {
+export const searchNameBooks = async (query) => {
   const res = await axios.get(`${API_BASE_URL}/books/search?q=${encodeURIComponent(query)}`);
   return res.data.books || [];
 };

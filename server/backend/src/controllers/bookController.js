@@ -1,7 +1,5 @@
 import Book from "../models/Book.js";
 import Review from "../models/Review.js";
-import Book from '../models/Book.js';
-import Review from '../models/Review.js';
 import Counter from '../models/Counter.js';
 
 // Hàm lấy id tự tăng
@@ -270,7 +268,7 @@ export const deleteBook = async (req, res) => {
   }
 };
 
-export const searchBooks = async (req, res) => {
+export const searchNameBooks = async (req, res) => {
   try {
     const { q } = req.query;
     if (!q) {

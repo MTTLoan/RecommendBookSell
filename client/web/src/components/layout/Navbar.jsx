@@ -1,8 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../styles/navbar.css';
+import { getCurrentUser } from '../../services/authService';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
 
-const Navbar = ({ user, onLogout }) => (
+
+const Navbar = ({ onLogout }) => {
+  const [user, setUser] = useState(getCurrentUser());
+
+  useEffect(() => {
+    // Nếu muốn tự động cập nhật khi user thay đổi ở localStorage, có thể lắng nghe sự kiện storage
+    const handleStorage = () => setUser(getCurrentUser());
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  return (
   <nav className="navbar">
     <div className="navbar-left">
     </div>
@@ -23,6 +35,7 @@ const Navbar = ({ user, onLogout }) => (
       </button>
     </div>
   </nav>
-);
+  );
+};
 
 export default Navbar;
