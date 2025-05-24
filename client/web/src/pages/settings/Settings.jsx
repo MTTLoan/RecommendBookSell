@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import Navbar from "../../components/layout/Navbar";
 import Sidebar from "../../components/layout/Sidebar";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
+import Popup from "../../components/common/Popup"; 
 import defaultAvatar from "../../assets/images/default-avatar.jpg";
+import { isAuthenticated, logout } from '../../services/authService';
 import "../../styles/setting.css";
 import {
   getProfile,
@@ -13,26 +16,9 @@ import {
 } from "../../services/authService";
 import { validateUsername, validateRequired } from "../../utils/validators";
 
-// Component Dialog tùy chỉnh để hiển thị thông báo
-const Dialog = ({ isOpen, message, onClose }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="dialog-overlay">
-      <div className="dialog">
-        <h3>Thông báo</h3>
-        <p>{message}</p>
-        <div className="dialog-actions">
-          <Button variant="primary" onClick={onClose}>
-            Đóng
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const Settings = () => {
   // Khởi tạo trạng thái cho component
+    const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Tài khoản"); // Quản lý tab hiện tại (Tài khoản hoặc Bảo mật)
   const [avatar, setAvatar] = useState(null); // Lưu URL tạm thời của ảnh đại diện (hiển thị trên UI)
   const [avatarFileName, setAvatarFileName] = useState(""); // Lưu tên file ảnh đại diện được chọn
@@ -45,9 +31,13 @@ const Settings = () => {
   const [initialFormData, setInitialFormData] = useState(null); // Lưu dữ liệu hồ sơ ban đầu để khôi phục khi hủy
   const [errors, setErrors] = useState({}); // Lưu các lỗi xác thực biểu mẫu
   const [loading, setLoading] = useState(false); // Quản lý trạng thái đang tải
-  const [successMessage, setSuccessMessage] = useState(""); // Lưu thông báo thành công cho tab Tài khoản
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // Quản lý trạng thái mở/đóng dialog
-  const [dialogMessage, setDialogMessage] = useState(""); // Lưu nội dung thông báo trong dialog
+  const [isPopupOpen, setIsPopupOpen] = useState(false); // Quản lý trạng thái mở/đóng popup
+  const [popupConfig, setPopupConfig] = useState({
+    title: "",
+    content: "",
+    titleColor: "info",
+    contentColor: "info",
+  }); // Lưu cấu hình thông báo popup
   const [avatarFileObject, setAvatarFileObject] = useState(null); // Lưu đối tượng file ảnh đại diện được chọn
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
@@ -59,6 +49,9 @@ const Settings = () => {
   // Hàm này chạy khi component được gắn vào hoặc khi refreshKey thay đổi
   // Mục đích: Lấy thông tin hồ sơ người dùng từ server và cập nhật trạng thái
   useEffect(() => {
+    if (!isAuthenticated()) {
+          navigate('/auth/login');
+        }
     const fetchProfile = async () => {
       try {
         setLoading(true); // Bật trạng thái đang tải
@@ -80,21 +73,29 @@ const Settings = () => {
           setAvatar(user.avatar ? `${user.avatar}?t=${Date.now()}` : null); // Cập nhật URL ảnh đại diện với tham số chống cache
           setAvatarFileName(user.avatar ? "Current Avatar" : ""); // Cập nhật tên file ảnh
         } else {
-          setErrors({
-            general: "Không tìm thấy thông tin người dùng.",
+          setPopupConfig({
+            title: "Lỗi",
+            content: "Không tìm thấy thông tin người dùng.",
+            titleColor: "error",
+            contentColor: "error",
           });
+          setIsPopupOpen(true);
         }
       } catch (error) {
         console.error("Error fetching profile:", error.message);
-        setErrors({
-          general: "Không thể tải thông tin hồ sơ. Vui lòng thử lại.",
+        setPopupConfig({
+          title: "Lỗi",
+          content: "Không thể tải thông tin hồ sơ. Vui lòng thử lại.",
+          titleColor: "error",
+          contentColor: "error",
         });
+        setIsPopupOpen(true);
       } finally {
         setLoading(false); // Tắt trạng thái đang tải
       }
     };
     fetchProfile(); // Gọi hàm lấy hồ sơ
-  }, [refreshKey]);
+  }, [navigate, refreshKey]);
 
   // Hàm xử lý khi người dùng chọn file ảnh đại diện mới
   // Mục đích: Xác thực file ảnh và cập nhật trạng thái giao diện
@@ -172,7 +173,7 @@ const Settings = () => {
   };
 
   // Hàm xử lý khi người dùng nhấn nút "Cập nhật" trong tab Tài khoản
-  // Mục đích: Tải ảnh đại diện (nếu có) và cập nhật thông tin hồ sơ
+  // Mục đích: Tải ảnh đại diện (nếu có), cập nhật thông tin hồ sơ và hiển thị popup
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
@@ -185,6 +186,7 @@ const Settings = () => {
       setLoading(true); // Bật trạng thái đang tải
 
       // Tải ảnh đại diện nếu người dùng chọn ảnh mới
+       let avatarUpdated = false;
       if (avatarFileObject) {
         const avatarPayload = new FormData();
         avatarPayload.append("avatar", avatarFileObject); // Thêm file ảnh vào payload
@@ -196,6 +198,7 @@ const Settings = () => {
         if (!avatarResponse.success) {
           throw new Error(avatarResponse.msg || "Tải ảnh đại diện thất bại");
         }
+        avatarUpdated = true;
       }
 
       // Cập nhật thông tin hồ sơ
@@ -226,19 +229,36 @@ const Settings = () => {
           setAvatar(updatedUser.avatar ? `${updatedUser.avatar}?t=${Date.now()}` : null); // Cập nhật ảnh đại diện
           setAvatarFileName(updatedUser.avatar ? "Current Avatar" : ""); // Cập nhật tên file
           setAvatarFileObject(null); // Xóa file ảnh đã chọn
-          setSuccessMessage("Cập nhật hồ sơ thành công!"); // Hiển thị thông báo thành công
+          setPopupConfig({
+            title: "Thành công",
+            content: profileResponse.msg || "Cập nhật hồ sơ thành công!",
+            titleColor: "success",
+            confirmColor: "success",
+            contentColor: "success",
+          }); // Hiển thị popup thành công
+          setIsPopupOpen(true);
           setErrors({}); // Xóa lỗi
           setRefreshKey((prev) => prev + 1); // Buộc làm mới giao diện
-          setTimeout(() => setSuccessMessage(""), 3000); // Xóa thông báo sau 3 giây
+
+          // Nếu avatar được cập nhật, gửi sự kiện để thông báo cho Navbar
+          if (avatarUpdated) {
+            const event = new Event("avatarUpdated");
+            window.dispatchEvent(event);
+          }
         } else {
           throw new Error("Không thể tải lại thông tin hồ sơ.");
         }
       }
     } catch (error) {
       console.error("Error updating profile:", error.message);
-      setErrors({
-        general: error.message || "Cập nhật hồ sơ thất bại. Vui lòng thử lại.",
-      });
+      setPopupConfig({
+        title: "Lỗi",
+        content: error.message || "Cập nhật hồ sơ thất bại. Vui lòng thử lại.",
+        titleColor: "error",
+        confirmColor: "error",
+        contentColor: "error",
+      }); // Hiển thị popup lỗi
+      setIsPopupOpen(true);
       setAvatar(initialFormData?.avatar ? `${initialFormData.avatar}?t=${Date.now()}` : null); // Khôi phục ảnh cũ
       setAvatarFileName(initialFormData?.avatar ? "Current Avatar" : ""); // Khôi phục tên file
       setAvatarFileObject(null); // Xóa file ảnh đã chọn
@@ -248,7 +268,7 @@ const Settings = () => {
   };
 
   // Hàm xử lý khi người dùng nhấn nút "Cập nhật" trong tab Bảo mật
-  // Mục đích: Gọi API đổi mật khẩu và hiển thị dialog nếu thành công
+  // Mục đích: Gọi API đổi mật khẩu và hiển thị popup nếu thành công hoặc thất bại
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validatePasswordForm();
@@ -266,8 +286,14 @@ const Settings = () => {
       console.log("Password change payload:", payload);
       const response = await changePassWord(payload); // Gọi API đổi mật khẩu
       if (response.success) {
-        setDialogMessage(response.msg || "Mật khẩu đã được thay đổi thành công."); // Lưu thông báo thành công
-        setIsDialogOpen(true); // Mở dialog
+        setPopupConfig({
+          title: "Thành công",
+          content: response.msg || "Mật khẩu đã được thay đổi thành công.",
+          titleColor: "success",
+          confirmColor: "success",
+          contentColor: "success",
+        }); // Hiển thị popup thành công
+        setIsPopupOpen(true);
         setErrors({}); // Xóa lỗi
         setPasswordData({
           oldPassword: "",
@@ -279,19 +305,24 @@ const Settings = () => {
       }
     } catch (error) {
       console.error("Error updating password:", error.message);
-      setErrors({
-        general: error.message || "Đổi mật khẩu thất bại. Vui lòng thử lại.",
-      });
+      setPopupConfig({
+        title: "Lỗi",
+        content: error.message || "Đổi mật khẩu thất bại. Vui lòng thử lại.",
+        titleColor: "error",
+        confirmColor: "error",
+        contentColor: "error",
+      }); // Hiển thị popup lỗi
+      setIsPopupOpen(true);
     } finally {
       setLoading(false); // Tắt trạng thái đang tải
     }
   };
 
-  // Hàm đóng dialog thông báo
-  // Mục đích: Đặt lại trạng thái dialog khi người dùng nhấn nút đóng
-  const closeDialog = () => {
-    setIsDialogOpen(false);
-    setDialogMessage("");
+  // Hàm đóng popup thông báo
+  // Mục đích: Đặt lại trạng thái popup khi người dùng nhấn nút đóng
+  const closePopup = () => {
+    setIsPopupOpen(false);
+    setPopupConfig({ title: "", content: "", titleColor: "info", contentColor: "info" });
   };
 
   // Hàm xử lý khi người dùng nhấn nút "Hủy"
@@ -303,14 +334,13 @@ const Settings = () => {
       setAvatarFileName(initialFormData.avatar ? "Current Avatar" : ""); // Khôi phục tên file
       setAvatarFileObject(null); // Xóa file ảnh đã chọn
       setErrors({}); // Xóa lỗi
-      setSuccessMessage(""); // Xóa thông báo thành công
     }
   };
-
+  const user = JSON.parse(sessionStorage.getItem('user')) || {};
   // Giao diện chính của component
   return (
     <div className="dashboard-layout">
-      <Navbar />
+      <Navbar user={user} onLogout={logout} />
       <Sidebar />
       <main className="dashboard-content">
         <div className="product-header">
@@ -336,12 +366,6 @@ const Settings = () => {
           </span>
         </div>
         <div className="setting-content">
-          {successMessage && (
-            <div className="success-message">{successMessage}</div>
-          )}
-          {errors.general && (
-            <div className="error-message">{errors.general}</div>
-          )}
           {activeTab === "Tài khoản" && (
             <form
               className="setting-form setting-form-horizontal"
@@ -521,10 +545,17 @@ const Settings = () => {
               </div>
             </form>
           )}
-          <Dialog
-            isOpen={isDialogOpen}
-            message={dialogMessage}
-            onClose={closeDialog}
+          <Popup
+            open={isPopupOpen}
+            title={popupConfig.title}
+            content={popupConfig.content}
+            titleColor={popupConfig.titleColor}
+            contentColor={popupConfig.contentColor}
+            onClose={closePopup}
+            showCancel={false} // Chỉ cần nút "Đồng ý"
+            confirmText="Đồng ý"
+            onConfirm={closePopup} // Nút "Đồng ý" cũng đóng popup
+            confirmColor="info"
           />
         </div>
       </main>

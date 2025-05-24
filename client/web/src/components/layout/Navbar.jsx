@@ -1,17 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import '../../styles/navbar.css';
-import { getCurrentUser } from '../../services/authService';
+import { getProfile } from '../../services/authService';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
 import { logout } from '../../services/authService';
 
 const Navbar = () => {
-  const [user, setUser] = useState(getCurrentUser());
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Nếu muốn tự động cập nhật khi user thay đổi ở localStorage, có thể lắng nghe sự kiện storage
-    const handleStorage = () => setUser(getCurrentUser());
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    // Hàm lấy thông tin người dùng từ API
+    const fetchUser = async () => {
+      try {
+        const profile = await getProfile();
+        setUser(profile?.user || null); // Vì response trả về { message, user }
+      } catch (error) {
+        console.error("Error fetching profile in Navbar:", error.message);
+        setUser(null);
+      }
+    };
+    fetchUser();
+
+    // Hàm xử lý sự kiện avatarUpdated
+    const handleAvatarUpdate = () => {
+      fetchUser();
+    };
+
+    // Lắng nghe sự kiện avatarUpdated
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+
+    // Dọn dẹp sự kiện khi component unmount
+    return () => {
+      window.removeEventListener('avatarUpdated AscendingAvatarUpdated', handleAvatarUpdate);
+    };
   }, []);
 
   return (
