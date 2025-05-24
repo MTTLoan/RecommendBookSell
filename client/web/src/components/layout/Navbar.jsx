@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import '../../styles/navbar.css';
 import { getCurrentUser } from '../../services/authService';
 import defaultAvatar from '../../assets/images/default-avatar.jpg';
+import { logout } from '../../services/authService';
 
-
-const Navbar = ({ onLogout }) => {
+const Navbar = () => {
   const [user, setUser] = useState(getCurrentUser());
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const Navbar = ({ onLogout }) => {
           <span className="navbar-fullname">{user?.fullName || 'Administrator'}</span>
         </div>
       </div>
-      <button className="navbar-logout" onClick={onLogout} title="Đăng xuất">
+      <button className="navbar-logout" onClick={logout} title="Đăng xuất">
         <span className="material-symbols-outlined navbar-logout-icon">logout</span>
       </button>
     </div>

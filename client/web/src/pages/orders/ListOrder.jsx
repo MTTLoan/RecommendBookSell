@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
 import Sidebar from '../../components/layout/Sidebar';
 import Table from '../../components/layout/Table';
@@ -10,6 +11,7 @@ const ListOrder = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
+  const navigate = useNavigate();
 
     useEffect(() => {
     loadData();
@@ -42,6 +44,12 @@ const ListOrder = () => {
     setLoading(false);
   };
 
+    const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/auth/login');
+  };
+
   const columns = [
     {
     key: 'order',
@@ -50,17 +58,10 @@ const ListOrder = () => {
     render: (order) => {
       const firstItem = order.items?.[0];
       return (
-        <div className="product-info">
-          <img
-            src={firstItem?.bookImage || 'https://via.placeholder.com/40x40?text=No+Img'}
-            alt={firstItem?.bookName || ''}
-            className="product-image"
-            style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 8, border: '1px solid #eee' }}
-          />
-          <div className="product-details">
-            <p className="product-name">{firstItem?.bookName || ''}</p>
-          </div>
-        </div>
+      <div>
+        <div><b>Mã đơn:</b> {order.id}</div>
+        <div><b>Số sản phẩm:</b> {order.items?.length || 0}</div>
+      </div>
         );
       },
     },
@@ -92,18 +93,31 @@ const ListOrder = () => {
       label: 'Hành động',
       render: (order) => (
         <div className="actions">
-          <span className="material-symbols-outlined action-icon" title="Xem">visibility</span>
-          <span className="material-symbols-outlined action-icon" title="Sửa">edit_square</span>
-          <span className="material-symbols-outlined action-icon" title="Xóa">delete</span>
-        </div>
-      ),
+        <span
+          className="material-symbols-outlined action-icon"
+          title="Xem"
+          onClick={() => navigate(`/orders/view/${order.id}`)}
+          style={{ cursor: 'pointer' }}
+        >
+          visibility
+        </span>
+        <span
+          className="material-symbols-outlined action-icon"
+          title="Sửa"
+          onClick={() => navigate(`/orders/edit/${order.id}`)}
+          style={{ cursor: 'pointer' }}
+        >
+          edit_square
+        </span>
+      </div>
+    ),
       disableSort: true,
     },
   ];
 
   return (
     <div className="dashboard-layout">
-      <Navbar />
+      <Navbar onLogout={handleLogout} />
       <Sidebar />
       <main className="dashboard-content">
         {/* Title và Subtitle */}
