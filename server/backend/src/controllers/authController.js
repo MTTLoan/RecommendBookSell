@@ -4,8 +4,8 @@ import jwt from "jsonwebtoken";
 import { sendVerificationOTPEmail } from "./email_verificationController.js";
 import { hashData, verifyHashedData } from "../util/hashData.js";
 import { deleteS3File } from "../middleware/uploadToS3.js";
-
-
+import PasswordReset from "../models/PasswordReset.js";
+import mongoose from "mongoose";
 
 export const registerController = async (req, res) => {
   const { username, fullName, email, phoneNumber, password } = req.body;
@@ -16,8 +16,17 @@ export const registerController = async (req, res) => {
       return res.status(400).json({ message: "Tên tài khoản đã tồn tại" });
     }
 
-    // Tạo người dùng mới
+    // Lấy và tăng id từ Counter
+    const Counter = mongoose.model("Counter");
+    const counter = await Counter.findOneAndUpdate(
+      { _id: "userId" },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+
+    // Tạo người dùng mới với id tự tăng
     user = new User({
+      id: counter.seq, // Gán id từ Counter
       username,
       fullName,
       email,
@@ -96,7 +105,7 @@ export const loginController = async (req, res) => {
 
     // Kiểm tra mật khẩu
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password match:', isMatch ? 'Yes' : 'No'); // Log kết quả so sánh mật khẩu
+    console.log("Password match:", isMatch ? "Yes" : "No"); // Log kết quả so sánh mật khẩu
 
     if (!isMatch) {
       return res.status(400).json({
@@ -372,12 +381,16 @@ export const uploadAvatarController = async (req, res) => {
   try {
     if (!req.file || !req.file.location) {
       console.log("No file or location found in req.file");
-      return res.status(400).json({ success: false, msg: "Không có file avatar được gửi lên." });
+      return res
+        .status(400)
+        .json({ success: false, msg: "Không có file avatar được gửi lên." });
     }
 
     const user = await User.findOne({ id: req.user.id });
     if (!user) {
-      return res.status(404).json({ success: false, msg: "Không tìm thấy tài khoản." });
+      return res
+        .status(404)
+        .json({ success: false, msg: "Không tìm thấy tài khoản." });
     }
 
     // Nếu user đã có avatar cũ, xóa khỏi S3
@@ -390,40 +403,48 @@ export const uploadAvatarController = async (req, res) => {
     user.updatedAt = new Date();
     await user.save();
 
-    return res.status(200).json({ success: true, msg: "Cập nhật avatar thành công!", avatar: user.avatar });
+    return res.status(200).json({
+      success: true,
+      msg: "Cập nhật avatar thành công!",
+      avatar: user.avatar,
+    });
   } catch (error) {
     console.error("Lỗi cập nhật avatar:", error.message, error.stack);
-    return res.status(500).json({ success: false, msg: "Cập nhật avatar thất bại! Lỗi server." });
+    return res
+      .status(500)
+      .json({ success: false, msg: "Cập nhật avatar thất bại! Lỗi server." });
   }
 };
 
 export const resetPasswordController = async (req, res) => {
-    const { token, password } = req.body;
-  
-    try {
-      const passwordReset = await PasswordReset.findOne({
-        token,
-        expiresAt: { $gt: Date.now() }, // Token chưa hết hạn
-      });
-  
-      if (!passwordReset) {
-        return res.status(400).json({ message: "Token không hợp lệ hoặc đã hết hạn." });
-      }
-  
-      const user = await User.findById(passwordReset.userId);
-      if (!user) {
-        return res.status(404).json({ message: "Người dùng không tồn tại." });
-      }
-  
-      // Cập nhật mật khẩu
-      user.password = await bcrypt.hash(password, 10);
-      await user.save();
-  
-      // Xóa yêu cầu khôi phục mật khẩu sau khi sử dụng
-      await PasswordReset.deleteOne({ _id: passwordReset._id });
-  
-      res.json({ message: "Mật khẩu đã được cập nhật." });
-    } catch (error) {
-      res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
+  const { token, password } = req.body;
+
+  try {
+    const passwordReset = await PasswordReset.findOne({
+      token,
+      expiresAt: { $gt: Date.now() }, // Token chưa hết hạn
+    });
+
+    if (!passwordReset) {
+      return res
+        .status(400)
+        .json({ message: "Token không hợp lệ hoặc đã hết hạn." });
     }
-  };
+
+    const user = await User.findById(passwordReset.userId);
+    if (!user) {
+      return res.status(404).json({ message: "Người dùng không tồn tại." });
+    }
+
+    // Cập nhật mật khẩu
+    user.password = await bcrypt.hash(password, 10);
+    await user.save();
+
+    // Xóa yêu cầu khôi phục mật khẩu sau khi sử dụng
+    await PasswordReset.deleteOne({ _id: passwordReset._id });
+
+    res.json({ message: "Mật khẩu đã được cập nhật." });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
+  }
+};
