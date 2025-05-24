@@ -244,6 +244,9 @@ const confirmDelete = async () => {
             <div className="modal-confirm">
               <h3>Xác nhận xóa sản phẩm</h3>
               <p>Bạn có chắc muốn xóa sản phẩm này không?</p>
+              <div style={{ margin: '12px 0', color: '#d32f2f', fontWeight: 500 }}>
+                {selectedProducts.name}
+              </div>
               <div className="modal-actions">
                 <button className="btn-cancel" onClick={cancelDelete}>Hủy</button>
                 <button className="btn-delete" onClick={confirmDelete}>Xóa</button>
