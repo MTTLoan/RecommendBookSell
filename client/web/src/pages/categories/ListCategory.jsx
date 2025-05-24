@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/layout/Navbar';
 import Sidebar from '../../components/layout/Sidebar';
 import Table from '../../components/layout/Table';
+import Popup from '../../components/common/Popup';
 import '../../styles/listcategory.css';
 import { useNavigate } from 'react-router-dom';
 import { fetchCategories, searchCategories, addCategory, updateCategory, deleteCategory, fetchCategoryStats } from '../../services/categoryService';
@@ -156,7 +157,7 @@ const handleSearch = async (query) => {
             columns={columns}
             showHeader
             showSearch
-            showFilter
+            showFilter={false}
             showDownload
             showAddButton={true}
             showCheckbox={true}
@@ -169,80 +170,100 @@ const handleSearch = async (query) => {
             onSearch={handleSearch}
           />
         )}
+
+        <Popup
+        open={showAdd}
+        title="Thêm danh mục"
+        titleColor="success"
+        inputs={[
+          { label: 'Tên danh mục', name: 'name', placeholder: 'Tên danh mục', value: newCategory.name },
+          { label: 'Mô tả', name: 'description', type: 'textarea', placeholder: 'Mô tả', value: newCategory.description || '' },
+        ]}
+        showImageUpload={true}
+        imageUrl={newCategory.imageUrl}
+        onImageChange={e => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = ev => setNewCategory({ ...newCategory, imageUrl: ev.target.result });
+            reader.readAsDataURL(file);
+          }
+        }}
+        onInputChange={(name, value) => setNewCategory({ ...newCategory, [name]: value })}
+        onClose={() => setShowAdd(false)}
+        onConfirm={handleAddCategory}
+        confirmText="Thêm"
+        confirmColor="success"
+        cancelText="Hủy"
+        cancelColor="gray"
+      />
+
+      <Popup
+        open={showEdit && selectedCategory}
+        title="Sửa danh mục"
+        titleColor="info"
+        inputs={[
+          { label: 'Tên danh mục', name: 'name', placeholder: 'Tên danh mục', value: selectedCategory?.name || '' },
+          { label: 'Mô tả', name: 'description', type: 'textarea', placeholder: 'Mô tả', value: selectedCategory?.description || '' },
+        ]}
+        showImageUpload={true}
+        imageUrl={selectedCategory?.imageUrl}
+        onImageChange={e => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = ev => setSelectedCategory({ ...selectedCategory, imageUrl: ev.target.result });
+            reader.readAsDataURL(file);
+          }
+        }}
+          children={
+            selectedCategory?.imageUrl && (
+              <button
+                style={{
+                  margin: '8px 0 0 0',
+                  background: '#fff',
+                  color: '#d32f2f',
+                  border: '1px solid #d32f2f',
+                  borderRadius: 8,
+                  padding: '4px 12px',
+                  cursor: 'pointer',
+                  fontFamily: 'Quicksand, sans-serif',
+                  fontSize: 14,
+                }}
+                onClick={() => setSelectedCategory({ ...selectedCategory, imageUrl: '' })}
+                type="button"
+              >
+                Xóa ảnh
+              </button>
+            )
+          }
+        onInputChange={(name, value) => setSelectedCategory({ ...selectedCategory, [name]: value })}
+        onClose={() => setShowEdit(false)}
+        onConfirm={handleEditCategory}
+        confirmText="Lưu"
+        confirmColor="info"
+        cancelText="Hủy"
+        cancelColor="gray"
+      />
+
+      <Popup
+        open={showDelete && selectedCategory}
+        title="Xác nhận xóa danh mục"
+        titleColor="error"
+        content={
+          selectedCategory
+            ? `Bạn có chắc muốn xóa danh mục "${selectedCategory.name}" không?`
+            : ''
+        }
+        contentColor="error"
+        onClose={() => setShowDelete(false)}
+        onConfirm={handleDeleteCategory}
+        confirmText="Xóa"
+        confirmColor="error"
+        cancelText="Hủy"
+        cancelColor="gray"
+      />
       </main>
-
-            {/* Popup Thêm */}
-      {showAdd && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Thêm danh mục</h3>
-            <input
-              type="text"
-              placeholder="Tên danh mục"
-              value={newCategory.name}
-              onChange={e => setNewCategory({ ...newCategory, name: e.target.value })}
-            />
-            <input
-              type="text"
-              placeholder="Mô tả"
-              value={newCategory.description}
-              onChange={e => setNewCategory({ ...newCategory, description: e.target.value })}
-            />
-            <input
-              type="text"
-              placeholder="Link ảnh (tuỳ chọn)"
-              value={newCategory.imageUrl}
-              onChange={e => setNewCategory({ ...newCategory, imageUrl: e.target.value })}
-            />
-            <div style={{ marginTop: 16 }}>
-              <button onClick={handleAddCategory}>Lưu</button>
-              <button onClick={() => setShowAdd(false)}>Hủy</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-        {/* Popup Sửa */}
-      {showEdit && selectedCategory && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Sửa danh mục</h3>
-            <input
-              type="text"
-              value={selectedCategory.name}
-              onChange={e => setSelectedCategory({ ...selectedCategory, name: e.target.value })}
-              placeholder="Tên danh mục"
-            />
-            <input
-              type="text"
-              value={selectedCategory.description || ''}
-              onChange={e => setSelectedCategory({ ...selectedCategory, description: e.target.value })}
-              placeholder="Mô tả"
-            />
-            <div style={{ marginTop: 16 }}>
-              <button onClick={handleEditCategory}>Lưu</button>
-              <button onClick={() => setShowEdit(false)}>Hủy</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-        {/* Popup Xóa */}
-      {showDelete && selectedCategory && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Bạn có chắc muốn xóa danh mục này?</h3>
-            <div style={{ margin: '12px 0', color: '#d32f2f', fontWeight: 500 }}>
-              {selectedCategory.name}
-              <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>{selectedCategory.description}</div>
-            </div>
-            <div style={{ marginTop: 16 }}>
-              <button onClick={handleDeleteCategory}>Xóa</button>
-              <button onClick={() => setShowDelete(false)}>Hủy</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

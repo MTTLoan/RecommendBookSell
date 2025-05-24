@@ -5,7 +5,7 @@ import Sidebar from '../../components/layout/Sidebar';
 import Widget from '../../components/common/Widget';
 import Chart from '../../components/layout/Chart';
 import Table from '../../components/layout/Table';
-import { isAuthenticated, logout } from '../../services/authService';
+import { isAuthenticated } from '../../services/authService';
 import '../../styles/dashboard.css';
 
 const data = [
@@ -38,7 +38,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-layout">
-      <Navbar user={user} onLogout={logout} />
+      <Navbar />
       <Sidebar />
       <main className="dashboard-content">
         {/* Title */}
