@@ -299,6 +299,7 @@ export const changePasswordController = async (req, res) => {
   }
 };
 
+// Lấy thông tin hồ sơ người dùng
 export const getProfileController = async (req, res) => {
   try {
     const user = await User.findOne({ id: req.user.id });
@@ -427,3 +428,46 @@ export const resetPasswordController = async (req, res) => {
       res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
     }
   };
+
+
+  export const updateProfileWithAvatarController = async (req, res) => {
+  try {
+    // Multer middleware đã upload file avatar lên S3, req.file.location có URL ảnh mới
+    const {
+      username,
+      fullName,
+      birthday,
+    } = req.body;
+
+    const user = await User.findOne({ id: req.user.id });
+    if (!user) {
+      return res.status(404).json({ success: false, msg: "Không tìm thấy tài khoản." });
+    }
+
+    // Xóa avatar cũ nếu có và có file mới
+    if (req.file && user.avatar) {
+      await deleteS3File(user.avatar);
+      user.avatar = req.file.location; // url ảnh mới
+    }
+
+    if (username !== undefined) user.username = username;
+    if (fullName !== undefined) user.fullName = fullName;
+    if (birthday !== undefined) user.birthday = birthday ? new Date(birthday) : null;
+
+    user.updatedAt = new Date();
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      msg: "Cập nhật hồ sơ thành công!",
+      user,
+    });
+  } catch (error) {
+    console.error("Lỗi cập nhật hồ sơ:", error.message);
+    return res.status(500).json({
+      success: false,
+      msg: "Cập nhật hồ sơ thất bại! Lỗi server.",
+    });
+  }
+};
