@@ -31,5 +31,4 @@ router.put("/:id", userJwtMiddleware, updateOrder);
 
 router.get("/", getAllOrders);
 
-
 export default router;

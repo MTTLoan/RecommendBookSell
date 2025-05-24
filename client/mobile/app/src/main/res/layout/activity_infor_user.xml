@@ -34,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
-            android:fontFamily="@font/roboto_semibold"
+            android:fontFamily="@font/quicksand_bold"
             android:text="Tài khoản"
             android:textAllCaps="true"
             android:textColor="@color/black"
@@ -65,7 +65,6 @@
             android:layout_marginStart="8dp"
             android:contentDescription="avatar"
             android:background="@drawable/circle_with_border"
-            android:src="@drawable/avt"
             android:scaleType="centerCrop"
             android:clickable="true"
             android:focusable="true"
@@ -73,29 +72,15 @@
             app:layout_constraintStart_toStartOf="@id/vInfor"
             app:layout_constraintTop_toTopOf="@id/vInfor" />
 
-<!--        &lt;!&ndash; Button to change avatar &ndash;&gt;-->
-<!--        <ImageButton-->
-<!--            android:id="@+id/btnChangeAvatar"-->
-<!--            android:layout_width="24dp"-->
-<!--            android:layout_height="24dp"-->
-<!--            android:background="?attr/selectableItemBackgroundBorderless"-->
-<!--            android:src="@drawable/ic_add_a_photo_24px"-->
-<!--            android:translationX="-16dp"-->
-<!--            android:translationY="4dp"-->
-<!--            app:layout_constraintBottom_toBottomOf="@id/ivAvatar"-->
-<!--            app:layout_constraintEnd_toEndOf="@id/ivAvatar"-->
-<!--            app:layout_constraintStart_toEndOf="@id/ivAvatar" />-->
-
         <!-- Name -->
         <TextView
             android:id="@+id/tvName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:fontFamily="@font/roboto_bold"
+            android:fontFamily="@font/quicksand_bold"
             android:paddingStart="20dp"
             android:paddingTop="4dp"
-            android:text="thanhloan"
             android:textColor="@color/black"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="@id/vInfor"
@@ -109,7 +94,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:paddingStart="20dp"
-            android:text="thanhloan307204@gmail.com"
             android:textColor="@color/black"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="@id/vInfor"
@@ -123,7 +107,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="44dp"
-            android:fontFamily="@font/roboto_regular"
+            android:fontFamily="@font/quicksand_regular"
             android:text="Thông tin chung"
             android:textColor="@color/sub"
             android:textSize="16sp"
@@ -143,7 +127,7 @@
             android:textSize="16sp"
             android:clickable="true"
             android:focusable="true"
-            android:fontFamily="@font/roboto_medium"
+            android:fontFamily="@font/quicksand_medium"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvPersonalInfoTitle" />
 
@@ -156,7 +140,7 @@
             android:layout_marginTop="16dp"
             android:text="Đổi mật khẩu"
             android:textColor="@color/black"
-            android:fontFamily="@font/roboto_medium"
+            android:fontFamily="@font/quicksand_medium"
             android:textSize="16sp"
             android:clickable="true"
             android:focusable="true"
@@ -171,7 +155,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginStart="24dp"
             android:text="Trợ giúp"
-            android:fontFamily="@font/roboto_medium"
+            android:fontFamily="@font/quicksand_medium"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:clickable="true"
@@ -187,7 +171,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="44dp"
-            android:fontFamily="@font/roboto_regular"
+            android:fontFamily="@font/quicksand_regular"
             android:text="Bảo mật"
             android:textColor="@color/sub"
             android:textSize="16sp"
@@ -207,7 +191,7 @@
             android:textSize="16sp"
             android:clickable="true"
             android:focusable="true"
-            android:fontFamily="@font/roboto_medium"
+            android:fontFamily="@font/quicksand_medium"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvSecurity" />
 
@@ -221,7 +205,7 @@
             android:layout_marginStart="24dp"
             android:text="Chính sách bảo mật"
             android:textColor="@color/black"
-            android:fontFamily="@font/roboto_medium"
+            android:fontFamily="@font/quicksand_medium"
             android:textSize="16sp"
             android:clickable="true"
             android:focusable="true"
@@ -237,7 +221,7 @@
             android:layout_marginStart="24dp"
             android:text="Đăng xuất"
             android:textColor="@color/red"
-            android:fontFamily="@font/roboto_medium"
+            android:fontFamily="@font/quicksand_medium"
             android:textSize="16sp"
             android:clickable="true"
             android:focusable="true"
