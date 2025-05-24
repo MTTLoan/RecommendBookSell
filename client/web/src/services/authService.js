@@ -185,3 +185,20 @@ export const uploadAvatar = async (formData) => {
   }
 }; 
 
+// Hàm đổi mật khẩu
+export const changePassWord = async (data) => {
+  try {
+    const response = await api.post('/auth/change-password', data);
+    return response.data;
+  } catch (error) {
+    console.error('Change password error:', error);
+    if (error.response) {
+      throw new Error(error.response.data.msg || 'Đổi mật khẩu thất bại');
+    } else if (error.request) {
+      throw new Error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.');
+    } else {
+      throw new Error('Đã xảy ra lỗi. Vui lòng thử lại.');
+    }
+  }
+}
+
