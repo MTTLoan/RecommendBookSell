@@ -22,6 +22,7 @@ import com.example.app.R;
 import com.example.app.activities.ListBookActivity;
 import com.example.app.adapters.BannerAdapter;
 import com.example.app.adapters.BookAdapter;
+import com.example.app.adapters.RecommendationAdapter;
 import com.example.app.models.Book;
 import com.example.app.models.Category;
 import com.example.app.models.response.BookResponse;
@@ -56,7 +57,7 @@ public class HomeFragment extends Fragment {
     private RecyclerView recommendationsRecyclerView;
     private BookAdapter bestSellersAdapter;
     private BookAdapter newBooksAdapter;
-    private BookAdapter recommendationsAdapter;
+    private RecommendationAdapter recommendationsAdapter;
     private List<Category> categoryList = new ArrayList<>();
     private List<Book> bestSellersList = new ArrayList<>();
     private List<Book> newBooksList = new ArrayList<>();
@@ -129,7 +130,7 @@ public class HomeFragment extends Fragment {
         recommendationsRecyclerView = view.findViewById(R.id.recommendationsRecyclerView);
         recommendationsRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2, GridLayoutManager.VERTICAL, false));
         recommendationsRecyclerView.setNestedScrollingEnabled(false);
-        recommendationsAdapter = new BookAdapter(requireContext(), recommendationList, categoryList, 0);
+        recommendationsAdapter = new RecommendationAdapter(requireContext(), recommendationList, categoryList, 0);
         recommendationsRecyclerView.setAdapter(recommendationsAdapter);
 
         View recommendationsTitle = view.findViewById(R.id.recommendationsTitle);
@@ -276,20 +277,6 @@ public class HomeFragment extends Fragment {
                 showFailureError("sách đề xuất", t);
             }
         });
-    }
-
-    private List<Book> getTopRatedRecommendations(List<Book> books, int count) {
-        if (books == null || books.isEmpty()) return new ArrayList<>();
-
-        List<Book> topRatedBooks = new ArrayList<>();
-        for (Book book : books) {
-            if (book.getAverageRating() == 5.0) {
-                topRatedBooks.add(book);
-            }
-        }
-
-        Collections.shuffle(topRatedBooks, new Random());
-        return topRatedBooks.subList(0, Math.min(count, topRatedBooks.size()));
     }
 
     private void showApiError(String baseMessage, Response<?> response) {

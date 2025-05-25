@@ -1,7 +1,9 @@
 // controllers/cartController.js
 import mongoose from "mongoose";
+import RecommendationTracking from "../models/RecommendationTracking.js";
 import Cart from "../models/Cart.js";
 import Book from "../models/Book.js";
+import Counter from "../models/Counter.js";
 
 // Hàm thêm vào giỏ hàng (giữ nguyên)
 export const addToCart = async (req, res) => {
@@ -11,7 +13,7 @@ export const addToCart = async (req, res) => {
       return res.status(401).json({ message: "Người dùng không hợp lệ" });
     }
 
-    const { items } = req.body;
+    const { items, recommended = false } = req.body; // Lấy recommended, mặc định là false
     if (!items || !Array.isArray(items) || items.length === 0) {
       console.log("Invalid input data:", req.body);
       return res
@@ -62,6 +64,33 @@ export const addToCart = async (req, res) => {
     console.log("Saving cart:", cart);
     const updatedCart = await cart.save();
     console.log("Cart saved:", updatedCart);
+
+    // Chỉ ghi add_to_cart nếu sách đến từ danh sách gợi ý (recommended = true)
+    if (recommended) {
+      const trackingPromises = items.map(async (item) => {
+        const counter = await Counter.findOneAndUpdate(
+          { _id: "recommendationTrackingId" },
+          { $inc: { seq: 1 } },
+          { new: true, upsert: true }
+        );
+        const trackingId = counter.seq;
+
+        return new RecommendationTracking({
+          id: trackingId,
+          userId: user.id,
+          bookId: item.bookId,
+          action: "add_to_cart",
+          cartId: updatedCart.id,
+        }).save();
+      });
+
+      await Promise.all(trackingPromises);
+      console.log(
+        `Recorded add_to_cart for user ${user.id} on ${items.length} items (recommended)`
+      );
+    } else {
+      console.log("Skipped recording add_to_cart: not a recommended item");
+    }
 
     res.status(200).json(updatedCart);
   } catch (error) {

@@ -41,13 +41,11 @@ export const recordClick = async (req, res) => {
     res.status(200).json({ success: true, msg: "Ghi nhận click thành công" });
   } catch (error) {
     console.error("Error recording click:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        msg: "Lỗi khi ghi nhận click",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      msg: "Lỗi khi ghi nhận click",
+      error: error.message,
+    });
   }
 };
 
