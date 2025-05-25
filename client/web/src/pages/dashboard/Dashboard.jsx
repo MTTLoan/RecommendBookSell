@@ -34,8 +34,6 @@ const Dashboard = () => {
     }
   }, [navigate]);
 
-  const user = JSON.parse(sessionStorage.getItem('user')) || {};
-
   return (
     <div className="dashboard-layout">
       <Navbar />

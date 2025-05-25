@@ -4,14 +4,22 @@ import {
   adminSearchUsersController,
   adminUpdateUserController, 
   adminDeleteUserController,
-  adminGetAllUsersController
+  adminGetAllUsersController,
+  adminGetUserDetailController,
+  adminAddUserController,
+  peekNextUserId
 } from "../controllers/userController.js";
+import uploadAvatar from "../middleware/uploadToS3.js";
+
 
 const router = express.Router();
 
+router.get("/peek-next-id", peekNextUserId);
 router.get('/search', user_jwt, adminSearchUsersController);
-router.put("/:id", user_jwt, adminUpdateUserController);
 router.delete("/:id", user_jwt, adminDeleteUserController);
+router.get("/:id", user_jwt, adminGetUserDetailController);
 router.get("/", user_jwt, adminGetAllUsersController);
+router.post("/", uploadAvatar.single("avatar"), adminAddUserController);
+router.put("/:id", uploadAvatar.single("avatar"), adminUpdateUserController);
 
 export default router;

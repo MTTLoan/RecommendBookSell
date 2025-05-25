@@ -1,4 +1,16 @@
 import User from "../models/User.js";
+import Order from "../models/Order.js";
+
+export const peekNextUserId = async (req, res) => {
+  try {
+    const lastUser = await User.findOne({}).sort({ id: -1 });
+    const nextId = lastUser ? lastUser.id + 1 : 1;
+    return res.json({ id: nextId });
+  } catch (error) {
+    console.error("Lỗi lấy mã user tiếp theo:", error.message);
+    res.status(500).json({ success: false, msg: "Lỗi server khi lấy mã user tiếp theo." });
+  }
+};
 
 export const adminSearchUsersController = async (req, res) => {
   try {
@@ -10,7 +22,7 @@ export const adminSearchUsersController = async (req, res) => {
       return res.status(400).json({ success: false, msg: "Thiếu từ khóa tìm kiếm." });
     }
     const users = await User.find({
-      role: "user",
+      role: "customer",
       $or: [
         { username: { $regex: q, $options: "i" } },
         { fullName: { $regex: q, $options: "i" } }
@@ -28,47 +40,81 @@ export const adminGetAllUsersController = async (req, res) => {
     if (req.user.role !== "admin") {
       return res.status(403).json({ success: false, msg: "Bạn không có quyền thực hiện thao tác này." });
     }
-    const users = await User.find({ role: "user" }).select("-password");
-    return res.status(200).json({ success: true, users });
+    const users = await User.find({ role: "customer" }).select("-password");
+
+    // Lấy danh sách userId
+    const userIds = users.map(u => u.id);
+
+    // Lấy tổng doanh thu và số đơn hàng cho từng user
+    const ordersAgg = await Order.aggregate([
+      { $match: { userId: { $in: userIds } } },
+      {
+        $group: {
+          _id: "$userId",
+          revenue: { $sum: "$totalAmount" },
+          orderCount: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const orderMap = {};
+    ordersAgg.forEach(o => {
+      orderMap[o._id] = { revenue: o.revenue, orderCount: o.orderCount };
+    });
+
+    const usersWithStats = users.map(u => ({
+      ...u.toObject(),
+      revenue: orderMap[u.id]?.revenue || 0,
+      orderCount: orderMap[u.id]?.orderCount || 0
+    }));
+
+    return res.status(200).json({ success: true, users: usersWithStats });
   } catch (error) {
     console.error("Lỗi lấy danh sách user:", error.message);
     res.status(500).json({ success: false, msg: "Lỗi server khi lấy danh sách user." });
   }
 };
 
-// Sửa thông tin user (chỉ cho admin)
+export const adminAddUserController = async (req, res) => {
+  try {
+    const { username, fullName, ...otherFields } = req.body;
+    let avatarUrl = null;
+    if (req.file && req.file.location) {
+      avatarUrl = req.file.location; // Nếu dùng S3
+    } else if (req.file && req.file.path) {
+      avatarUrl = req.file.path; // Nếu dùng multer lưu local
+    }
+    // Tạo user mới
+    const user = new User({
+      username,
+      fullName,
+      ...otherFields,
+      avatar: avatarUrl,
+    });
+    await user.save();
+    res.status(201).json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, msg: "Lỗi server" });
+  }
+};
+
 export const adminUpdateUserController = async (req, res) => {
   try {
-    // Kiểm tra quyền admin
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, msg: "Bạn không có quyền thực hiện thao tác này." });
+    const { fullName, ...otherFields } = req.body;
+    let updateData = { fullName, ...otherFields };
+    if (req.file && req.file.location) {
+      updateData.avatar = req.file.location;
+    } else if (req.file && req.file.path) {
+      updateData.avatar = req.file.path;
     }
-    const userId = parseInt(req.params.id);
-    const { fullName, phoneNumber, email, addressProvince, addressDistrict, addressWard, addressDetail, birthday, avatar } = req.body;
-
-    const user = await User.findOne({ id: userId, role: "user" });
-    if (!user) {
-      return res.status(404).json({ success: false, msg: "Không tìm thấy user." });
-    }
-
-    // Cập nhật các trường
-    if (fullName !== undefined) user.fullName = fullName;
-    if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
-    if (email !== undefined) user.email = email;
-    if (addressProvince !== undefined) user.addressProvince = addressProvince;
-    if (addressDistrict !== undefined) user.addressDistrict = addressDistrict;
-    if (addressWard !== undefined) user.addressWard = addressWard;
-    if (addressDetail !== undefined) user.addressDetail = addressDetail;
-    if (birthday !== undefined) user.birthday = birthday ? new Date(birthday) : null;
-    if (avatar !== undefined) user.avatar = avatar;
-
-    user.updatedAt = new Date();
-    await user.save();
-
-    return res.status(200).json({ success: true, msg: "Cập nhật user thành công!", user });
+    const user = await User.findOneAndUpdate(
+      { id: req.params.id },
+      updateData,
+      { new: true }
+    );
+    res.status(200).json({ success: true, user });
   } catch (error) {
-    console.error("Lỗi cập nhật user:", error.message);
-    res.status(500).json({ success: false, msg: "Cập nhật user thất bại! Lỗi server." });
+    res.status(500).json({ success: false, msg: "Lỗi server" });
   }
 };
 
@@ -80,7 +126,7 @@ export const adminDeleteUserController = async (req, res) => {
     }
     const userId = parseInt(req.params.id);
 
-    const user = await User.findOneAndDelete({ id: userId, role: "user" });
+    const user = await User.findOneAndDelete({ id: userId, role: "customer" });
     if (!user) {
       return res.status(404).json({ success: false, msg: "Không tìm thấy user để xóa." });
     }
@@ -89,5 +135,22 @@ export const adminDeleteUserController = async (req, res) => {
   } catch (error) {
     console.error("Lỗi xóa user:", error.message);
     res.status(500).json({ success: false, msg: "Xóa user thất bại! Lỗi server." });
+  }
+};
+
+export const adminGetUserDetailController = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ success: false, msg: "Bạn không có quyền thực hiện thao tác này." });
+    }
+    const userId = parseInt(req.params.id);
+    const user = await User.findOne({ id: userId, role: "customer" }).select("-password");
+    if (!user) {
+      return res.status(404).json({ success: false, msg: "Không tìm thấy user." });
+    }
+    return res.status(200).json({ success: true, user });
+  } catch (error) {
+    console.error("Lỗi lấy chi tiết user:", error.message);
+    res.status(500).json({ success: false, msg: "Lỗi server khi lấy chi tiết user." });
   }
 };

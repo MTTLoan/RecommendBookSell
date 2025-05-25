@@ -51,7 +51,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
 // Hàm đăng nhập
 export const login = async (credentials) => {
   try {
@@ -126,6 +125,11 @@ export const getCurrentUser = () => {
   return user ? JSON.parse(user) : null;
 }; 
 
+export const peekNextUserId = async () => {
+  const res = await api.get("/user/peek-next-id");
+  return res.data;
+};
+
 export const fetchAllCustomers = async () => {
   const res = await api.get(`${API_BASE_URL}/user/`);
   return res.data.users || [];
@@ -134,4 +138,73 @@ export const fetchAllCustomers = async () => {
 export const searchCustomers = async (query) => {
   const res = await api.get(`/user/search?q=${encodeURIComponent(query)}`);
   return res.data.users || [];
+};
+
+export const fetchCustomerDetail = async (id) => {
+  const token = localStorage.getItem("token");
+  const res = await axios.get(`${API_BASE_URL}/user/${id}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    withCredentials: true,
+  });
+
+  return res.data.user || res.data;
+};
+
+export const adminAddUser = async (formData) => {
+  const res = await api.post("/user", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+};
+
+export const adminUpdateUser = async (id, formData) => {
+  const res = await api.put(`/user/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+};
+
+export const fetchProvinces = async () => {
+  try {
+    const res = await axios.get("https://provinces.open-api.vn/api/p/");
+    return res.data;
+  } catch {
+    return [];
+  }
+};
+
+export const fetchDistricts = async (provinceCode) => {
+  if (!provinceCode) return [];
+  try {
+    const res = await axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
+    return res.data.districts || [];
+  } catch {
+    return [];
+  }
+};
+
+export const fetchWards = async (districtCode) => {
+  if (!districtCode) return [];
+  try {
+    const res = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
+    return res.data.wards || [];
+  } catch {
+    return [];
+  }
+};
+
+export const adminDeleteUser = async (id) => {
+  const res = await api.delete(`/user/${id}`);
+  return res.data;
+};
+
+export const fetchReviewStatsForBooks = async (idList) => {
+  if (!idList || idList.length === 0) return [];
+  const res = await api.post("/review/stats", { bookIds: idList });
+  return res.data.stats || [];
+};
+
+export const fetchAdminOrderById = async (id) => {
+  const res = await api.get(`/orders/admin/${id}`);
+  return res.data;
 };

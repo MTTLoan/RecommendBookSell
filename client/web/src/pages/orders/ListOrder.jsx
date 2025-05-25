@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
 import Sidebar from '../../components/layout/Sidebar';
 import Table from '../../components/layout/Table';
-import '../../styles/order.css';
+import '../../styles/listorder.css';
 import { fetchAllOrders, searchOrders } from '../../services/orderService';
 
 
@@ -42,12 +42,6 @@ const ListOrder = () => {
       setOrders([]);
     }
     setLoading(false);
-  };
-
-    const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/auth/login');
   };
 
   const columns = [
@@ -117,7 +111,7 @@ const ListOrder = () => {
 
   return (
     <div className="dashboard-layout">
-      <Navbar onLogout={handleLogout} />
+      <Navbar />
       <Sidebar />
       <main className="dashboard-content">
         {/* Title và Subtitle */}

@@ -6,6 +6,7 @@ import {
   addOrder,
   getAllOrders,
   updateOrder,
+  adminGetOrderById,
   searchOrdersByBookName
 } from "../controllers/orderController.js";
 import userJwtMiddleware from "../middleware/user_jwt.js";
@@ -23,10 +24,12 @@ router.put("/:id/status", userJwtMiddleware, updateOrderStatus);
 // Route lấy thông tin đơn hàng theo ID
 router.get("/:id", userJwtMiddleware, getOrderById);
 
+router.get('/admin/:id', userJwtMiddleware, adminGetOrderById);
+
 // Route thêm đơn hàng mới
 router.post("/", userJwtMiddleware, addOrder);
 
-// Sửa đơn hàng (hay dùng sửa status thôi?)
+// Sửa đơn hàng
 router.put("/:id", userJwtMiddleware, updateOrder);
 
 router.get("/", getAllOrders);

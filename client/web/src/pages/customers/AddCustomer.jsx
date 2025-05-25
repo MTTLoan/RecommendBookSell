@@ -1,58 +1,77 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import Sidebar from "../../components/layout/Sidebar";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import defaultAvatar from "../../assets/images/default-avatar.jpg";
-import "../../styles/editcustomer.css";
+import "../../styles/addcustomer.css";
 import {
-  fetchCustomerDetail,
   fetchProvinces,
   fetchDistricts,
   fetchWards,
+  peekNextUserId,
+  adminAddUser,
   adminUpdateUser,
 } from "../../services/authService";
 
-const EditCustomer = () => {
-  const { id } = useParams();
+const AddCustomer = () => {
   const navigate = useNavigate();
-  const [customer, setCustomer] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [customer, setCustomer] = useState({
+    username: "",
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    birthday: "",
+    addressProvince: "",
+    addressDistrict: "",
+    addressWard: "",
+    addressDetail: "",
+    role: "customer",
+    verified: false,
+    avatar: "",
+  });
 
-  // Dropdown địa chỉ
+  // State cho dropdown địa chỉ
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
+  const [nextId, setNextId] = useState("");
 
+  // Lấy danh sách tỉnh
   useEffect(() => {
-    setLoading(true);
-    fetchCustomerDetail(id)
-      .then((data) => {
-        setCustomer(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setCustomer(null);
-        setLoading(false);
-      });
     fetchProvinces().then(setProvinces);
-  }, [id]);
+    peekNextUserId()
+      .then((data) => setNextId(data.id || ""))
+      .catch(() => setNextId(""));
+  }, []);
 
-  // Khi chọn tỉnh, load quận/huyện
+  // Khi chọn tỉnh, lấy danh sách quận/huyện
   useEffect(() => {
-    if (customer && customer.addressProvince) {
-      fetchDistricts(customer.addressProvince).then(setDistricts);
+    if (customer.addressProvince) {
+      fetchDistricts(customer.addressProvince).then((ds) =>
+        setDistricts(ds || [])
+      );
+      setCustomer((prev) => ({
+        ...prev,
+        addressDistrict: "",
+        addressWard: "",
+      }));
+      setWards([]);
     }
-  }, [customer?.addressProvince]);
+    // eslint-disable-next-line
+  }, [customer.addressProvince]);
 
-  // Khi chọn quận, load phường/xã
+  // Khi chọn quận/huyện, lấy danh sách phường/xã
   useEffect(() => {
-    if (customer && customer.addressDistrict) {
-      fetchWards(customer.addressDistrict).then(setWards);
+    if (customer.addressDistrict) {
+      fetchWards(customer.addressDistrict).then((ws) => setWards(ws || []));
+      setCustomer((prev) => ({ ...prev, addressWard: "" }));
     }
-  }, [customer?.addressDistrict]);
+    // eslint-disable-next-line
+  }, [customer.addressDistrict]);
 
+  // Xử lý thay đổi input
   const handleChange = (name, value) => {
     setCustomer((prev) => ({
       ...prev,
@@ -62,31 +81,26 @@ const EditCustomer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    // Thêm các trường text
+    Object.keys(customer).forEach((key) => {
+      if (key !== "avatar") formData.append(key, customer[key]);
+    });
+    // Thêm file ảnh nếu có
+    if (customer.avatar && typeof customer.avatar !== "string") {
+      formData.append("avatar", customer.avatar);
+    }
     try {
-      await adminUpdateUser(customer.id, customer);
-      alert("Cập nhật thành công!");
+      if (isEdit) {
+        await adminUpdateUser(customer.id, formData); // Sửa
+      } else {
+        await adminAddUser(formData); // Thêm
+      }
       navigate("/customers");
     } catch (err) {
-      alert("Cập nhật thất bại!");
+      alert("Lưu thất bại!");
     }
   };
-
-  if (loading || !customer) {
-    return (
-      <div
-        className="dashboard-layout"
-        style={{ fontFamily: "'Quicksand', sans-serif" }}
-      >
-        <Navbar />
-        <Sidebar />
-        <main className="dashboard-content view-product-main">
-          <div style={{ padding: 40, textAlign: "center" }}>
-            Đang tải dữ liệu...
-          </div>
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div
@@ -97,7 +111,7 @@ const EditCustomer = () => {
       <Sidebar />
       <main className="dashboard-content view-product-main">
         <div className="product-header">
-          <h1>Chỉnh sửa khách hàng</h1>
+          <h1>Thêm khách hàng</h1>
           <div className="product-subtitle">
             <span
               className="subtitle"
@@ -107,7 +121,7 @@ const EditCustomer = () => {
               Khách hàng
             </span>
             <span className="subtitle subtitle-sep">{">"}</span>
-            <span className="subtitle active">Chỉnh sửa khách hàng</span>
+            <span className="subtitle active">Thêm khách hàng</span>
           </div>
         </div>
         <form className="vp-content" onSubmit={handleSubmit}>
@@ -116,13 +130,18 @@ const EditCustomer = () => {
             <div className="vp-box-info">
               <h2>Thông tin khách hàng</h2>
               <div className="vp-form-group">
-                <Input type="text" label="ID" value={customer.id} disabled />
+                <Input
+                  type="text"
+                  label="Mã khách hàng"
+                  value={nextId || "Đang tải..."}
+                  disabled
+                />
               </div>
               <div className="vp-form-group">
                 <Input
                   type="text"
                   label="Tên đăng nhập"
-                  value={customer.username || ""}
+                  value={customer.username}
                   onChange={(e) => handleChange("username", e.target.value)}
                   required
                 />
@@ -131,16 +150,16 @@ const EditCustomer = () => {
                 <Input
                   type="text"
                   label="Họ tên"
-                  value={customer.fullName || ""}
+                  value={customer.fullName}
                   onChange={(e) => handleChange("fullName", e.target.value)}
                   required
                 />
               </div>
               <div className="vp-form-group">
                 <Input
-                  type="text"
+                  type="email"
                   label="Email"
-                  value={customer.email || ""}
+                  value={customer.email}
                   onChange={(e) => handleChange("email", e.target.value)}
                   required
                 />
@@ -149,7 +168,7 @@ const EditCustomer = () => {
                 <Input
                   type="text"
                   label="Số điện thoại"
-                  value={customer.phoneNumber || ""}
+                  value={customer.phoneNumber}
                   onChange={(e) => handleChange("phoneNumber", e.target.value)}
                   required
                 />
@@ -158,9 +177,7 @@ const EditCustomer = () => {
                 <Input
                   type="date"
                   label="Ngày sinh"
-                  value={
-                    customer.birthday ? customer.birthday.slice(0, 10) : ""
-                  }
+                  value={customer.birthday}
                   onChange={(e) => handleChange("birthday", e.target.value)}
                 />
               </div>
@@ -174,7 +191,7 @@ const EditCustomer = () => {
                 <label className="input-label">Tỉnh/Thành phố</label>
                 <select
                   className="input"
-                  value={customer.addressProvince || ""}
+                  value={customer.addressProvince}
                   onChange={(e) =>
                     handleChange("addressProvince", e.target.value)
                   }
@@ -192,7 +209,7 @@ const EditCustomer = () => {
                 <label className="input-label">Quận/Huyện</label>
                 <select
                   className="input"
-                  value={customer.addressDistrict || ""}
+                  value={customer.addressDistrict}
                   onChange={(e) =>
                     handleChange("addressDistrict", e.target.value)
                   }
@@ -211,7 +228,7 @@ const EditCustomer = () => {
                 <label className="input-label">Phường/Xã</label>
                 <select
                   className="input"
-                  value={customer.addressWard || ""}
+                  value={customer.addressWard}
                   onChange={(e) => handleChange("addressWard", e.target.value)}
                   required
                   disabled={!customer.addressDistrict}
@@ -228,7 +245,7 @@ const EditCustomer = () => {
                 <Input
                   type="text"
                   label="Địa chỉ chi tiết"
-                  value={customer.addressDetail || ""}
+                  value={customer.addressDetail}
                   onChange={(e) =>
                     handleChange("addressDetail", e.target.value)
                   }
@@ -238,7 +255,7 @@ const EditCustomer = () => {
                 <label className="input-label">Quyền người dùng</label>
                 <select
                   className="input"
-                  value={customer.role || "customer"}
+                  value={customer.role}
                   onChange={(e) => handleChange("role", e.target.value)}
                   required
                 >
@@ -256,7 +273,13 @@ const EditCustomer = () => {
               </div>
               <div className="vp-form-group" style={{ textAlign: "center" }}>
                 <img
-                  src={customer.avatar || defaultAvatar}
+                  src={
+                    customer.avatar
+                      ? typeof customer.avatar === "string"
+                        ? customer.avatar
+                        : URL.createObjectURL(customer.avatar)
+                      : defaultAvatar
+                  }
                   alt="Avatar"
                   style={{
                     width: 100,
@@ -265,6 +288,7 @@ const EditCustomer = () => {
                     objectFit: "cover",
                     border: "1px solid #eee",
                     background: "#fafafa",
+                    marginBottom: 12,
                   }}
                 />
                 <input
@@ -302,4 +326,4 @@ const EditCustomer = () => {
   );
 };
 
-export default EditCustomer;
+export default AddCustomer;
