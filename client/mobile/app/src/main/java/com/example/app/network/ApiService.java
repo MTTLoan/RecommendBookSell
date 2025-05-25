@@ -120,6 +120,11 @@ public interface ApiService {
             @Query("maxPrice") Float maxPrice
     );
 
+    @GET("/api/books/best-sellers")
+    Call<BookResponse> getBestSellers();
+    @GET("/api/books/new-books")
+    Call<BookResponse> getNewBooks();
+
     @GET("/api/categories/all-categories")
     Call<CategoryResponse> getCategories();
 

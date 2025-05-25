@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Input = ({ label, type, name, value, onChange, placeholder, required }) => {
+const Input = ({ label, type, name, value, onChange, placeholder, required, disabled }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -40,6 +40,7 @@ const Input = ({ label, type, name, value, onChange, placeholder, required }) =>
         onChange={onChange}
         placeholder={placeholder}
         required={required}
+        disabled={disabled} 
         style={{ fontFamily: "'Quicksand', sans-serif" }}
       />
 
