@@ -198,22 +198,27 @@ export const googleAuthController = async (req, res) => {
         }
       } while (usernameExists);
 
-      // Log user creation data
-      const userData = {
+      // Lấy và tăng id từ Counter
+      const Counter = mongoose.model("Counter");
+      const counter = await Counter.findOneAndUpdate(
+        { _id: "userId" },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+      );
+
+      // Tạo người dùng mới
+      user = new User({
+        id: counter.seq, // <-- Thêm dòng này để tránh lỗi
         googleId,
         email,
         fullName,
         photoUrl,
         username,
-        phoneNumber: "0000000000", // Temporary placeholder
-        password: Math.random().toString(36).slice(-8), // Temporary password
+        phoneNumber: "0000000000",
+        password: Math.random().toString(36).slice(-8),
         verified: true,
         role: "user",
-      };
-      console.log("Tạo người dùng mới:", userData);
-
-      // Create a new user
-      user = new User(userData);
+      });
 
       await user.save();
       isNewAccount = true;
@@ -431,7 +436,7 @@ export const resetPasswordController = async (req, res) => {
         .status(400)
         .json({ message: "Token không hợp lệ hoặc đã hết hạn." });
     }
-      const user = await User.findById(passwordReset.userId);
+    const user = await User.findById(passwordReset.userId);
     if (!user) {
       return res.status(404).json({ message: "Người dùng không tồn tại." });
     }
@@ -449,19 +454,16 @@ export const resetPasswordController = async (req, res) => {
   }
 };
 
-
-  export const updateProfileWithAvatarController = async (req, res) => {
+export const updateProfileWithAvatarController = async (req, res) => {
   try {
     // Multer middleware đã upload file avatar lên S3, req.file.location có URL ảnh mới
-    const {
-      username,
-      fullName,
-      birthday,
-    } = req.body;
+    const { username, fullName, birthday } = req.body;
 
     const user = await User.findOne({ id: req.user.id });
     if (!user) {
-      return res.status(404).json({ success: false, msg: "Không tìm thấy tài khoản." });
+      return res
+        .status(404)
+        .json({ success: false, msg: "Không tìm thấy tài khoản." });
     }
 
     // Xóa avatar cũ nếu có và có file mới
@@ -472,7 +474,8 @@ export const resetPasswordController = async (req, res) => {
 
     if (username !== undefined) user.username = username;
     if (fullName !== undefined) user.fullName = fullName;
-    if (birthday !== undefined) user.birthday = birthday ? new Date(birthday) : null;
+    if (birthday !== undefined)
+      user.birthday = birthday ? new Date(birthday) : null;
 
     user.updatedAt = new Date();
 
@@ -490,4 +493,4 @@ export const resetPasswordController = async (req, res) => {
       msg: "Cập nhật hồ sơ thất bại! Lỗi server.",
     });
   }
-}
+};

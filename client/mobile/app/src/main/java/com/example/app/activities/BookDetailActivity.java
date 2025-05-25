@@ -305,6 +305,7 @@ public class BookDetailActivity extends AppCompatActivity {
         if (book.getRatingCount() == 0) {
             ratingBar.setVisibility(View.GONE);
             tvRating.setText("Chưa có đánh giá");
+            tvRating.setTextSize(12);
             tvNumberReview.setText("");
         } else {
             ratingBar.setVisibility(View.VISIBLE);
