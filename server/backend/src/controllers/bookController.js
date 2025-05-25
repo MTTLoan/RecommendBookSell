@@ -1,11 +1,13 @@
 import Book from "../models/Book.js";
 import Review from "../models/Review.js";
-import Counter from '../models/Counter.js';
+import Counter from "../models/Counter.js";
+import Order from "../models/Order.js";
+
 
 // Hàm lấy id tự tăng
 async function getNextBookId() {
   const counter = await Counter.findByIdAndUpdate(
-    { _id: 'bookId' },
+    { _id: "bookId" },
     { $inc: { seq: 1 } },
     { new: true, upsert: true }
   );
@@ -109,6 +111,122 @@ export const getBookReviews = async (req, res) => {
   }
 };
 
+// Lấy danh sách sách bán chạy nhất (the bestsellers)
+// Get all-time best sellers
+export const getBestSellers = async (req, res) => {
+  try {
+    // Aggregate orders to calculate total quantity sold per book
+    const bestSellers = await Order.aggregate([
+      {
+        $match: {
+          status: "Đã giao",
+        },
+      },
+      {
+        $unwind: "$items",
+      },
+      {
+        $group: {
+          _id: "$items.bookId",
+          totalQuantitySold: { $sum: "$items.quantity" },
+        },
+      },
+      {
+        $sort: {
+          totalQuantitySold: -1,
+        },
+      },
+      {
+        $limit: 20,
+      },
+      // Step 6: Lookup to join with the books collection
+      {
+        $lookup: {
+          from: "books", // The name of the books collection
+          localField: "_id",
+          foreignField: "id",
+          as: "bookDetails",
+        },
+      },
+      {
+        $unwind: "$bookDetails",
+      },
+      // Step 8: Project the desired fields
+      {
+        $project: {
+          _id: 0,
+          id: "$bookDetails.id",
+          name: "$bookDetails.name",
+          price: "$bookDetails.price",
+          images: "$bookDetails.images", // Take only the first image categoryId: '$bookDetails.categoryId',
+          categoryId: "$bookDetails.categoryId",
+          totalQuantitySold: 1,
+        },
+      }
+    ]);
+
+    // Check if any best sellers were found
+    if (!bestSellers || bestSellers.length === 0) {
+      return res.status(200).json({
+        success: true,
+        msg: "Không tìm thấy sách bán chạy.",
+        book: [],
+      });
+    }
+
+    // Return the response in the expected format
+    res.status(200).json({
+      success: true,
+      msg: "Lấy danh sách sách bán chạy thành công.",
+      book: bestSellers,
+    });
+  } catch (error) {
+    console.error("Error fetching best sellers:", error);
+    res.status(500).json({
+      success: false,
+      msg: "Lỗi server khi lấy danh sách sách bán chạy.",
+      error: error.message,
+    });
+  }
+};
+
+export const getNewBooks = async (req, res) => {
+  try {
+    const currentMonth = new Date().getMonth() + 1; // 5 cho tháng 5
+    const currentYear = new Date().getFullYear(); // 2025
+    const books = await Book.find({
+      createdAt: {
+        $gte: new Date(`${currentYear}-${currentMonth}-01`),
+        $lt: new Date(`${currentYear}-${currentMonth + 1}-01`),
+      },
+    })
+      .select('id name description images price stockQuantity categoryId createdAt author averageRating ratingCount')
+      .sort({ createdAt: -1 }) // Sắp xếp theo thời gian giảm dần
+      .limit(20); // Giới hạn 10 sách mới nhất
+
+    if (!books || books.length === 0) {
+      return res.status(200).json({
+        success: true,
+        msg: "Không tìm thấy sách mới trong tháng này.",
+        book: [],
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      msg: "Lấy danh sách sách mới nhất thành công.",
+      book: books,
+    });
+  } catch (error) {
+    console.error("Error fetching new books:", error);
+    res.status(500).json({
+      success: false,
+      msg: "Lỗi server khi lấy danh sách sách mới.",
+      error: error.message,
+    });
+  }
+};
+
 // Search books controller
 export const searchBooks = async (req, res) => {
   try {
@@ -169,10 +287,9 @@ export const searchBooks = async (req, res) => {
   }
 };
 
-
 // Hàm chỉ xem số hiện tại, không tăng
 async function peekNextBookId() {
-  const counter = await Counter.findById('bookId');
+  const counter = await Counter.findById("bookId");
   return counter ? counter.seq + 1 : 1;
 }
 
@@ -182,14 +299,22 @@ export const peekNextBookIdApi = async (req, res) => {
     const nextId = await peekNextBookId();
     res.json({ id: nextId });
   } catch (error) {
-    res.status(500).json({ error: 'Không lấy được mã sách mới' });
+    res.status(500).json({ error: "Không lấy được mã sách mới" });
   }
 };
 
 // Thêm sách mới
 export const createBook = async (req, res) => {
   try {
-    const { name, description, price, stockQuantity, images, categoryId, authors } = req.body;
+    const {
+      name,
+      description,
+      price,
+      stockQuantity,
+      images,
+      categoryId,
+      authors,
+    } = req.body;
     const id = await getNextBookId(); // Lấy id tự tăng
     const newBook = new Book({
       id, // Đúng trường id
@@ -205,11 +330,11 @@ export const createBook = async (req, res) => {
     await newBook.save();
     return res.status(201).json({
       success: true,
-      msg: 'Thêm sách thành công.',
+      msg: "Thêm sách thành công.",
       book: newBook,
     });
   } catch (error) {
-    console.error('Lỗi thêm sách:', error.message);
+    console.error("Lỗi thêm sách:", error.message);
     return res.status(500).json({
       success: false,
       msg: `Lỗi server: ${error.message}`,
@@ -222,20 +347,24 @@ export const updateBook = async (req, res) => {
   try {
     const bookId = parseInt(req.params.id);
     const updateData = req.body;
-    const updatedBook = await Book.findOneAndUpdate({ id: bookId }, updateData, { new: true });
+    const updatedBook = await Book.findOneAndUpdate(
+      { id: bookId },
+      updateData,
+      { new: true }
+    );
     if (!updatedBook) {
       return res.status(404).json({
         success: false,
-        msg: 'Không tìm thấy sách để cập nhật.',
+        msg: "Không tìm thấy sách để cập nhật.",
       });
     }
     return res.status(200).json({
       success: true,
-      msg: 'Cập nhật sách thành công.',
+      msg: "Cập nhật sách thành công.",
       book: updatedBook,
     });
   } catch (error) {
-    console.error('Lỗi cập nhật sách:', error.message);
+    console.error("Lỗi cập nhật sách:", error.message);
     return res.status(500).json({
       success: false,
       msg: `Lỗi server: ${error.message}`,
@@ -251,16 +380,16 @@ export const deleteBook = async (req, res) => {
     if (!deletedBook) {
       return res.status(404).json({
         success: false,
-        msg: 'Không tìm thấy sách để xóa.',
+        msg: "Không tìm thấy sách để xóa.",
       });
     }
     return res.status(200).json({
       success: true,
-      msg: 'Xóa sách thành công.',
+      msg: "Xóa sách thành công.",
       book: deletedBook,
     });
   } catch (error) {
-    console.error('Lỗi xóa sách:', error.message);
+    console.error("Lỗi xóa sách:", error.message);
     return res.status(500).json({
       success: false,
       msg: `Lỗi server: ${error.message}`,
@@ -272,18 +401,21 @@ export const searchNameBooks = async (req, res) => {
   try {
     const { q } = req.query;
     if (!q) {
-      return res.status(400).json({ success: false, msg: "Thiếu từ khóa tìm kiếm." });
+      return res
+        .status(400)
+        .json({ success: false, msg: "Thiếu từ khóa tìm kiếm." });
     }
     // Chỉ tìm theo tên (name), không tìm theo id
     const query = {
-      name: { $regex: q, $options: "i" }
+      name: { $regex: q, $options: "i" },
     };
 
     const books = await Book.find(query);
     res.json({ success: true, books });
   } catch (error) {
     console.error("Lỗi tìm kiếm sách:", error);
-    res.status(500).json({ success: false, msg: "Lỗi server khi tìm kiếm sản phẩm." });
+    res
+      .status(500)
+      .json({ success: false, msg: "Lỗi server khi tìm kiếm sản phẩm." });
   }
 };
-

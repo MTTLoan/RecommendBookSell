@@ -1,0 +1,9 @@
+input[disabled] {
+  background-color: #f5f5f5; /* nhẹ nhàng hơn thay vì xám đậm */
+  color: #666;
+  cursor: not-allowed;
+  opacity: 1; /* Đừng làm mờ nếu bạn không muốn nó nhỏ lại */
+  padding: 10px; /* giống với input thường */
+  font-size: 16px; /* giống với input thường */
+  border: 1px solid #ccc;
+}

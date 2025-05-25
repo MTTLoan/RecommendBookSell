@@ -8,8 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.app.R;
@@ -23,15 +26,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder> {
+public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context context;
     private List<Book> bookList;
-    private Map<Integer, String> categoryMap; // Map để tra cứu categoryName nhanh
+    private Map<Integer, String> categoryMap;
 
-    public BookAdapter(Context context, List<Book> bookList, List<Category> categoryList) {
+    // View types
+    private static final int VIEW_TYPE_REGULAR = 0; // For regular books (item_book.xml)
+    private static final int VIEW_TYPE_BEST_SELLER = 1; // For best sellers (item_book_best_sale.xml)
+    private int viewType; // To determine which layout to use for this adapter instance
+
+    public BookAdapter(Context context, List<Book> bookList, List<Category> categoryList, int viewType) {
         this.context = context;
         this.bookList = bookList != null ? bookList : new ArrayList<>();
-        // Chuyển categoryList thành Map để tra cứu nhanh
+        this.viewType = viewType;
         this.categoryMap = new HashMap<>();
         updateCategoryMap(categoryList);
     }
@@ -55,36 +63,68 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         notifyDataSetChanged();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return viewType; // Return the view type for this adapter instance
+    }
+
     @NonNull
     @Override
-    public BookViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_book, parent, false);
-        return new BookViewHolder(view);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_BEST_SELLER) {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_book_best_sale, parent, false);
+            return new BestSellerViewHolder(view);
+        } else {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_book, parent, false);
+            return new BookViewHolder(view);
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull BookViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Book book = bookList.get(position);
-        holder.textTitle.setText(book.getName() != null ? book.getName() : "Unknown Title");
 
-        // Xử lý giá
-        holder.textPrice.setText(book.getPrice() > 0 ? String.format("%,.0f đ", book.getPrice()) : "N/A");
+        if (holder instanceof BestSellerViewHolder) {
+            BestSellerViewHolder bestSellerHolder = (BestSellerViewHolder) holder;
+            bestSellerHolder.textTitle.setText(book.getName() != null ? book.getName() : "Unknown Title");
+            bestSellerHolder.textPrice.setText(book.getPrice() > 0 ? String.format("%,.0f đ", book.getPrice()) : "N/A");
+            bestSellerHolder.txtSold.setText(String.format("Đã bán: %d", book.getTotalQuantitySold()));
+            bestSellerHolder.textSale.setText("#" + (position + 1)); // Rank based on position
 
-        // Load hình ảnh bằng Glide
-        List<Image> images = book.getImages();
-        if (images != null && !images.isEmpty() && images.get(0).getUrl() != null) {
-            Glide.with(context)
-                    .load(images.get(0).getUrl())
-                    .centerCrop()
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .error(R.drawable.placeholder_book)
-                    .into(holder.imageBook);
+            Image image = book.getFirstImage(); // Use getFirstImage to safely get the first image
+            if (image != null && image.getUrl() != null) {
+                Glide.with(context)
+                        .load(image.getUrl())
+                        .centerCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .error(R.drawable.placeholder_book)
+                        .into(bestSellerHolder.imageBook);
+            } else {
+                bestSellerHolder.imageBook.setImageResource(R.drawable.placeholder_book);
+            }
         } else {
-            holder.imageBook.setImageResource(R.drawable.placeholder_book);
+            BookViewHolder bookHolder = (BookViewHolder) holder;
+            bookHolder.textTitle.setText(book.getName() != null ? book.getName() : "Unknown Title");
+            bookHolder.textPrice.setText(book.getPrice() > 0 ? String.format("%,.0f đ", book.getPrice()) : "N/A");
+
+            Image image = book.getFirstImage(); // Use getFirstImage
+            if (image != null && image.getUrl() != null) {
+                Glide.with(context)
+                        .load(image.getUrl())
+                        .centerCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .error(R.drawable.placeholder_book)
+                        .into(bookHolder.imageBook);
+            } else {
+                bookHolder.imageBook.setImageResource(R.drawable.placeholder_book);
+            }
         }
 
-        // Thiết lập sự kiện click
         holder.itemView.setOnClickListener(v -> {
+            if (book.getId() <= 0) {
+                Toast.makeText(context, "ID sách không hợp lệ.", Toast.LENGTH_SHORT).show();
+                return;
+            }
             Intent intent = new Intent(context, BookDetailActivity.class);
             intent.putExtra("bookId", book.getId());
             context.startActivity(intent);
@@ -105,6 +145,20 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
             imageBook = itemView.findViewById(R.id.imageBook);
             textTitle = itemView.findViewById(R.id.textTitle);
             textPrice = itemView.findViewById(R.id.textPrice);
+        }
+    }
+
+    public static class BestSellerViewHolder extends RecyclerView.ViewHolder {
+        ImageView imageBook;
+        TextView textTitle, textPrice, textSale, txtSold;
+
+        public BestSellerViewHolder(@NonNull View itemView) {
+            super(itemView);
+            imageBook = itemView.findViewById(R.id.imageBook);
+            textTitle = itemView.findViewById(R.id.textTitle);
+            textPrice = itemView.findViewById(R.id.textPrice);
+            txtSold = itemView.findViewById(R.id.totalSold);
+            textSale = itemView.findViewById(R.id.textSale);
         }
     }
 

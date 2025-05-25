@@ -8,7 +8,8 @@ import {
   changePasswordController,
   getProfileController,
   updateProfileController,
-  uploadAvatarController
+  uploadAvatarController,
+  updateProfileWithAvatarController
 } from "../controllers/authController.js";
 import {
   registerValidator,
@@ -26,7 +27,8 @@ router.post("/googleauth", googleAuthController);
 router.post("/logout", user_jwt, logoutController);
 router.post("/change-password", user_jwt, changePasswordValidator, changePasswordController);
 router.get("/profile", user_jwt, getProfileController);
-router.put('/update-profile', user_jwt, updateProfileValidator, updateProfileController);
+router.put("/update-profile", user_jwt, updateProfileValidator, updateProfileController);
 router.post("/upload-avatar", user_jwt, uploadAvatar, uploadAvatarController);
+router.put("/update-profile-with-avt", user_jwt, uploadAvatar, updateProfileWithAvatarController);
 
 export default router;
