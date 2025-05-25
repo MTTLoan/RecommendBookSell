@@ -15,7 +15,6 @@ const pythonExec = resolve(
 );
 
 const getRecommendations = async (req, res) => {
-  // Lấy userId từ token (được gán bởi userJwtMiddleware)
   const userId = req.user?.id;
   if (!userId) {
     return res
@@ -32,11 +31,13 @@ const getRecommendations = async (req, res) => {
     async (error, stdout, stderr) => {
       if (error) {
         console.error(`Error: ${error.message}`);
-        return res.status(500).json({
-          success: false,
-          msg: "Lỗi khi gọi script gợi ý",
-          error: error.message,
-        });
+        return res
+          .status(500)
+          .json({
+            success: false,
+            msg: "Lỗi khi gọi script gợi ý",
+            error: error.message,
+          });
       }
       if (stderr) {
         console.error(`Stderr: ${stderr}`);
@@ -48,11 +49,13 @@ const getRecommendations = async (req, res) => {
       try {
         const result = JSON.parse(stdout);
         if (result.error) {
-          return res.status(400).json({
-            success: false,
-            msg: "Lỗi từ script gợi ý",
-            error: result.error,
-          });
+          return res
+            .status(400)
+            .json({
+              success: false,
+              msg: "Lỗi từ script gợi ý",
+              error: result.error,
+            });
         }
 
         // Lấy danh sách bookId từ kết quả của script Python
@@ -61,12 +64,12 @@ const getRecommendations = async (req, res) => {
         // Truy vấn MongoDB để lấy thông tin chi tiết của các sách
         const books = await Book.find({ id: { $in: bookIds } }).lean();
 
-        // Sắp xếp books theo thứ tự của bookIds (để giữ nguyên thứ tự gợi ý từ Python)
+        // Sắp xếp books theo thứ tự của bookIds
         const sortedBooks = bookIds
           .map((id) => books.find((book) => book.id === id))
           .filter((book) => book);
 
-        // Định dạng response theo yêu cầu
+        // Định dạng response
         res.status(200).json({
           success: true,
           msg: "Lấy danh sách sách đề xuất thành công.",
@@ -74,11 +77,13 @@ const getRecommendations = async (req, res) => {
         });
       } catch (parseError) {
         console.error(`Parse Error: ${parseError.message}`);
-        res.status(500).json({
-          success: false,
-          msg: "Lỗi khi phân tích kết quả từ script",
-          error: parseError.message,
-        });
+        res
+          .status(500)
+          .json({
+            success: false,
+            msg: "Lỗi khi phân tích kết quả từ script",
+            error: parseError.message,
+          });
       }
     }
   );

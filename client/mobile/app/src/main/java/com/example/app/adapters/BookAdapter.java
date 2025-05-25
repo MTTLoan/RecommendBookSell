@@ -3,6 +3,7 @@ package com.example.app.adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,11 +21,18 @@ import com.example.app.activities.BookDetailActivity;
 import com.example.app.models.Book;
 import com.example.app.models.Category;
 import com.example.app.models.Image;
+import com.example.app.network.ApiService;
+import com.example.app.network.RetrofitClient;
+import com.example.app.utils.AuthUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context context;
@@ -32,9 +40,9 @@ public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Map<Integer, String> categoryMap;
 
     // View types
-    private static final int VIEW_TYPE_REGULAR = 0; // For regular books (item_book.xml)
-    private static final int VIEW_TYPE_BEST_SELLER = 1; // For best sellers (item_book_best_sale.xml)
-    private int viewType; // To determine which layout to use for this adapter instance
+    private static final int VIEW_TYPE_REGULAR = 0;
+    private static final int VIEW_TYPE_BEST_SELLER = 1;
+    private int viewType;
 
     public BookAdapter(Context context, List<Book> bookList, List<Category> categoryList, int viewType) {
         this.context = context;
@@ -65,7 +73,7 @@ public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemViewType(int position) {
-        return viewType; // Return the view type for this adapter instance
+        return viewType;
     }
 
     @NonNull
@@ -89,9 +97,9 @@ public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             bestSellerHolder.textTitle.setText(book.getName() != null ? book.getName() : "Unknown Title");
             bestSellerHolder.textPrice.setText(book.getPrice() > 0 ? String.format("%,.0f đ", book.getPrice()) : "N/A");
             bestSellerHolder.txtSold.setText(String.format("Đã bán: %d", book.getTotalQuantitySold()));
-            bestSellerHolder.textSale.setText("#" + (position + 1)); // Rank based on position
+            bestSellerHolder.textSale.setText("#" + (position + 1));
 
-            Image image = book.getFirstImage(); // Use getFirstImage to safely get the first image
+            Image image = book.getFirstImage();
             if (image != null && image.getUrl() != null) {
                 Glide.with(context)
                         .load(image.getUrl())
@@ -107,7 +115,7 @@ public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             bookHolder.textTitle.setText(book.getName() != null ? book.getName() : "Unknown Title");
             bookHolder.textPrice.setText(book.getPrice() > 0 ? String.format("%,.0f đ", book.getPrice()) : "N/A");
 
-            Image image = book.getFirstImage(); // Use getFirstImage
+            Image image = book.getFirstImage();
             if (image != null && image.getUrl() != null) {
                 Glide.with(context)
                         .load(image.getUrl())
@@ -125,6 +133,11 @@ public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 Toast.makeText(context, "ID sách không hợp lệ.", Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            Log.d("BookAdapter", "Clicked bookId: " + book.getId());
+            // Ghi lại hành động click
+            recordClick(book.getId());
+
             Intent intent = new Intent(context, BookDetailActivity.class);
             intent.putExtra("bookId", book.getId());
             context.startActivity(intent);
@@ -166,5 +179,31 @@ public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         bookList.clear();
         bookList.addAll(newBookList != null ? newBookList : new ArrayList<>());
         notifyDataSetChanged();
+    }
+
+    private void recordClick(int bookId) {
+        String token = AuthUtils.getToken(context);
+        if (token == null) {
+            Toast.makeText(context, "Vui lòng đăng nhập để ghi nhận hành động.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ApiService apiService = RetrofitClient.getApiService();
+        Call<Void> call = apiService.recordRecommendationClick("Bearer " + token, bookId);
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d("BookAdapter", "Click recorded successfully for bookId: " + bookId);
+                } else {
+                    Log.e("BookAdapter", "Failed to record click, code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("BookAdapter", "Error recording click: " + t.getMessage());
+            }
+        });
     }
 }
