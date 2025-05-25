@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
@@ -102,11 +103,25 @@ public class HomeFragment extends Fragment {
         }
 
         setupBookSection(view, CATEGORY_RECOMMENDATION, R.id.recommendationsRecyclerView, R.id.recommendationsTitle);
+
     }
 
     private void setupBookSection(View view, int categoryId, int recyclerViewId, int titleViewId) {
         RecyclerView recyclerView = view.findViewById(recyclerViewId);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        // Set LayoutManager based on category
+        // Set LayoutManager based on category
+        if (recyclerViewId == R.id.recommendationsRecyclerView) {
+            // Grid layout with 2 columns for recommendationsRecyclerView
+            GridLayoutManager layoutManager = new GridLayoutManager(view.getContext(), 2, GridLayoutManager.VERTICAL, false);
+            recyclerView.setLayoutManager(layoutManager);
+        } else {
+            // Horizontal scrolling for other RecyclerViews
+            LinearLayoutManager layoutManager = new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false);
+            recyclerView.setLayoutManager(layoutManager);
+        }
+
+        // Disable nested scrolling (already set in XML, confirming programmatically)
+        recyclerView.setNestedScrollingEnabled(false);
         BookAdapter adapter = new BookAdapter(requireContext(), new ArrayList<>(), categoryList);
         recyclerView.setAdapter(adapter);
 
