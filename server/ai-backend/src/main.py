@@ -1,4 +1,3 @@
-# ai-backend/src/main.py
 import pandas as pd
 import numpy as np
 from scipy.sparse import csr_matrix
@@ -87,7 +86,7 @@ if __name__ == "__main__":
     
     try:
         user_id = int(sys.argv[1])
-        recommended_books = recommend_books_for_user(user_id, X, user_mapper, book_mapper, book_inv_mapper, reviews, books, k=10)
+        recommended_books = recommend_books_for_user(user_id, X, user_mapper, book_mapper, book_inv_mapper, reviews, books, k=20)
         print(json.dumps({"recommended_books": recommended_books}))
     except Exception as e:
         print(json.dumps({"error": str(e)}))

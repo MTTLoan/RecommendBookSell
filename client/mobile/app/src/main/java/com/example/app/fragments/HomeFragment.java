@@ -28,6 +28,7 @@ import com.example.app.models.response.BookResponse;
 import com.example.app.models.response.CategoryResponse;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
+import com.example.app.utils.AuthUtils;
 import com.example.app.utils.HeaderController;
 
 import java.io.IOException;
@@ -181,7 +182,7 @@ public class HomeFragment extends Fragment {
     private void fetchBooks() {
         fetchBestSellersBooks();
         fetchNewBooks();
-        fetchRecommendationBooks();
+        fetchRecommendations();
     }
 
     private void fetchBestSellersBooks() {
@@ -244,13 +245,26 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void fetchRecommendationBooks() {
-        Call<BookResponse> call = apiService.getBooks(null);
+    private void fetchRecommendations() {
+        String token = AuthUtils.getToken(requireContext());
+        if (token == null) {
+            Toast.makeText(requireContext(), "Vui lòng đăng nhập để xem đề xuất.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Call<BookResponse> call = apiService.getRecommendations("Bearer " + token);
         call.enqueue(new Callback<BookResponse>() {
             @Override
             public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    recommendationList = getTopRatedRecommendations(response.body().getBooks(), 5);
+                    recommendationList.clear();
+                    List<Book> books = response.body().getBooks();
+                    if (books != null) {
+                        recommendationList.addAll(books);
+                        Log.d("HomeFragment", "Recommendations loaded: " + books.size() + " books");
+                    } else {
+                        Log.w("HomeFragment", "Recommendations books is null");
+                    }
                     recommendationsAdapter.setBooks(recommendationList);
                 } else {
                     showApiError("Không thể lấy sách đề xuất.", response);
