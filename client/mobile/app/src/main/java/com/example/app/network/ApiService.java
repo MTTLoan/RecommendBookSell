@@ -145,4 +145,10 @@ public interface ApiService {
 
     @POST("orders")
     Call<Order> addOrder(@Header("Authorization") String authorization, @Body Order order);
+
+    @GET("/api/recommendations/")
+    Call<BookResponse> getRecommendations(@Header("Authorization") String token);
+
+    @POST("/api/recommendations/click")
+    Call<Void> recordRecommendationClick(@Header("Authorization") String token, @Query("bookId") int bookId);
 }
