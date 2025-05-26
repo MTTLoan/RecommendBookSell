@@ -4,6 +4,7 @@ import Navbar from "../../components/layout/Navbar";
 import Sidebar from "../../components/layout/Sidebar";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
+import Popup from "../../components/common/Popup";
 import defaultAvatar from "../../assets/images/default-avatar.jpg";
 import "../../styles/addcustomer.css";
 import {
@@ -14,6 +15,13 @@ import {
   adminAddUser,
   adminUpdateUser,
 } from "../../services/authService";
+import {
+  isValidEmail,
+  isValidPhone,
+  validatePassword,
+  validateUsername,
+  validateRequired,
+} from "../../utils/validators";
 
 const AddCustomer = () => {
   const navigate = useNavigate();
@@ -30,6 +38,7 @@ const AddCustomer = () => {
     role: "user",
     verified: false,
     avatar: "",
+    password: "",
   });
 
   // State cho dropdown địa chỉ
@@ -37,6 +46,9 @@ const AddCustomer = () => {
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
   const [nextId, setNextId] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successTimeout, setSuccessTimeout] = useState(null);
+  const [errors, setErrors] = useState({});
 
   // Lấy danh sách tỉnh
   useEffect(() => {
@@ -81,22 +93,60 @@ const AddCustomer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validate fields
+    const newErrors = {};
+    if (!validateUsername(customer.username).isValid) {
+      newErrors.username = validateUsername(customer.username).message;
+    }
+    if (!validateRequired(customer.fullName).isValid) {
+      newErrors.fullName = "Họ tên không được để trống";
+    }
+    if (!isValidEmail(customer.email)) {
+      newErrors.email = "Email không hợp lệ";
+    }
+    if (!isValidPhone(customer.phoneNumber)) {
+      newErrors.phoneNumber = "Số điện thoại không hợp lệ";
+    }
+    if (!validatePassword(customer.password).isValid) {
+      newErrors.password = validatePassword(customer.password).message;
+    }
+    if (!customer.addressProvince) {
+      newErrors.addressProvince = "Vui lòng chọn tỉnh/thành phố";
+    }
+    if (!customer.addressDistrict) {
+      newErrors.addressDistrict = "Vui lòng chọn quận/huyện";
+    }
+    if (!customer.addressWard) {
+      newErrors.addressWard = "Vui lòng chọn phường/xã";
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+    // Chuyển đổi customer thành FormData
     const formData = new FormData();
-    // Thêm các trường text
     Object.keys(customer).forEach((key) => {
       if (key !== "avatar") formData.append(key, customer[key]);
     });
-    // Thêm file ảnh nếu có
     if (customer.avatar && typeof customer.avatar !== "string") {
       formData.append("avatar", customer.avatar);
     }
     try {
-      await adminAddUser(formData); // Chỉ thêm mới, không cần kiểm tra isEdit
-      navigate("/customers");
+      await adminAddUser(formData);
+      setShowSuccess(true);
+      const timeout = setTimeout(() => {
+        setShowSuccess(false);
+        navigate("/customers");
+      }, 3000);
+      setSuccessTimeout(timeout);
     } catch (err) {
-      alert("Lưu thất bại!");
+      alert("Thêm khách hàng thất bại!");
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (successTimeout) clearTimeout(successTimeout);
+    };
+  }, [successTimeout]);
 
   return (
     <div
@@ -140,7 +190,11 @@ const AddCustomer = () => {
                   value={customer.username}
                   onChange={(e) => handleChange("username", e.target.value)}
                   required
+                  error={errors.username}
                 />
+                {errors.username && (
+                  <div className="error-message">{errors.username}</div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -149,7 +203,11 @@ const AddCustomer = () => {
                   value={customer.fullName}
                   onChange={(e) => handleChange("fullName", e.target.value)}
                   required
+                  error={errors.fullName}
                 />
+                {errors.fullName && (
+                  <div className="error-message">{errors.fullName}</div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -158,7 +216,11 @@ const AddCustomer = () => {
                   value={customer.email}
                   onChange={(e) => handleChange("email", e.target.value)}
                   required
+                  error={errors.email}
                 />
+                {errors.email && (
+                  <div className="error-message">{errors.email}</div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -167,7 +229,11 @@ const AddCustomer = () => {
                   value={customer.phoneNumber}
                   onChange={(e) => handleChange("phoneNumber", e.target.value)}
                   required
+                  error={errors.phoneNumber}
                 />
+                {errors.phoneNumber && (
+                  <div className="error-message">{errors.phoneNumber}</div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -176,6 +242,19 @@ const AddCustomer = () => {
                   value={customer.birthday}
                   onChange={(e) => handleChange("birthday", e.target.value)}
                 />
+              </div>
+              <div className="vp-form-group">
+                <Input
+                  type="password"
+                  label="Mật khẩu"
+                  value={customer.password}
+                  onChange={(e) => handleChange("password", e.target.value)}
+                  required
+                  error={errors.password}
+                />
+                {errors.password && (
+                  <div className="error-message">{errors.password}</div>
+                )}
               </div>
             </div>
           </div>
@@ -192,6 +271,7 @@ const AddCustomer = () => {
                     handleChange("addressProvince", e.target.value)
                   }
                   required
+                  style={errors.addressProvince ? { borderColor: "red" } : {}}
                 >
                   <option value="">Chọn tỉnh/thành</option>
                   {provinces.map((p) => (
@@ -200,6 +280,9 @@ const AddCustomer = () => {
                     </option>
                   ))}
                 </select>
+                {errors.addressProvince && (
+                  <div className="error-message">{errors.addressProvince}</div>
+                )}
               </div>
               <div className="vp-form-group">
                 <label className="input-label">Quận/Huyện</label>
@@ -211,6 +294,7 @@ const AddCustomer = () => {
                   }
                   required
                   disabled={!customer.addressProvince}
+                  style={errors.addressDistrict ? { borderColor: "red" } : {}}
                 >
                   <option value="">Chọn quận/huyện</option>
                   {districts.map((d) => (
@@ -219,6 +303,9 @@ const AddCustomer = () => {
                     </option>
                   ))}
                 </select>
+                {errors.addressDistrict && (
+                  <div className="error-message">{errors.addressDistrict}</div>
+                )}
               </div>
               <div className="vp-form-group">
                 <label className="input-label">Phường/Xã</label>
@@ -228,6 +315,7 @@ const AddCustomer = () => {
                   onChange={(e) => handleChange("addressWard", e.target.value)}
                   required
                   disabled={!customer.addressDistrict}
+                  style={errors.addressWard ? { borderColor: "red" } : {}}
                 >
                   <option value="">Chọn phường/xã</option>
                   {wards.map((w) => (
@@ -236,6 +324,9 @@ const AddCustomer = () => {
                     </option>
                   ))}
                 </select>
+                {errors.addressWard && (
+                  <div className="error-message">{errors.addressWard}</div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -297,6 +388,9 @@ const AddCustomer = () => {
                     }
                   }}
                 />
+                {errors.avatar && (
+                  <div className="error-message">{errors.avatar}</div>
+                )}
               </div>
             </div>
             <div className="vp-box-actions vp-box-actions-alone">
@@ -317,6 +411,15 @@ const AddCustomer = () => {
             </div>
           </div>
         </form>
+        <Popup
+          open={showSuccess}
+          title="Thành công"
+          titleColor="success"
+          content="Thêm khách hàng thành công!"
+          contentColor="success"
+          hideCancel={false}
+          hideConfirm={false}
+        />
       </main>
     </div>
   );

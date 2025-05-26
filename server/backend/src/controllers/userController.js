@@ -1,5 +1,7 @@
 import User from "../models/User.js";
 import Order from "../models/Order.js";
+import bcrypt from "bcryptjs";
+import { deleteS3File } from "../middleware/uploadToS3.js";
 
 export const peekNextUserId = async (req, res) => {
   try {
@@ -91,21 +93,173 @@ export const adminGetAllUsersController = async (req, res) => {
 
 export const adminAddUserController = async (req, res) => {
   try {
-    const { username, fullName, ...otherFields } = req.body;
-    let avatarUrl = null;
-    if (req.file && req.file.location) {
-      avatarUrl = req.file.location; // Link ảnh trên S3
-    }
-    const user = new User({
+    console.log("Request body:", req.body);
+    console.log("Request file:", req.file);
+
+    const {
       username,
       fullName,
-      ...otherFields,
-      avatar: avatarUrl,
+      email,
+      phoneNumber,
+      password,
+      birthday,
+      addressProvince,
+      addressDistrict,
+      addressWard,
+      addressDetail,
+      role,
+      verified,
+    } = req.body;
+
+    // Validate required fields
+    if (!username || !fullName || !email || !phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        msg: "Tên đăng nhập, họ tên, email và số điện thoại là bắt buộc.",
+      });
+    }
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        msg: "Mật khẩu là bắt buộc và phải từ 6 ký tự trở lên.",
+      });
+    }
+
+    // Check if username or email already exists
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }],
     });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        msg:
+          existingUser.username === username
+            ? "Tên đăng nhập đã tồn tại."
+            : "Email đã tồn tại.",
+      });
+    }
+
+    // Handle avatar upload
+    let avatarUrl = null;
+    if (req.file && req.file.location) {
+      avatarUrl = req.file.location; // S3 URL
+      console.log("Avatar uploaded to:", avatarUrl);
+    } else {
+      console.log("No avatar file uploaded");
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user object with explicit fields
+    const userData = {
+      username: username.trim(),
+      fullName: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      phoneNumber: phoneNumber.trim(),
+      password: hashedPassword,
+      role: role || "user",
+      verified: verified === "true" || verified === true || false,
+    };
+
+    // Add optional fields only if they exist and are not empty
+    if (birthday && birthday.trim()) {
+      userData.birthday = new Date(birthday);
+    }
+
+    if (addressProvince && addressProvince.trim()) {
+      userData.addressProvince = parseInt(addressProvince);
+    }
+
+    if (addressDistrict && addressDistrict.trim()) {
+      userData.addressDistrict = parseInt(addressDistrict);
+    }
+
+    if (addressWard && addressWard.trim()) {
+      userData.addressWard = parseInt(addressWard);
+    }
+
+    if (addressDetail && addressDetail.trim()) {
+      userData.addressDetail = addressDetail.trim();
+    }
+
+    // Only add avatar if it exists
+    if (avatarUrl) {
+      userData.avatar = avatarUrl;
+    }
+
+    console.log("Creating user with data:", {
+      ...userData,
+      password: "[HIDDEN]",
+    });
+
+    // Ensure Counter model exists and get next ID manually if needed
+    try {
+      const Counter = mongoose.model("Counter");
+      const counter = await Counter.findOneAndUpdate(
+        { _id: "userId" },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+      );
+      userData.id = counter.seq;
+      console.log("Generated ID:", userData.id);
+    } catch (counterError) {
+      console.error("Counter error, using fallback:", counterError);
+      // Fallback: get max ID from existing users
+      const lastUser = await User.findOne({}).sort({ id: -1 });
+      userData.id = lastUser ? lastUser.id + 1 : 1;
+      console.log("Fallback ID:", userData.id);
+    }
+
+    const user = new User(userData);
     await user.save();
-    res.status(201).json({ success: true, user });
+
+    // Remove password from response
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    console.log("User created successfully:", userResponse);
+
+    res.status(201).json({
+      success: true,
+      user: userResponse,
+      msg: "Thêm người dùng thành công!",
+    });
   } catch (error) {
-    res.status(500).json({ success: false, msg: "Lỗi server" });
+    console.error("Error in adminAddUserController:", error);
+    console.error("Error stack:", error.stack);
+
+    // Handle specific errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        success: false,
+        msg: `${
+          field === "username"
+            ? "Tên đăng nhập"
+            : field === "email"
+            ? "Email"
+            : "Trường"
+        } đã tồn tại.`,
+      });
+    }
+
+    // Handle validation errors
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({
+        success: false,
+        msg: `Lỗi validation: ${messages.join(", ")}`,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      msg: "Lỗi server khi thêm người dùng.",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
 };
 
@@ -113,14 +267,22 @@ export const adminUpdateUserController = async (req, res) => {
   try {
     const { fullName, ...otherFields } = req.body;
     let updateData = { fullName, ...otherFields };
+    let user = await User.findOne({ id: req.params.id });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, msg: "Không tìm thấy user." });
+    }
+    // Nếu có file mới và user có avatar cũ, xóa avatar cũ khỏi S3
     if (req.file && req.file.location) {
+      if (user.avatar) {
+        await deleteS3File(user.avatar);
+      }
       updateData.avatar = req.file.location;
     }
-    const user = await User.findOneAndUpdate(
-      { id: req.params.id },
-      updateData,
-      { new: true }
-    );
+    user = await User.findOneAndUpdate({ id: req.params.id }, updateData, {
+      new: true,
+    });
     res.status(200).json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, msg: "Lỗi server" });

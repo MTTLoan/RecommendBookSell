@@ -14,6 +14,8 @@ const ListCustomer = () => {
   const [searchValue, setSearchValue] = useState("");
   const [showDelete, setShowDelete] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successTimeout, setSuccessTimeout] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,10 +49,23 @@ const ListCustomer = () => {
       await loadData();
       setShowDelete(false);
       setSelectedCustomer(null);
+      setShowSuccess(true);
+      const timeout = setTimeout(() => {
+        setShowSuccess(false);
+        navigate("/customers");
+      }, 2500);
+      setSuccessTimeout(timeout);
     } catch (err) {
       alert("Xóa khách hàng thất bại!");
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (successTimeout) clearTimeout(successTimeout);
+    };
+  }, [successTimeout]);
+
   const columns = [
     {
       key: "fullName",
@@ -181,6 +196,15 @@ const ListCustomer = () => {
           confirmColor="error"
           cancelText="Hủy"
           cancelColor="gray"
+        />
+        <Popup
+          open={showSuccess}
+          title="Thành công"
+          titleColor="success"
+          content="Xóa khách hàng thành công!"
+          contentColor="success"
+          hideCancel={false}
+          hideConfirm={false}
         />
       </main>
     </div>

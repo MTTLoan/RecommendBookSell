@@ -4,6 +4,7 @@ import Navbar from "../../components/layout/Navbar";
 import Sidebar from "../../components/layout/Sidebar";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
+import Popup from "../../components/common/Popup";
 import defaultAvatar from "../../assets/images/default-avatar.jpg";
 import "../../styles/editcustomer.css";
 import {
@@ -19,6 +20,8 @@ const EditCustomer = () => {
   const navigate = useNavigate();
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successTimeout, setSuccessTimeout] = useState(null);
 
   // Dropdown địa chỉ
   const [provinces, setProvinces] = useState([]);
@@ -62,14 +65,33 @@ const EditCustomer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    // Thêm các trường text
+    Object.keys(customer).forEach((key) => {
+      if (key !== "avatar") formData.append(key, customer[key]);
+    });
+    // Thêm file ảnh nếu có (và là file mới)
+    if (customer.avatar && typeof customer.avatar !== "string") {
+      formData.append("avatar", customer.avatar);
+    }
     try {
-      await adminUpdateUser(customer.id, customer);
-      alert("Cập nhật thành công!");
-      navigate("/customers");
+      await adminUpdateUser(customer.id, formData);
+      setShowSuccess(true); // Hiển thị popup thành công
+      const timeout = setTimeout(() => {
+        setShowSuccess(false);
+        navigate("/customers");
+      }, 3000);
+      setSuccessTimeout(timeout);
     } catch (err) {
       alert("Cập nhật thất bại!");
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (successTimeout) clearTimeout(successTimeout);
+    };
+  }, [successTimeout]);
 
   if (loading || !customer) {
     return (
@@ -256,7 +278,13 @@ const EditCustomer = () => {
               </div>
               <div className="vp-form-group" style={{ textAlign: "center" }}>
                 <img
-                  src={customer.avatar || defaultAvatar}
+                  src={
+                    customer.avatar
+                      ? typeof customer.avatar === "string"
+                        ? customer.avatar
+                        : URL.createObjectURL(customer.avatar)
+                      : defaultAvatar
+                  }
                   alt="Avatar"
                   style={{
                     width: 100,
@@ -297,6 +325,15 @@ const EditCustomer = () => {
             </div>
           </div>
         </form>
+        <Popup
+          open={showSuccess}
+          title="Thành công"
+          titleColor="success"
+          content="Cập nhật khách hàng thành công!"
+          contentColor="success"
+          hideCancel={false}
+          hideConfirm={false}
+        />
       </main>
     </div>
   );
