@@ -22,12 +22,14 @@ import com.example.app.R;
 import com.example.app.activities.ListBookActivity;
 import com.example.app.adapters.BannerAdapter;
 import com.example.app.adapters.BookAdapter;
+import com.example.app.adapters.RecommendationAdapter;
 import com.example.app.models.Book;
 import com.example.app.models.Category;
 import com.example.app.models.response.BookResponse;
 import com.example.app.models.response.CategoryResponse;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
+import com.example.app.utils.AuthUtils;
 import com.example.app.utils.HeaderController;
 
 import java.io.IOException;
@@ -55,12 +57,11 @@ public class HomeFragment extends Fragment {
     private RecyclerView recommendationsRecyclerView;
     private BookAdapter bestSellersAdapter;
     private BookAdapter newBooksAdapter;
-    private BookAdapter recommendationsAdapter;
+    private RecommendationAdapter recommendationsAdapter;
     private List<Category> categoryList = new ArrayList<>();
     private List<Book> bestSellersList = new ArrayList<>();
     private List<Book> newBooksList = new ArrayList<>();
     private List<Book> recommendationList = new ArrayList<>();
-
     private ApiService apiService;
 
     // Constants
@@ -128,7 +129,7 @@ public class HomeFragment extends Fragment {
         recommendationsRecyclerView = view.findViewById(R.id.recommendationsRecyclerView);
         recommendationsRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2, GridLayoutManager.VERTICAL, false));
         recommendationsRecyclerView.setNestedScrollingEnabled(false);
-        recommendationsAdapter = new BookAdapter(requireContext(), recommendationList, categoryList, 0);
+        recommendationsAdapter = new RecommendationAdapter(requireContext(), recommendationList, categoryList, 0);
         recommendationsRecyclerView.setAdapter(recommendationsAdapter);
 
         View recommendationsTitle = view.findViewById(R.id.recommendationsTitle);
@@ -181,7 +182,7 @@ public class HomeFragment extends Fragment {
     private void fetchBooks() {
         fetchBestSellersBooks();
         fetchNewBooks();
-        fetchRecommendationBooks();
+        fetchRecommendations();
     }
 
     private void fetchBestSellersBooks() {
@@ -244,13 +245,26 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void fetchRecommendationBooks() {
-        Call<BookResponse> call = apiService.getBooks(null);
+    private void fetchRecommendations() {
+        String token = AuthUtils.getToken(requireContext());
+        if (token == null) {
+            Toast.makeText(requireContext(), "Vui lòng đăng nhập để xem đề xuất.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Call<BookResponse> call = apiService.getRecommendations("Bearer " + token);
         call.enqueue(new Callback<BookResponse>() {
             @Override
             public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    recommendationList = getTopRatedRecommendations(response.body().getBooks(), 5);
+                    recommendationList.clear();
+                    List<Book> books = response.body().getBooks();
+                    if (books != null) {
+                        recommendationList.addAll(books);
+                        Log.d("HomeFragment", "Recommendations loaded: " + books.size() + " books");
+                    } else {
+                        Log.w("HomeFragment", "Recommendations books is null");
+                    }
                     recommendationsAdapter.setBooks(recommendationList);
                 } else {
                     showApiError("Không thể lấy sách đề xuất.", response);
@@ -262,20 +276,6 @@ public class HomeFragment extends Fragment {
                 showFailureError("sách đề xuất", t);
             }
         });
-    }
-
-    private List<Book> getTopRatedRecommendations(List<Book> books, int count) {
-        if (books == null || books.isEmpty()) return new ArrayList<>();
-
-        List<Book> topRatedBooks = new ArrayList<>();
-        for (Book book : books) {
-            if (book.getAverageRating() == 5.0) {
-                topRatedBooks.add(book);
-            }
-        }
-
-        Collections.shuffle(topRatedBooks, new Random());
-        return topRatedBooks.subList(0, Math.min(count, topRatedBooks.size()));
     }
 
     private void showApiError(String baseMessage, Response<?> response) {

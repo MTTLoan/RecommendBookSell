@@ -268,7 +268,8 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                     cartItem.getBookId(),
                     cartItem.getQuantity(),
                     cartItem.getBook().getPrice(),
-                    cartItem.getBook()
+                    cartItem.getBook(),
+                    cartItem.isRecommend() // Truyền recommend
             ));
         }
 

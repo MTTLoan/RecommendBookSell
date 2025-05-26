@@ -14,16 +14,19 @@ import forgotPasswordRoutes from "./routes/forgotPassword.js";
 import bookRoutes from "./routes/book.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import recommendationRoutes from "./routes/recommendationRoutes.js";
 
 dotenv.config();
 const app = express();
 
-app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // Cho phép cả localhost và 127.0.0.1
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://127.0.0.1:3000"], // Cho phép cả localhost và 127.0.0.1
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
 // app.use(cors());
 app.use(express.json());
@@ -60,6 +63,9 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/carts", cartRoutes);
 
 app.use("/api/user", userRoutes);
+
+// recommendation routes
+app.use("/api/recommendations", recommendationRoutes);
 
 app.use(errorHandler);
 

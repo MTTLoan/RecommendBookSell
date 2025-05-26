@@ -361,7 +361,6 @@ public class OrderConfirmationActivity extends AppCompatActivity {
     }
 
     private void validateAndPlaceOrder() {
-        // Lấy dữ liệu đã chỉnh sửa
         String newFullName = etUserFullName.getText().toString().trim();
         String newPhoneNumber = etUserPhoneNumber.getText().toString().trim();
         String newProvince = spinnerProvince.getSelectedItem() != null ? spinnerProvince.getSelectedItem().toString() : "";
@@ -369,22 +368,19 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         String newWard = spinnerWard.getSelectedItem() != null ? spinnerWard.getSelectedItem().toString() : "";
         String newDetailedAddress = etDetailedAddress.getText().toString().trim();
 
-        // Kiểm tra dữ liệu đầu vào
         if (newFullName.isEmpty() || newPhoneNumber.isEmpty() || newDetailedAddress.isEmpty() || newProvince.isEmpty() || newDistrict.isEmpty() || newWard.isEmpty()) {
             Toast.makeText(this, "Vui lòng điền đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Kiểm tra định dạng số điện thoại (10 chữ số, bắt đầu bằng 0)
         if (!Pattern.matches("0[0-9]{9}", newPhoneNumber)) {
             Toast.makeText(this, "Số điện thoại không hợp lệ! Vui lòng nhập 10 chữ số bắt đầu bằng 0.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Chuẩn bị dữ liệu gửi API
         Order newOrder = new Order();
         newOrder.setUserId(order.getUserId());
-        newOrder.setTotalAmount(order.getTotalAmount()+shippingCost);
+        newOrder.setTotalAmount(order.getTotalAmount() + shippingCost);
         newOrder.setShippingCost((int) shippingCost);
         newOrder.setShippingProvince(provinceMap.get(newProvince));
         newOrder.setShippingDistrict(districtMap.get(newDistrict));
@@ -392,13 +388,32 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         newOrder.setShippingDetail(newDetailedAddress);
         newOrder.setItems(order.getItems());
 
-        // Gửi yêu cầu tạo đơn hàng
         Call<Order> call = apiService.addOrder("Bearer " + authToken, newOrder);
         call.enqueue(new Callback<Order>() {
             @Override
             public void onResponse(Call<Order> call, Response<Order> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    showConfirmationDialog(response.body());
+                    Order createdOrder = response.body();
+                    showConfirmationDialog(createdOrder);
+
+                    // Ghi nhận hành động purchase cho các mục từ đề xuất
+                    for (OrderItem item : createdOrder.getItems()) {
+                        if (item.isRecommend()) {
+                            apiService.recordRecommendationPurchase("Bearer " + authToken, item.getBookId(), createdOrder.getId()).enqueue(new Callback<Void>() {
+                                @Override
+                                public void onResponse(Call<Void> call, Response<Void> response) {
+                                    if (response.isSuccessful()) {
+                                        Log.d("OrderConfirmation", "Purchase recorded for bookId: " + item.getBookId());
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<Void> call, Throwable t) {
+                                    Log.e("OrderConfirmation", "Error recording purchase: " + t.getMessage());
+                                }
+                            });
+                        }
+                    }
                 } else {
                     Toast.makeText(OrderConfirmationActivity.this, "Lỗi khi đặt hàng: " + response.message(), Toast.LENGTH_SHORT).show();
                     Log.e("OrderConfirmation", "Response error: " + response.message());

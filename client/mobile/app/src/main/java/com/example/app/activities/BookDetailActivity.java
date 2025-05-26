@@ -138,14 +138,22 @@ public class BookDetailActivity extends AppCompatActivity {
                 return;
             }
 
+            // Lấy giá trị fromRecommendation
+            boolean isFromRecommendation = getIntent().getBooleanExtra("fromRecommendation", false);
+            Log.d("BookDetailActivity", "isFromRecommendation: " + isFromRecommendation); // Debug
+
             // Tạo CartItem
-            CartItem cartItem = new CartItem(bookId, quantity);
+            CartItem cartItem = new CartItem(bookId, quantity, currentBook, isFromRecommendation);
             List<CartItem> items = new ArrayList<>();
             items.add(cartItem);
 
             // Tạo Cart
             Cart cart = new Cart();
             cart.setItems(items);
+
+            // Lấy thông tin isRecommended
+//            boolean isRecommended = getIntent().getBooleanExtra("isRecommended", false);
+//            cart.setRecommended(isRecommended); // Thêm trường recommended vào Cart
 
             // Gọi API thêm vào giỏ hàng
             apiService.addToCart("Bearer " + token, cart).enqueue(new Callback<Cart>() {
@@ -154,6 +162,25 @@ public class BookDetailActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         Toast.makeText(BookDetailActivity.this, "Đã thêm " + quantity + " sản phẩm vào giỏ hàng", Toast.LENGTH_SHORT).show();
                         Log.d("BookDetailActivity", "Added to cart: " + response.body().toString());
+
+                        // Ghi nhận add_to_cart nếu từ đề xuất
+                        if (isFromRecommendation) {
+                            apiService.recordRecommendationAddToCart("Bearer " + token, bookId, response.body().getId()).enqueue(new Callback<Void>() {
+                                @Override
+                                public void onResponse(Call<Void> call, Response<Void> response) {
+                                    if (response.isSuccessful()) {
+                                        Log.d("BookDetailActivity", "Add to cart recorded for bookId: " + bookId);
+                                    } else {
+                                        Log.e("BookDetailActivity", "Failed to record add_to_cart, status: " + response.code());
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<Void> call, Throwable t) {
+                                    Log.e("BookDetailActivity", "Error recording add to cart: " + t.getMessage());
+                                }
+                            });
+                        }
                     } else {
                         String errorMsg = "Lỗi khi thêm vào giỏ hàng";
                         try {
@@ -177,13 +204,12 @@ public class BookDetailActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<Cart> call, Throwable t) {
-                    Log.e("BookDetailActivity", "Add to cart failed: " + t.getMessage(), t);
+                    Log.e("BookDetailActivity", "Add to cart failed: " + t.getMessage());
                     Toast.makeText(BookDetailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         });
     }
-
     private void toggleDescription() {
         isDescriptionExpanded = !isDescriptionExpanded;
         tvDescription.setMaxLines(isDescriptionExpanded ? Integer.MAX_VALUE : 5);
