@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { deleteSelectedCartItems } from "./cartController.js";
 import User from "../models/User.js";
 import Counter from "../models/Counter.js";
+import Cart from "../models/Cart.js";
 
 export const getOrderHistory = async (req, res) => {
   try {
@@ -115,7 +116,7 @@ const getNextSequence = async (name) => {
 
 export const addOrder = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     const {
       items,
       totalAmount,
