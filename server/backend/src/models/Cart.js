@@ -4,6 +4,7 @@ const CartItemSchema = new mongoose.Schema({
   bookId: { type: Number, required: true },
   quantity: { type: Number, required: true },
   selected: { type: Boolean, default: false },
+  recommend: { type: Boolean, default: false },
 });
 
 const CartSchema = new mongoose.Schema({

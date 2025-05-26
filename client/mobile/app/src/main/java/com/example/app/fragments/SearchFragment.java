@@ -202,11 +202,11 @@ public class SearchFragment extends Fragment {
 
     private void setupRecyclerViews() {
         searchResultsRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
-        searchResultsAdapter = new BookAdapter(requireContext(), new ArrayList<>(), categoryList);
+        searchResultsAdapter = new BookAdapter(requireContext(), new ArrayList<>(), categoryList, 0);
         searchResultsRecyclerView.setAdapter(searchResultsAdapter);
 
         recommendationsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        recommendationsAdapter = new BookAdapter(requireContext(), recommendationList != null ? recommendationList : new ArrayList<>(), categoryList);
+        recommendationsAdapter = new BookAdapter(requireContext(), recommendationList != null ? recommendationList : new ArrayList<>(), categoryList, 0);
         recommendationsRecyclerView.setAdapter(recommendationsAdapter);
 
         categoryRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));

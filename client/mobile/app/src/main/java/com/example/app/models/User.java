@@ -8,9 +8,9 @@ public class  User {
     private String fullName;
     private String email;
     private String phoneNumber;
-    private int addressProvince;
-    private int addressDistrict;
-    private int addressWard;
+    private Integer addressProvince;
+    private Integer addressDistrict;
+    private Integer addressWard;
     private String addressDetail;
     private String password;
     private String role;
@@ -61,27 +61,27 @@ public class  User {
         this.phoneNumber = phoneNumber;
     }
 
-    public int getAddressProvince() {
+    public Integer getAddressProvince() {
         return addressProvince;
     }
 
-    public void setAddressProvince(int addressProvince) {
+    public void setAddressProvince(Integer addressProvince) {
         this.addressProvince = addressProvince;
     }
 
-    public int getAddressDistrict() {
+    public Integer getAddressDistrict() {
         return addressDistrict;
     }
 
-    public void setAddressDistrict(int addressDistrict) {
+    public void setAddressDistrict(Integer addressDistrict) {
         this.addressDistrict = addressDistrict;
     }
 
-    public int getAddressWard() {
+    public Integer getAddressWard() {
         return addressWard;
     }
 
-    public void setAddressWard(int addressWard) {
+    public void setAddressWard(Integer addressWard) {
         this.addressWard = addressWard;
     }
 
@@ -148,11 +148,4 @@ public class  User {
     public void setToken(String token) {
         this.token = token;
     }
-//    public String getGender() {
-//        return gender;
-//    }
-//    public void setGender(String gender) {
-//        this.gender = this.gender;
-//    }
-
 }

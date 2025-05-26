@@ -236,3 +236,70 @@ export const fetchAdminOrderById = async (id) => {
   const res = await api.get(`/orders/admin/${id}`);
   return res.data;
 };
+
+// Hàm lấy thông tin hồ sơ người dùng
+export const getProfile = async () => {
+  try {
+    const response = await api.get("/auth/profile"); 
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi lấy user từ API:", error);
+    return null;
+  }
+};
+
+// Hàm cập nhật hồ sơ
+export const updateProfileWithAvatar = async (data) => {
+  try {
+    const response = await api.put('/auth/update-profile-with-avt', data /* no need to set headers here */);
+    return response.data;
+  } catch (error) {
+    console.error('Update profile with avatar error:', error);
+    if (error.response) {
+      throw new Error(error.response.data.msg || 'Cập nhật hồ sơ thất bại');
+    } else if (error.request) {
+      throw new Error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.');
+    } else {
+      throw new Error('Đã xảy ra lỗi. Vui lòng thử lại.');
+    }
+  }
+};
+
+// Hàm upload ảnh đại diện
+export const uploadAvatar = async (formData) => {
+  try {
+    const response = await api.post('/auth/upload-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Upload avatar error:', error);
+    if (error.response) {
+      throw new Error(error.response.data.msg || 'Tải ảnh đại diện thất bại');
+    } else if (error.request) {
+      throw new Error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.');
+    } else {
+      throw new Error('Đã xảy ra lỗi. Vui lòng thử lại.');
+    }
+  }
+}; 
+
+// Hàm đổi mật khẩu
+export const changePassWord = async (data) => {
+  try {
+    const response = await api.post('/auth/change-password', data);
+    return response.data;
+  } catch (error) {
+    console.error('Change password error:', error);
+    if (error.response) {
+      throw new Error(error.response.data.msg || 'Đổi mật khẩu thất bại');
+    } else if (error.request) {
+      throw new Error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.');
+    } else {
+      throw new Error('Đã xảy ra lỗi. Vui lòng thử lại.');
+    }
+  }
+}
+
