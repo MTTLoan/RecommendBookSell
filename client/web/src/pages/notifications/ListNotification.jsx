@@ -90,9 +90,11 @@ const ListNotification = () => {
   const [searchValue, setSearchValue] = useState("");
   const [error, setError] = useState("");
 
-  const filteredNotifications = notifications.filter((noti) =>
-    noti.customerName?.toLowerCase().includes(searchValue.toLowerCase())
-  );
+  const filteredNotifications = notifications
+    .filter((noti) =>
+      noti.customerName?.toLowerCase().includes(searchValue.toLowerCase())
+    )
+    .sort((a, b) => b.id - a.id);
 
   useEffect(() => {
     loadData();

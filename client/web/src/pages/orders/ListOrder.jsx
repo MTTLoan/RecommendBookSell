@@ -90,6 +90,14 @@ const ListOrder = () => {
       key: "status",
       label: "Trạng thái",
       render: (order) => order.status,
+      filters: [
+        { text: "Đang đóng gói", value: "Đang đóng gói" },
+        { text: "Chờ giao hàng", value: "Chờ giao hàng" },
+        { text: "Đã giao", value: "Đã giao" },
+        { text: "Trả hàng", value: "Trả hàng" },
+        { text: "Đã hủy", value: "Đã hủy" },
+      ],
+      onFilter: (value, record) => record.status === value,
     },
     {
       key: "actions",

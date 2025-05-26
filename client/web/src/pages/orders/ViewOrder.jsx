@@ -126,10 +126,13 @@ const ViewOrder = () => {
                   style={{
                     marginTop: 16,
                     textAlign: "right",
-                    fontWeight: 600,
                     fontSize: 16,
+                    fontWeight: "bold",
                   }}
                 >
+                  <div style={{ marginBottom: 8 }}>
+                    Phí vận chuyển: {(20000).toLocaleString("vi-VN")} VND
+                  </div>
                   Tổng tiền: {order.totalAmount?.toLocaleString("vi-VN")} VND
                 </div>
               </div>
