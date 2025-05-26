@@ -118,6 +118,7 @@ export const getCart = async (req, res) => {
       bookId: item.bookId, // Giữ bookId là số
       quantity: item.quantity,
       selected: item.selected || false, // Đảm bảo có trường selected
+      recommend: item.recommend || false, // Đảm bảo có trường recommend
       book: bookMap[item.bookId] || null, // Thêm trường book chứa thông tin chi tiết
     }));
 
