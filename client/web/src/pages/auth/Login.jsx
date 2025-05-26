@@ -56,6 +56,7 @@ const Login = () => {
           </div>
           <h1 className="auth-title">Đăng nhập</h1>
 
+          {/* Hiển thị lỗi duy nhất ở dòng trên cùng */}
           {error && <div className="auth-error">{error}</div>}
 
           <form onSubmit={handleSubmit}>

@@ -70,7 +70,12 @@ export const login = async (credentials) => {
   } catch (error) {
     console.error("Login error:", error);
     if (error.response) {
-      throw new Error(error.response.data.message || "Đăng nhập thất bại");
+      // Ưu tiên lấy msg, nếu không có thì lấy message
+      const errMsg =
+        error.response.data.msg ||
+        error.response.data.message ||
+        "Đăng nhập thất bại";
+      throw new Error(errMsg);
     } else if (error.request) {
       throw new Error(
         "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng."
@@ -306,12 +311,6 @@ export const changePassWord = async (data) => {
     console.error("Change password error:", error);
     if (error.response) {
       throw new Error(error.response.data.msg || "Đổi mật khẩu thất bại");
-    } else if (error.request) {
-      throw new Error(
-        "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng."
-      );
-    } else {
-      throw new Error("Đã xảy ra lỗi. Vui lòng thử lại.");
     }
   }
 };

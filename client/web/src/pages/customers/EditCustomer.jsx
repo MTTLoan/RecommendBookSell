@@ -14,6 +14,11 @@ import {
   fetchWards,
   adminUpdateUser,
 } from "../../services/authService";
+import {
+  validateUsername,
+  isValidEmail,
+  isValidPhone,
+} from "../../utils/validators";
 
 const EditCustomer = () => {
   const { id } = useParams();
@@ -22,6 +27,7 @@ const EditCustomer = () => {
   const [loading, setLoading] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successTimeout, setSuccessTimeout] = useState(null);
+  const [errors, setErrors] = useState({});
 
   // Dropdown địa chỉ
   const [provinces, setProvinces] = useState([]);
@@ -65,6 +71,33 @@ const EditCustomer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validate fields
+    const newErrors = {};
+    const usernameValidation = validateUsername(customer.username);
+    if (!usernameValidation.isValid) {
+      newErrors.username = usernameValidation.message;
+    }
+    if (!customer.fullName) {
+      newErrors.fullName = "Họ tên không được để trống";
+    }
+    if (!isValidEmail(customer.email)) {
+      newErrors.email = "Email không hợp lệ";
+    }
+    if (!isValidPhone(customer.phoneNumber)) {
+      newErrors.phoneNumber = "Số điện thoại không hợp lệ";
+    }
+    if (!customer.addressProvince) {
+      newErrors.addressProvince = "Vui lòng chọn tỉnh/thành phố";
+    }
+    if (!customer.addressDistrict) {
+      newErrors.addressDistrict = "Vui lòng chọn quận/huyện";
+    }
+    if (!customer.addressWard) {
+      newErrors.addressWard = "Vui lòng chọn phường/xã";
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
     const formData = new FormData();
     // Thêm các trường text
     Object.keys(customer).forEach((key) => {
@@ -148,6 +181,11 @@ const EditCustomer = () => {
                   onChange={(e) => handleChange("username", e.target.value)}
                   required
                 />
+                {errors.username && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.username}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -157,6 +195,11 @@ const EditCustomer = () => {
                   onChange={(e) => handleChange("fullName", e.target.value)}
                   required
                 />
+                {errors.fullName && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.fullName}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -166,6 +209,11 @@ const EditCustomer = () => {
                   onChange={(e) => handleChange("email", e.target.value)}
                   required
                 />
+                {errors.email && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.email}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -175,6 +223,11 @@ const EditCustomer = () => {
                   onChange={(e) => handleChange("phoneNumber", e.target.value)}
                   required
                 />
+                {errors.phoneNumber && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.phoneNumber}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -209,6 +262,11 @@ const EditCustomer = () => {
                     </option>
                   ))}
                 </select>
+                {errors.addressProvince && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.addressProvince}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <label className="input-label">Quận/Huyện</label>
@@ -228,6 +286,11 @@ const EditCustomer = () => {
                     </option>
                   ))}
                 </select>
+                {errors.addressDistrict && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.addressDistrict}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <label className="input-label">Phường/Xã</label>
@@ -245,6 +308,11 @@ const EditCustomer = () => {
                     </option>
                   ))}
                 </select>
+                {errors.addressWard && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.addressWard}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -331,8 +399,8 @@ const EditCustomer = () => {
           titleColor="success"
           content="Cập nhật khách hàng thành công!"
           contentColor="success"
-          hideCancel={false}
-          hideConfirm={false}
+          showCancel={false}
+          showConfirm={false}
         />
       </main>
     </div>

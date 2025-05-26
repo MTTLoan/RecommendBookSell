@@ -89,7 +89,41 @@ const ListOrder = () => {
     {
       key: "status",
       label: "Trạng thái",
-      render: (order) => order.status,
+      render: (order) => {
+        let color = "#888";
+        let bg = "#f0f0f0";
+        let text = order.status;
+        if (text === "Đang đóng gói") {
+          color = "#43009b";
+          bg = "#eac9ff";
+        } else if (text === "Chờ giao hàng") {
+          color = "#fd3300";
+          bg = "#fff1bd";
+        } else if (text === "Đã giao") {
+          color = "#04910c";
+          bg = "#b2ffb4";
+        } else if (text === "Trả hàng") {
+          color = "#007afc";
+          bg = "#e2feff";
+        } else if (text === "Đã hủy") {
+          color = "#f00";
+          bg = "#ffdcdc";
+        }
+        return (
+          <span
+            style={{
+              background: bg,
+              color: color,
+              fontWeight: 700,
+              borderRadius: 10,
+              padding: "8px 12px",
+              display: "inline-block",
+            }}
+          >
+            {text}
+          </span>
+        );
+      },
       filters: [
         { text: "Đang đóng gói", value: "Đang đóng gói" },
         { text: "Chờ giao hàng", value: "Chờ giao hàng" },

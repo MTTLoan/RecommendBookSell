@@ -193,7 +193,9 @@ const AddCustomer = () => {
                   error={errors.username}
                 />
                 {errors.username && (
-                  <div className="error-message">{errors.username}</div>
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.username}
+                  </div>
                 )}
               </div>
               <div className="vp-form-group">
@@ -206,7 +208,9 @@ const AddCustomer = () => {
                   error={errors.fullName}
                 />
                 {errors.fullName && (
-                  <div className="error-message">{errors.fullName}</div>
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.fullName}
+                  </div>
                 )}
               </div>
               <div className="vp-form-group">
@@ -219,7 +223,9 @@ const AddCustomer = () => {
                   error={errors.email}
                 />
                 {errors.email && (
-                  <div className="error-message">{errors.email}</div>
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.email}
+                  </div>
                 )}
               </div>
               <div className="vp-form-group">
@@ -232,7 +238,9 @@ const AddCustomer = () => {
                   error={errors.phoneNumber}
                 />
                 {errors.phoneNumber && (
-                  <div className="error-message">{errors.phoneNumber}</div>
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.phoneNumber}
+                  </div>
                 )}
               </div>
               <div className="vp-form-group">
@@ -253,7 +261,9 @@ const AddCustomer = () => {
                   error={errors.password}
                 />
                 {errors.password && (
-                  <div className="error-message">{errors.password}</div>
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.password}
+                  </div>
                 )}
               </div>
             </div>
@@ -281,7 +291,9 @@ const AddCustomer = () => {
                   ))}
                 </select>
                 {errors.addressProvince && (
-                  <div className="error-message">{errors.addressProvince}</div>
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.addressProvince}
+                  </div>
                 )}
               </div>
               <div className="vp-form-group">
@@ -304,7 +316,9 @@ const AddCustomer = () => {
                   ))}
                 </select>
                 {errors.addressDistrict && (
-                  <div className="error-message">{errors.addressDistrict}</div>
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.addressDistrict}
+                  </div>
                 )}
               </div>
               <div className="vp-form-group">
@@ -325,7 +339,9 @@ const AddCustomer = () => {
                   ))}
                 </select>
                 {errors.addressWard && (
-                  <div className="error-message">{errors.addressWard}</div>
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.addressWard}
+                  </div>
                 )}
               </div>
               <div className="vp-form-group">
@@ -389,7 +405,9 @@ const AddCustomer = () => {
                   }}
                 />
                 {errors.avatar && (
-                  <div className="error-message">{errors.avatar}</div>
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.avatar}
+                  </div>
                 )}
               </div>
             </div>
@@ -417,8 +435,8 @@ const AddCustomer = () => {
           titleColor="success"
           content="Thêm khách hàng thành công!"
           contentColor="success"
-          hideCancel={false}
-          hideConfirm={false}
+          showCancel={false}
+          showConfirm={false}
         />
       </main>
     </div>

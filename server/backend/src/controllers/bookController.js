@@ -3,7 +3,6 @@ import Review from "../models/Review.js";
 import Counter from "../models/Counter.js";
 import Order from "../models/Order.js";
 
-
 // Hàm lấy id tự tăng
 async function getNextBookId() {
   const counter = await Counter.findByIdAndUpdate(
@@ -162,7 +161,7 @@ export const getBestSellers = async (req, res) => {
           categoryId: "$bookDetails.categoryId",
           totalQuantitySold: 1,
         },
-      }
+      },
     ]);
 
     // Check if any best sellers were found
@@ -200,7 +199,9 @@ export const getNewBooks = async (req, res) => {
         $lt: new Date(`${currentYear}-${currentMonth + 1}-01`),
       },
     })
-      .select('id name description images price stockQuantity categoryId createdAt author averageRating ratingCount')
+      .select(
+        "id name description images price stockQuantity categoryId createdAt author averageRating ratingCount"
+      )
       .sort({ createdAt: -1 }) // Sắp xếp theo thời gian giảm dần
       .limit(20); // Giới hạn 20 sách mới nhất
 
@@ -313,18 +314,25 @@ export const createBook = async (req, res) => {
       stockQuantity,
       images,
       categoryId,
-      authors,
+      authors, // frontend gửi authors
+      author, // phòng trường hợp gửi author
     } = req.body;
     const id = await getNextBookId(); // Lấy id tự tăng
+    // Đảm bảo luôn lưu vào trường 'author' (schema)
+    const authorArr = Array.isArray(authors)
+      ? authors
+      : Array.isArray(author)
+      ? author
+      : [];
     const newBook = new Book({
-      id, // Đúng trường id
+      id,
       name,
       description,
       price,
       stockQuantity,
       images,
       categoryId,
-      authors,
+      author: authorArr, // luôn lưu vào trường 'author'
       createdAt: new Date(),
     });
     await newBook.save();
@@ -346,7 +354,14 @@ export const createBook = async (req, res) => {
 export const updateBook = async (req, res) => {
   try {
     const bookId = parseInt(req.params.id);
-    const updateData = req.body;
+    const updateData = { ...req.body };
+    // Đồng bộ trường 'author' khi update
+    if (updateData.authors) {
+      updateData.author = Array.isArray(updateData.authors)
+        ? updateData.authors
+        : [];
+      delete updateData.authors;
+    }
     const updatedBook = await Book.findOneAndUpdate(
       { id: bookId },
       updateData,

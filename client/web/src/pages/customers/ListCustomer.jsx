@@ -203,8 +203,8 @@ const ListCustomer = () => {
           titleColor="success"
           content="Xóa khách hàng thành công!"
           contentColor="success"
-          hideCancel={false}
-          hideConfirm={false}
+          showCancel={false}
+          showConfirm={false}
         />
       </main>
     </div>
