@@ -150,6 +150,10 @@ public class BookDetailActivity extends AppCompatActivity {
             Cart cart = new Cart();
             cart.setItems(items);
 
+            // Lấy thông tin isRecommended
+            boolean isRecommended = getIntent().getBooleanExtra("isRecommended", false);
+            cart.setRecommended(isRecommended); // Thêm trường recommended vào Cart
+
             // Gọi API thêm vào giỏ hàng
             apiService.addToCart("Bearer " + token, cart).enqueue(new Callback<Cart>() {
                 @Override

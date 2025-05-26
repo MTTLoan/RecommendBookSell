@@ -279,20 +279,6 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private List<Book> getTopRatedRecommendations(List<Book> books, int count) {
-        if (books == null || books.isEmpty()) return new ArrayList<>();
-
-        List<Book> topRatedBooks = new ArrayList<>();
-        for (Book book : books) {
-            if (book.getAverageRating() == 5.0) {
-                topRatedBooks.add(book);
-            }
-        }
-
-        Collections.shuffle(topRatedBooks, new Random());
-        return topRatedBooks.subList(0, Math.min(count, topRatedBooks.size()));
-    }
-
     private void showApiError(String baseMessage, Response<?> response) {
         String message = baseMessage;
         if (response.errorBody() != null) {

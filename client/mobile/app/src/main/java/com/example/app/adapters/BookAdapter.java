@@ -176,29 +176,4 @@ public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    private void recordClick(int bookId) {
-        String token = AuthUtils.getToken(context);
-        if (token == null) {
-            Toast.makeText(context, "Vui lòng đăng nhập để ghi nhận hành động.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        ApiService apiService = RetrofitClient.getApiService();
-        Call<Void> call = apiService.recordRecommendationClick("Bearer " + token, bookId);
-        call.enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    Log.d("BookAdapter", "Click recorded successfully for bookId: " + bookId);
-                } else {
-                    Log.e("BookAdapter", "Failed to record click, code: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Log.e("BookAdapter", "Error recording click: " + t.getMessage());
-            }
-        });
-    }
 }

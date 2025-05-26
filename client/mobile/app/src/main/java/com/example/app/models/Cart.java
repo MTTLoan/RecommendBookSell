@@ -7,25 +7,23 @@ import java.util.List;
 
 public class Cart {
     private int id;
-
     private int userId;
-
     private List<CartItem> items = new ArrayList<>();
-
     private String createdAt;
-
     private String updatedAt;
+    private boolean recommended;
 
     // Constructor
     public Cart() {
     }
 
-    public Cart(int id, int userId, List<CartItem> items, String createdAt, String updatedAt) {
+    public Cart(int id, int userId, List<CartItem> items, String createdAt, String updatedAt, boolean recommended) {
         this.id = id;
         this.userId = userId;
         this.items = items != null ? items : new ArrayList<>();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.recommended = recommended;
     }
 
     // Getters and Setters
@@ -67,5 +65,25 @@ public class Cart {
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public boolean isRecommended() {
+        return recommended;
+    }
+
+    public void setRecommended(boolean recommended) {
+        this.recommended = recommended;
+    }
+
+    @Override
+    public String toString() {
+        return "Cart{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", items=" + items +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", recommended=" + recommended +
+                '}';
     }
 }
