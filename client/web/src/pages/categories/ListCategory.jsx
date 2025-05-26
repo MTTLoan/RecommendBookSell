@@ -22,8 +22,12 @@ const ListCategory = () => {
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [newCategory, setNewCategory] = useState({ name: "", imageUrl: "" });
+  const [newCategory, setNewCategory] = useState({ name: "", description: "" });
   const [searchValue, setSearchValue] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [editImageFile, setEditImageFile] = useState(null);
+  const [previewImage, setPreviewImage] = useState("");
+  const [editPreviewImage, setEditPreviewImage] = useState("");
 
   useEffect(() => {
     loadData();
@@ -66,31 +70,115 @@ const ListCategory = () => {
     }
   }, [searchValue, allCategories]);
 
+  // Reset form khi đóng popup thêm
+  const resetAddForm = () => {
+    setNewCategory({ name: "", description: "" });
+    setImageFile(null);
+    setPreviewImage("");
+  };
+
+  // Reset form khi đóng popup sửa
+  const resetEditForm = () => {
+    setSelectedCategory(null);
+    setEditImageFile(null);
+    setEditPreviewImage("");
+  };
+
+  // Xử lý thay đổi ảnh trong popup Add
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPreviewImage(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Xử lý thay đổi ảnh trong popup Edit
+  const handleEditImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setEditPreviewImage(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Thêm danh mục
   const handleAddCategory = async () => {
-    await addCategory(newCategory);
-    setShowAdd(false);
-    setNewCategory({ name: "", description: "", imageUrl: "" });
-    loadData();
+    try {
+      // Kiểm tra dữ liệu đầu vào
+      if (!newCategory.name || newCategory.name.trim() === "") {
+        alert("Vui lòng nhập tên danh mục");
+        return;
+      }
+
+      const data = {
+        name: newCategory.name,
+        description: newCategory.description || "",
+        imageFile: imageFile,
+      };
+
+      console.log("Sending data:", data);
+      await addCategory(data);
+      setShowAdd(false);
+      resetAddForm();
+      loadData();
+    } catch (error) {
+      console.error("Lỗi thêm danh mục:", error);
+      console.error("Error response:", error.response?.data);
+      alert(
+        "Có lỗi xảy ra khi thêm danh mục: " +
+          (error.response?.data?.msg || error.message)
+      );
+    }
   };
 
   // Sửa danh mục
   const handleEditCategory = async () => {
-    await updateCategory(Number(selectedCategory.id), {
-      name: selectedCategory.name,
-      description: selectedCategory.description,
-    });
-    setShowEdit(false);
-    setSelectedCategory(null);
-    loadData();
+    try {
+      const data = {
+        name: selectedCategory.name,
+        description: selectedCategory.description,
+        imageFile: editImageFile,
+        removeImage: selectedCategory.removeImage,
+      };
+      await updateCategory(Number(selectedCategory.id), data);
+      setShowEdit(false);
+      resetEditForm();
+      loadData();
+    } catch (error) {
+      console.error("Lỗi sửa danh mục:", error);
+    }
   };
 
   // Xóa danh mục
   const handleDeleteCategory = async () => {
-    await deleteCategory(Number(selectedCategory.id));
-    setShowDelete(false);
-    setSelectedCategory(null);
-    loadData();
+    try {
+      await deleteCategory(Number(selectedCategory.id));
+      setShowDelete(false);
+      setSelectedCategory(null);
+      loadData();
+    } catch (error) {
+      console.error("Lỗi xóa danh mục:", error);
+    }
+  };
+
+  // Xóa ảnh trong popup Edit
+  const handleRemoveEditImage = () => {
+    setSelectedCategory({
+      ...selectedCategory,
+      imageUrl: "",
+      removeImage: true,
+    });
+    setEditImageFile(null);
+    setEditPreviewImage("");
   };
 
   const columns = [
@@ -142,7 +230,11 @@ const ListCategory = () => {
             className="material-symbols-outlined action-icon"
             title="Sửa"
             onClick={() => {
-              setSelectedCategory(cat);
+              setSelectedCategory({
+                ...cat,
+                removeImage: false,
+              });
+              setEditPreviewImage("");
               setShowEdit(true);
             }}
           >
@@ -200,6 +292,7 @@ const ListCategory = () => {
           />
         )}
 
+        {/* Popup Thêm danh mục */}
         <Popup
           open={showAdd}
           title="Thêm danh mục"
@@ -220,20 +313,15 @@ const ListCategory = () => {
             },
           ]}
           showImageUpload={true}
-          imageUrl={newCategory.imageUrl}
-          onImageChange={(e) => {
-            const file = e.target.files[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (ev) =>
-                setNewCategory({ ...newCategory, imageUrl: ev.target.result });
-              reader.readAsDataURL(file);
-            }
-          }}
+          imageUrl={previewImage}
+          onImageChange={handleImageChange}
           onInputChange={(name, value) =>
             setNewCategory({ ...newCategory, [name]: value })
           }
-          onClose={() => setShowAdd(false)}
+          onClose={() => {
+            setShowAdd(false);
+            resetAddForm();
+          }}
           onConfirm={handleAddCategory}
           confirmText="Thêm"
           confirmColor="success"
@@ -241,6 +329,7 @@ const ListCategory = () => {
           cancelColor="gray"
         />
 
+        {/* Popup Sửa danh mục */}
         <Popup
           open={showEdit && selectedCategory}
           title="Sửa danh mục"
@@ -261,21 +350,14 @@ const ListCategory = () => {
             },
           ]}
           showImageUpload={true}
-          imageUrl={selectedCategory?.imageUrl}
-          onImageChange={(e) => {
-            const file = e.target.files[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (ev) =>
-                setSelectedCategory({
-                  ...selectedCategory,
-                  imageUrl: ev.target.result,
-                });
-              reader.readAsDataURL(file);
-            }
-          }}
+          imageUrl={
+            editPreviewImage ||
+            (selectedCategory?.removeImage ? "" : selectedCategory?.imageUrl)
+          }
+          onImageChange={handleEditImageChange}
           children={
-            selectedCategory?.imageUrl && (
+            (selectedCategory?.imageUrl && !selectedCategory?.removeImage) ||
+            editPreviewImage ? (
               <button
                 style={{
                   margin: "8px 0 0 0",
@@ -288,19 +370,20 @@ const ListCategory = () => {
                   fontFamily: "Quicksand, sans-serif",
                   fontSize: 14,
                 }}
-                onClick={() =>
-                  setSelectedCategory({ ...selectedCategory, imageUrl: "" })
-                }
+                onClick={handleRemoveEditImage}
                 type="button"
               >
                 Xóa ảnh
               </button>
-            )
+            ) : null
           }
           onInputChange={(name, value) =>
             setSelectedCategory({ ...selectedCategory, [name]: value })
           }
-          onClose={() => setShowEdit(false)}
+          onClose={() => {
+            setShowEdit(false);
+            resetEditForm();
+          }}
           onConfirm={handleEditCategory}
           confirmText="Lưu"
           confirmColor="info"
@@ -308,6 +391,7 @@ const ListCategory = () => {
           cancelColor="gray"
         />
 
+        {/* Popup Xóa danh mục */}
         <Popup
           open={showDelete && selectedCategory}
           title="Xác nhận xóa danh mục"

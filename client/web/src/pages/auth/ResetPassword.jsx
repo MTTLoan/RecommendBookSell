@@ -1,36 +1,49 @@
-import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { resetPassword } from '../../services/authService';
-import Logo from '../../components/common/Logo';
-import Input from '../../components/common/Input';
-import Button from '../../components/common/Button';
-import loginImage from '../../assets/images/login-bg.png';
-import '../../styles/auth.css';
+import React, { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { resetPassword } from "../../services/authService";
+import Logo from "../../components/common/Logo";
+import Input from "../../components/common/Input";
+import Button from "../../components/common/Button";
+import loginImage from "../../assets/images/login-bg.png";
+import "../../styles/auth.css";
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const email = searchParams.get("email") || "";
+  const [otp, setOtp] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (password !== confirmPassword) {
-      setError('Mật khẩu và xác nhận mật khẩu không khớp.');
+    setError("");
+    setSuccess("");
+    if (!otp) {
+      setError("Vui lòng nhập mã xác nhận (OTP) đã gửi về email.");
       return;
     }
-
+    if (password !== confirmPassword) {
+      setError("Mật khẩu và xác nhận mật khẩu không khớp.");
+      return;
+    }
     try {
-      await resetPassword({ token, password }); // Gửi yêu cầu đổi mật khẩu đến backend
-      setSuccess('Mật khẩu của bạn đã được đặt lại thành công.');
+      await resetPassword({
+        email,
+        newPassword: password,
+        confirmPassword,
+        otp,
+      });
+      setSuccess(
+        "Mật khẩu của bạn đã được đặt lại thành công. Đang chuyển sang trang đăng nhập..."
+      );
+      setTimeout(() => {
+        navigate("/auth/login");
+      }, 1500);
     } catch (err) {
-      setError(err.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại.');
+      setError(err.message || "Đặt lại mật khẩu thất bại. Vui lòng thử lại.");
     }
   };
 
@@ -43,12 +56,19 @@ const ResetPassword = () => {
             <Logo />
           </div>
           <h1 className="auth-title">Khôi phục mật khẩu</h1>
-
-          {error && <div className="auth-error">{error}</div>}
-          {success && <div className="auth-success">{success}</div>}
-
           <form onSubmit={handleSubmit}>
-          <div className="mb-4">
+            <div className="mb-4">
+              <Input
+                label="Mã xác nhận (OTP)"
+                type="text"
+                name="otp"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                placeholder="Nhập mã xác nhận từ email"
+                required
+              />
+            </div>
+            <div className="mb-4">
               <Input
                 label="Mật khẩu mới"
                 type="password"
@@ -59,7 +79,6 @@ const ResetPassword = () => {
                 required
               />
             </div>
-
             <div className="mb-4">
               <Input
                 label="Xác nhận mật khẩu"
@@ -71,8 +90,15 @@ const ResetPassword = () => {
                 required
               />
             </div>
-
-            <Button type="submit">
+            {!email && (
+              <div className="auth-error">
+                Vui lòng truy cập từ liên kết quên mật khẩu để tự động điền
+                email.
+              </div>
+            )}
+            {error && <div className="auth-error">{error}</div>}
+            {success && <div className="auth-success">{success}</div>}
+            <Button type="submit" disabled={!email}>
               Đổi mật khẩu
             </Button>
           </form>

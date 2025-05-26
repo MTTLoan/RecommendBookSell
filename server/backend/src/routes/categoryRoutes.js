@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import {
   getCategories,
   getCategoryById,
@@ -6,23 +6,26 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
-  searchCategories
-} from '../controllers/categoryController.js';
+  searchCategories,
+} from "../controllers/categoryController.js";
+import uploadAvatar from "../middleware/uploadToS3.js";
 
 const router = express.Router();
 
-router.get('/category-stats', getCategoryStats);
+router.get("/category-stats", getCategoryStats);
 
-router.get('/search', searchCategories);
+router.get("/search", searchCategories);
 
 // Lấy danh sách danh mục
-router.get('/all-categories', getCategories);
+router.get("/all-categories", getCategories);
 
 // Lấy chi tiết danh mục
-router.get('/:id', getCategoryById);
+router.get("/:id", getCategoryById);
 
-router.post('/add-category', createCategory);
-router.put('/update-category/:id', updateCategory);
-router.delete('/delete-category/:id', deleteCategory);
+// Thêm danh mục mới (có upload ảnh)
+router.post("/add-category", uploadAvatar, createCategory);
+// Sửa danh mục (có upload ảnh)
+router.put("/update-category/:id", uploadAvatar, updateCategory);
+router.delete("/delete-category/:id", deleteCategory);
 
 export default router;

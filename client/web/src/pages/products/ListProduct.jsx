@@ -145,6 +145,14 @@ const ListProduct = () => {
       label: "Giá",
       width: "10%",
       filters: PRICE_FILTERS,
+      onFilter: (value, record) => {
+        const price = Number(String(record.price).replace(/[^\d]/g, ""));
+        if (value === "lt100") return price < 100000;
+        if (value === "100-300") return price >= 100000 && price <= 300000;
+        if (value === "300-500") return price > 300000 && price <= 500000;
+        if (value === "gt500") return price > 500000;
+        return true;
+      },
     },
     { key: "quantity", label: "Số lượng", width: "10%" },
     { key: "dateAdded", label: "Ngày thêm", width: "15%" },

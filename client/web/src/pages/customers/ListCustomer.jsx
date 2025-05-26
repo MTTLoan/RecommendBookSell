@@ -156,7 +156,7 @@ const ListCustomer = () => {
           showFilter={false}
           showDownload={true}
           showAddButton={true}
-          showCheckbox={true}
+          showCheckbox={false}
           showSort={true}
           addButtonText="Thêm khách hàng"
           downloadButtonText="Xuất file"

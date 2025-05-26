@@ -7,6 +7,7 @@ import Table from "../../components/layout/Table";
 import "../../styles/editorder.css";
 import { updateOrderStatus } from "../../services/orderService";
 import { fetchAdminOrderById } from "../../services/authService";
+import Popup from "../../components/common/Popup";
 
 const ORDER_STATUS = [
   "Đang đóng gói",
@@ -16,11 +17,30 @@ const ORDER_STATUS = [
   "Đã hủy",
 ];
 
+// Hàm xác định các trạng thái hợp lệ tiếp theo cho đơn hàng
+function getNextStatusOptions(currentStatus) {
+  switch (currentStatus) {
+    case "Đang đóng gói":
+      return ["Chờ giao hàng", "Đã hủy"];
+    case "Chờ giao hàng":
+      return ["Đã giao", "Đã hủy"];
+    case "Đã giao":
+      return ["Trả hàng"];
+    case "Trả hàng":
+      return [];
+    case "Đã hủy":
+      return [];
+    default:
+      return [];
+  }
+}
+
 const EditOrder = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,8 +62,11 @@ const EditOrder = () => {
     e.preventDefault();
     try {
       await updateOrderStatus(id, status);
-      alert("Cập nhật trạng thái thành công!");
-      navigate("/orders");
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigate("/orders");
+      }, 1200);
     } catch {
       alert("Cập nhật thất bại!");
     }
@@ -96,6 +119,15 @@ const EditOrder = () => {
       <Navbar />
       <Sidebar />
       <main className="dashboard-content view-product-main">
+        {showSuccess && (
+          <Popup
+            open={showSuccess}
+            title="Cập nhật thành công!"
+            titleColor="success"
+            showCancel={false}
+            showConfirm={false}
+          />
+        )}
         <div className="product-header">
           <h1>Chỉnh sửa đơn hàng</h1>
           <p className="product-subtitle">
@@ -184,9 +216,14 @@ const EditOrder = () => {
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
                     required
+                    disabled={
+                      order.status === "Đã hủy" ||
+                      order.status === "Trả hàng" ||
+                      getNextStatusOptions(order.status).length === 0
+                    }
                   >
                     <option value="">Chọn trạng thái</option>
-                    {ORDER_STATUS.map((s) => (
+                    {getNextStatusOptions(order.status).map((s) => (
                       <option key={s} value={s}>
                         {s}
                       </option>
