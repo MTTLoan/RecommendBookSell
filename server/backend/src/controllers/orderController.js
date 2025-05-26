@@ -292,6 +292,103 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
+export const adminUpdateOrderStatus = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const isAdmin = req.user.role === "admin";
+    const orderId = parseInt(req.params.id);
+    const { status } = req.body;
+
+    // Kiểm tra trạng thái hợp lệ
+    const validStatuses = [
+      "Đang đóng gói",
+      "Chờ giao hàng",
+      "Đã giao",
+      "Trả hàng",
+      "Đã hủy",
+    ];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Trạng thái không hợp lệ",
+      });
+    }
+
+    // Tìm và cập nhật đơn hàng
+    const order = isAdmin
+      ? await Order.findOneAndUpdate(
+          { id: orderId },
+          { status: status, updatedAt: new Date() },
+          { new: true }
+        )
+      : await Order.findOneAndUpdate(
+          { id: orderId, userId: userId },
+          { status: status, updatedAt: new Date() },
+          { new: true }
+        );
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng",
+      });
+    }
+
+    // Gửi thông báo cho người dùng
+    const notificationTitles = {
+      "Đang đóng gói": "Đơn hàng đang được đóng gói",
+      "Chờ giao hàng": "Đơn hàng chờ giao",
+      "Đã giao": "Đơn hàng đã giao thành công",
+      "Trả hàng": "Đơn hàng đã được trả lại",
+      "Đã hủy": "Đơn hàng đã bị hủy",
+    };
+    const notificationMessages = {
+      "Đang đóng gói": `Đơn hàng #${order.id} của bạn đang được đóng gói.`,
+      "Chờ giao hàng": `Đơn hàng #${order.id} của bạn đang chờ giao.`,
+      "Đã giao": `Đơn hàng #${order.id} của bạn đã được giao thành công.`,
+      "Trả hàng": `Đơn hàng #${order.id} của bạn đã được trả lại.`,
+      "Đã hủy": `Đơn hàng #${order.id} của bạn đã bị hủy.`,
+    };
+
+    // Lấy userId của chủ đơn hàng
+    const notifyUserId = order.userId;
+
+    // Tăng seq cho notificationId
+    const notificationCounterResult = await mongoose.connection.db
+      .collection("counters")
+      .findOneAndUpdate(
+        { _id: "notificationId" },
+        { $inc: { seq: 1 } },
+        { returnDocument: "after", upsert: true }
+      );
+    const notificationId = notificationCounterResult.seq;
+
+    // Tạo thông báo
+    const notification = new Notification({
+      id: notificationId,
+      userId: notifyUserId,
+      orderId: order.id,
+      title: notificationTitles[status] || "Cập nhật đơn hàng",
+      message: notificationMessages[status] || `Đơn hàng #${order.id} đã cập nhật trạng thái.`,
+      isRead: false,
+      createdAt: new Date(),
+    });
+    await notification.save();
+
+    res.status(200).json({
+      success: true,
+      data: order,
+      notification,
+    });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
 export const getOrderById = async (req, res) => {
   try {
     const user = req.user;
@@ -399,7 +496,7 @@ export const getAllOrders = async (req, res) => {
     });
 
     // Gộp dữ liệu cho từng đơn hàng
-    const result = orders.map((order) => ({
+    const result = orders.map(order => ({
       id: order.id,
       orderDate: order.orderDate,
       totalAmount: order.totalAmount,
@@ -494,5 +591,41 @@ export const searchOrdersByBookName = async (req, res) => {
   } catch (error) {
     console.error("searchOrdersByBookName error:", error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const adminGetOrderById = async (req, res) => {
+  try {
+    const order = await Order.findOne({ id: req.params.id });
+    if (!order) {
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+    }
+
+    // Lấy thông tin user
+    const user = await User.findOne({ id: order.userId });
+    // Lấy thông tin từng sách trong đơn hàng
+    const items = await Promise.all(
+      order.items.map(async (item) => {
+        const book = await Book.findOne({ id: item.bookId });
+        return {
+          ...item.toJSON(),
+          bookName: book ? book.name : '',
+          bookImage: book?.images?.[0]?.url || book?.images?.[0] || '',
+        };
+      })
+    );
+
+    res.status(200).json({
+      id: order.id,
+      orderDate: order.orderDate,
+      totalAmount: order.totalAmount,
+      status: order.status,
+      customer: user?.fullName || 'Ẩn',
+      address: order.shippingDetail || '',
+      items,
+    });
+  } catch (error) {
+    console.error("Error fetching order by ID:", error.message);
+    res.status(500).json({ message: error.message });
   }
 };

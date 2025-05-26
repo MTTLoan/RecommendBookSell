@@ -1,41 +1,48 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { isAuthenticated } from '../services/authService';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { isAuthenticated } from "../services/authService";
 
 // Auth Pages
-import Login from '../pages/auth/Login';
-import ForgotPassword from '../pages/auth/ForgotPassword';
-import ResetPassword from '../pages/auth/ResetPassword';
+import Login from "../pages/auth/Login";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
 
 // Dashboard Page
-import Dashboard from '../pages/dashboard/Dashboard';
+import Dashboard from "../pages/dashboard/Dashboard";
 
 // Product Pages
-import ListProduct from '../pages/products/ListProduct';
-import AddProduct from '../pages/products/AddProduct';
-import EditProduct from '../pages/products/EditProduct';
-import ViewProduct from '../pages/products/ViewProduct';
+import ListProduct from "../pages/products/ListProduct";
+import AddProduct from "../pages/products/AddProduct";
+import EditProduct from "../pages/products/EditProduct";
+import ViewProduct from "../pages/products/ViewProduct";
 
 // Order Pages
-import ListOrder from '../pages/orders/ListOrder';
-import AddOrder from '../pages/orders/AddOrder';
-import EditOrder from '../pages/orders/EditOrder';
-import ViewOrder from '../pages/orders/ViewOrder';
+import ListOrder from "../pages/orders/ListOrder";
+import EditOrder from "../pages/orders/EditOrder";
+import ViewOrder from "../pages/orders/ViewOrder";
 
 // Customer Pages
-import ListCustomer from '../pages/customers/ListCustomer';
-import EditCustomer from '../pages/customers/EditCustomer';
-import ViewCustomer from '../pages/customers/ViewCustomer';
+import ListCustomer from "../pages/customers/ListCustomer";
+import AddCustomer from "../pages/customers/AddCustomer";
+import EditCustomer from "../pages/customers/EditCustomer";
+import ViewCustomer from "../pages/customers/ViewCustomer";
 
 // Category Pages
-import ListCategory from '../pages/categories/ListCategory';
-import ViewCategory from '../pages/categories/ViewCategory';
+import ListCategory from "../pages/categories/ListCategory";
+import ViewCategory from "../pages/categories/ViewCategory";
+
+// Notification Pages
+import ListNotification from "../pages/notifications/ListNotification";
+
+// Reviews Page
+import ListReview from "../pages/reviews/ListReview";
+import DetailReview from "../pages/reviews/DetailReview";
 
 // Settings Page
-import Settings from '../pages/settings/Settings';
+import Settings from "../pages/settings/Settings";
 
 // Reports Page
-import Reports from '../pages/reports/Reports';
+import Reports from "../pages/reports/Reports";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -55,7 +62,7 @@ const PublicRoute = ({ children }) => {
 
 // Reset Password Route wrapper (requires token)
 const ResetPasswordRoute = ({ children }) => {
-  const token = new URLSearchParams(window.location.search).get('token'); // Lấy token từ URL
+  const token = new URLSearchParams(window.location.search).get("token"); // Lấy token từ URL
   if (!token) {
     return <Navigate to="/auth/login" replace />;
   }
@@ -145,14 +152,6 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/orders/add"
-        element={
-          <ProtectedRoute>
-            <AddOrder />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/orders/edit/:id"
         element={
           <ProtectedRoute>
@@ -175,6 +174,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <ListCustomer />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customers/add"
+        element={
+          <ProtectedRoute>
+            <AddCustomer />
           </ProtectedRoute>
         }
       />
@@ -209,6 +216,32 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <ViewCategory />
+          </ProtectedRoute>
+        }
+      />
+      {/* Notification Routes */}
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <ListNotification />
+          </ProtectedRoute>
+        }
+      />
+      {/* Reviews Routes */}
+      <Route
+        path="/reviews"
+        element={
+          <ProtectedRoute>
+            <ListReview />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reviews/detail/:id"
+        element={
+          <ProtectedRoute>
+            <DetailReview />
           </ProtectedRoute>
         }
       />

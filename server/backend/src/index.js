@@ -14,6 +14,7 @@ import forgotPasswordRoutes from "./routes/forgotPassword.js";
 import bookRoutes from "./routes/book.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 import recommendationRoutes from "./routes/recommendationRoutes.js";
 
 dotenv.config();
@@ -63,6 +64,8 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/carts", cartRoutes);
 
 app.use("/api/user", userRoutes);
+
+app.use("/api/dashboard", dashboardRoutes);
 
 // recommendation routes
 app.use("/api/recommendations", recommendationRoutes);
