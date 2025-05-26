@@ -266,27 +266,6 @@
                     android:text="37 đường số 8" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <RadioButton
-                android:id="@+id/rbMale"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Nam"
-                android:fontFamily="@font/quicksand_medium"
-                android:checked="true"
-                app:layout_constraintTop_toBottomOf="@id/tilAddress"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginTop="16dp" />
-
-            <RadioButton
-                android:id="@+id/rbFemale"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Nữ"
-                android:fontFamily="@font/quicksand_medium"
-                app:layout_constraintTop_toTopOf="@id/rbMale"
-                app:layout_constraintStart_toEndOf="@id/rbMale"
-                android:layout_marginStart="32dp" />
-
             <Button
                 android:id="@+id/btnSave"
                 android:layout_width="0dp"
@@ -295,7 +274,7 @@
                 android:backgroundTint="@color/green"
                 android:textColor="@android:color/white"
                 android:fontFamily="@font/quicksand_bold"
-                app:layout_constraintTop_toBottomOf="@id/rbMale"
+                app:layout_constraintTop_toBottomOf="@id/tilAddress"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="24dp" />

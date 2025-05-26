@@ -23,12 +23,14 @@ import com.example.app.R;
 import com.example.app.activities.ListBookActivity;
 import com.example.app.adapters.BookAdapter;
 import com.example.app.adapters.CategoryAdapter;
+import com.example.app.adapters.RecommendationAdapter;
 import com.example.app.models.Book;
 import com.example.app.models.Category;
 import com.example.app.models.response.BookResponse;
 import com.example.app.models.response.CategoryResponse;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
+import com.example.app.utils.AuthUtils;
 import com.example.app.utils.HeaderController;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
@@ -36,10 +38,8 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.slider.RangeSlider;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -52,7 +52,7 @@ public class SearchFragment extends Fragment {
     private RecyclerView recommendationsRecyclerView;
     private RecyclerView categoryRecyclerView;
     private BookAdapter searchResultsAdapter;
-    private BookAdapter recommendationsAdapter;
+    private RecommendationAdapter recommendationsAdapter;
     private CategoryAdapter categoryAdapter;
     private TextView recommendationsTitle;
     private List<Book> bookList;
@@ -62,7 +62,7 @@ public class SearchFragment extends Fragment {
     private ApiService apiService;
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
-    // Filter state
+    // Trạng thái bộ lọc
     private Integer selectedCategoryId = null;
     private float minPrice = 0f;
     private float maxPrice = 700000f;
@@ -72,7 +72,7 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_search, container, false);
 
-        // Initialize views
+        // Khởi tạo các view
         searchView = view.findViewById(R.id.searchView);
         btnFilter = view.findViewById(R.id.btnFilter);
         recommendationsTitle = view.findViewById(R.id.recommendationsTitle);
@@ -81,33 +81,33 @@ public class SearchFragment extends Fragment {
         categoryRecyclerView = view.findViewById(R.id.categoryRecyclerView);
         noResultsText = view.findViewById(R.id.noResultsText);
 
-        // Initialize API service
+        // Khởi tạo API service
         apiService = RetrofitClient.getApiService();
 
-        // Set up RecyclerView for header
+        // Thiết lập header
         HeaderController.setupHeader(requireActivity());
 
-        // Initialize lists
+        // Khởi tạo danh sách
         bookList = new ArrayList<>();
         recommendationList = new ArrayList<>();
         categoryList = new ArrayList<>();
 
-        // Setup RecyclerViews
+        // Thiết lập RecyclerViews
         setupRecyclerViews();
 
-        // Load data from API: Fetch categories first, then books
+        // Tải dữ liệu từ API: Lấy danh mục trước, sau đó lấy sách
         fetchCategories();
 
-        // Setup SearchView
+        // Thiết lập SearchView
         setupSearchView();
 
-        // Setup Filter Button
+        // Thiết lập nút bộ lọc
         setupFilterButton();
 
-        // Setup Recommendations Title click
+        // Thiết lập sự kiện click cho tiêu đề đề xuất
         setupRecommendationsTitle();
 
-        // Clear search when back button is pressed
+        // Xóa tìm kiếm khi nhấn nút back
         searchView.setOnCloseListener(() -> {
             clearSearch();
             return false;
@@ -126,10 +126,10 @@ public class SearchFragment extends Fragment {
                     categoryAdapter.setCategories(categoryList);
                     searchResultsAdapter.setCategories(categoryList);
                     recommendationsAdapter.setCategories(categoryList);
-                    Log.d(TAG, "Fetched categories: " + categoryList.size() + ", Categories: " + categoryList.toString());
+                    Log.d(TAG, "Đã lấy danh mục: " + categoryList.size() + ", Danh mục: " + categoryList.toString());
                     fetchBooks(null);
                 } else {
-                    Log.e(TAG, "Failed to fetch categories: " + response.code() + " - " + response.message());
+                    Log.e(TAG, "Không thể lấy danh mục: " + response.code() + " - " + response.message());
                     Toast.makeText(getContext(), "Không thể tải danh mục", Toast.LENGTH_SHORT).show();
                     categoryList = new ArrayList<>();
                     categoryAdapter.setCategories(categoryList);
@@ -141,7 +141,7 @@ public class SearchFragment extends Fragment {
 
             @Override
             public void onFailure(Call<CategoryResponse> call, Throwable t) {
-                Log.e(TAG, "API call failed: " + t.getMessage());
+                Log.e(TAG, "Lỗi gọi API: " + t.getMessage());
                 Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
                 categoryList = new ArrayList<>();
                 categoryAdapter.setCategories(categoryList);
@@ -153,51 +153,80 @@ public class SearchFragment extends Fragment {
     }
 
     private void fetchBooks(Integer categoryId) {
+        // Lấy danh sách sách chung
         Call<BookResponse> call = apiService.getBooks(categoryId);
         call.enqueue(new Callback<BookResponse>() {
             @Override
             public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getBooks() != null) {
                     bookList = response.body().getBooks();
-                    recommendationList = getTopRatedRecommendations(bookList, 5);
-                    recommendationsAdapter.updateList(recommendationList);
+                    Log.d(TAG, "Đã lấy sách: " + bookList.size());
                     if (categoryId == null) {
                         searchResultsRecyclerView.setVisibility(View.GONE);
                         noResultsText.setVisibility(View.GONE);
                     } else {
                         searchResultsAdapter.updateList(bookList);
                     }
-                    Log.d(TAG, "Fetched books: " + bookList.size() + ", Recommendations: " + recommendationList.size());
                 } else {
-                    Log.e(TAG, "Failed to fetch books: " + response.code() + " - " + response.message());
+                    Log.e(TAG, "Không thể lấy sách: " + response.code() + " - " + response.message());
                     Toast.makeText(getContext(), "Không thể tải sách", Toast.LENGTH_SHORT).show();
                     bookList = new ArrayList<>();
-                    recommendationList = new ArrayList<>();
-                    recommendationsAdapter.updateList(recommendationList);
+                    searchResultsAdapter.updateList(bookList);
                 }
             }
 
             @Override
             public void onFailure(Call<BookResponse> call, Throwable t) {
-                Log.e(TAG, "API call failed: " + t.getMessage());
+                Log.e(TAG, "Lỗi gọi API: " + t.getMessage());
                 Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
                 bookList = new ArrayList<>();
-                recommendationList = new ArrayList<>();
-                recommendationsAdapter.updateList(recommendationList);
+                searchResultsAdapter.updateList(bookList);
             }
         });
+
+        // Lấy sách đề xuất
+        fetchRecommendations();
     }
 
-    private List<Book> getTopRatedRecommendations(List<Book> books, int count) {
-        if (books == null || books.isEmpty()) return new ArrayList<>();
-        List<Book> topRatedBooks = new ArrayList<>();
-        for (Book book : books) {
-            if (book.getAverageRating() == 5.0) {
-                topRatedBooks.add(book);
-            }
+    private void fetchRecommendations() {
+        String token = AuthUtils.getToken(requireContext());
+        if (token == null) {
+            Toast.makeText(requireContext(), "Vui lòng đăng nhập để xem đề xuất.", Toast.LENGTH_SHORT).show();
+            recommendationList = new ArrayList<>();
+            recommendationsAdapter.setBooks(recommendationList);
+            return;
         }
-        Collections.shuffle(topRatedBooks, new Random());
-        return topRatedBooks.subList(0, Math.min(count, topRatedBooks.size()));
+
+        Call<BookResponse> call = apiService.getRecommendations("Bearer " + token);
+        call.enqueue(new Callback<BookResponse>() {
+            @Override
+            public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    recommendationList.clear();
+                    List<Book> books = response.body().getBooks();
+                    if (books != null) {
+                        recommendationList.addAll(books);
+                        Log.d(TAG, "Đã tải đề xuất: " + books.size() + " sách");
+                    } else {
+                        Log.w(TAG, "Danh sách sách đề xuất rỗng");
+                    }
+                    recommendationsAdapter.setBooks(recommendationList);
+                } else {
+                    Log.e(TAG, "Không thể lấy sách đề xuất: " + response.code() + " - " + response.message());
+                    Toast.makeText(getContext(), "Không thể tải sách đề xuất", Toast.LENGTH_SHORT).show();
+                    recommendationList = new ArrayList<>();
+                    recommendationsAdapter.setBooks(recommendationList);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BookResponse> call, Throwable t) {
+                Log.e(TAG, "Lỗi gọi API đề xuất: " + t.getMessage());
+                Toast.makeText(getContext(), "Lỗi kết nối khi tải sách đề xuất", Toast.LENGTH_SHORT).show();
+                recommendationList = new ArrayList<>();
+                recommendationsAdapter.setBooks(recommendationList);
+            }
+        });
     }
 
     private void setupRecyclerViews() {
@@ -206,7 +235,8 @@ public class SearchFragment extends Fragment {
         searchResultsRecyclerView.setAdapter(searchResultsAdapter);
 
         recommendationsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        recommendationsAdapter = new BookAdapter(requireContext(), recommendationList != null ? recommendationList : new ArrayList<>(), categoryList, 0);
+        recommendationsRecyclerView.setNestedScrollingEnabled(false);
+        recommendationsAdapter = new RecommendationAdapter(requireContext(), recommendationList != null ? recommendationList : new ArrayList<>(), categoryList, 0);
         recommendationsRecyclerView.setAdapter(recommendationsAdapter);
 
         categoryRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
@@ -252,7 +282,7 @@ public class SearchFragment extends Fragment {
         View bottomSheetView = LayoutInflater.from(getContext()).inflate(R.layout.filter_dialog, null);
         bottomSheetDialog.setContentView(bottomSheetView);
 
-        // Initialize views
+        // Khởi tạo các view
         ImageView ivBack = bottomSheetView.findViewById(R.id.ivBack);
         TextView tvReset = bottomSheetView.findViewById(R.id.tvReset);
         ChipGroup chipGroup = bottomSheetView.findViewById(R.id.chipGroup);
@@ -260,13 +290,13 @@ public class SearchFragment extends Fragment {
         TextView tvPriceRange = bottomSheetView.findViewById(R.id.tvPriceRange);
         Button btnApply = bottomSheetView.findViewById(R.id.btnApply);
 
-        // Populate ChipGroup with categories
+        // Điền danh mục vào ChipGroup
         for (Category category : categoryList) {
             Chip chip = new Chip(requireContext());
             chip.setText(category.getName());
             chip.setCheckable(true);
-            chip.setChipBackgroundColorResource(R.color.chip_background_selector); // Define in res/color
-            chip.setTextColor(getResources().getColorStateList(R.color.chip_text_selector)); // Define in res/color
+            chip.setChipBackgroundColorResource(R.color.chip_background_selector);
+            chip.setTextColor(getResources().getColorStateList(R.color.chip_text_selector));
             chip.setId(category.getId());
             chipGroup.addView(chip);
             if (selectedCategoryId != null && category.getId() == selectedCategoryId) {
@@ -274,11 +304,11 @@ public class SearchFragment extends Fragment {
             }
         }
 
-        // Set initial price range
+        // Thiết lập khoảng giá ban đầu
         sliderPrice.setValues(minPrice, maxPrice);
         updatePriceRangeText(tvPriceRange, minPrice, maxPrice);
 
-        // Price Slider Listener
+        // Lắng nghe thay đổi giá
         sliderPrice.addOnChangeListener((slider, value, fromUser) -> {
             List<Float> values = slider.getValues();
             float newMinPrice = values.get(0);
@@ -286,12 +316,12 @@ public class SearchFragment extends Fragment {
             updatePriceRangeText(tvPriceRange, newMinPrice, newMaxPrice);
         });
 
-        // ChipGroup Listener
+        // Lắng nghe ChipGroup
         chipGroup.setOnCheckedChangeListener((group, checkedId) -> {
             selectedCategoryId = checkedId == View.NO_ID ? null : checkedId;
         });
 
-        // Reset Button
+        // Nút đặt lại
         tvReset.setOnClickListener(v -> {
             selectedCategoryId = null;
             minPrice = 0f;
@@ -307,7 +337,7 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        // Apply Button
+        // Nút áp dụng
         btnApply.setOnClickListener(v -> {
             List<Float> values = sliderPrice.getValues();
             minPrice = values.get(0);
@@ -321,16 +351,10 @@ public class SearchFragment extends Fragment {
             bottomSheetDialog.dismiss();
         });
 
-        // Back Button
+        // Nút quay lại
         ivBack.setOnClickListener(v -> bottomSheetDialog.dismiss());
 
-        // Show the bottom sheet
-        bottomSheetDialog.show();
-
-        // Back Button
-        ivBack.setOnClickListener(v -> bottomSheetDialog.dismiss());
-
-        // Show the bottom sheet
+        // Hiển thị bottom sheet
         bottomSheetDialog.show();
     }
 
@@ -349,14 +373,14 @@ public class SearchFragment extends Fragment {
             Intent intent = new Intent(requireContext(), ListBookActivity.class);
             intent.putExtra("category_id", 0);
             intent.putExtra("category_name", "Đề xuất dành riêng cho bạn");
-            intent.putExtra("book_list", new ArrayList<>(recommendationList));
+            intent.putParcelableArrayListExtra("book_list", new ArrayList<>(recommendationList));
             startActivity(intent);
         });
     }
 
     private void searchBooks(String query) {
         if (query == null) {
-            query = ""; // Handle null query to avoid NPE
+            query = "";
         }
         String trimmedQuery = query.trim();
         if (trimmedQuery.isEmpty() && selectedCategoryId == null && minPrice == 0f && maxPrice == 700000f) {
@@ -364,9 +388,9 @@ public class SearchFragment extends Fragment {
             return;
         }
 
-        Log.d(TAG, "SearchBooks - Query: " + trimmedQuery);
-        Log.d(TAG, "SearchBooks - CategoryId: " + selectedCategoryId);
-        Log.d(TAG, "SearchBooks - Price Range: " + minPrice + " to " + maxPrice);
+        Log.d(TAG, "Tìm kiếm - Từ khóa: " + trimmedQuery);
+        Log.d(TAG, "Tìm kiếm - ID danh mục: " + selectedCategoryId);
+        Log.d(TAG, "Tìm kiếm - Khoảng giá: " + minPrice + " đến " + maxPrice);
 
         Call<BookResponse> call = apiService.searchBooks(trimmedQuery, selectedCategoryId, minPrice, maxPrice);
         call.enqueue(new Callback<BookResponse>() {
@@ -376,7 +400,7 @@ public class SearchFragment extends Fragment {
                     BookResponse bookResponse = response.body();
                     if (bookResponse != null) {
                         List<Book> filteredList = bookResponse.getBooks();
-                        Log.d(TAG, "Response Body: success=" + (bookResponse.isSuccess() ? "true" : "false") +
+                        Log.d(TAG, "Phản hồi API: success=" + (bookResponse.isSuccess() ? "true" : "false") +
                                 ", msg=" + (bookResponse.getMsg() != null ? bookResponse.getMsg() : "null") +
                                 ", books=" + (filteredList != null ? filteredList.size() : "null"));
                         if (filteredList != null && !filteredList.isEmpty()) {
@@ -390,19 +414,19 @@ public class SearchFragment extends Fragment {
                             Toast.makeText(getContext(), bookResponse.getMsg() != null ? bookResponse.getMsg() : "Không tìm thấy sách phù hợp", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Log.e(TAG, "Response body is null");
+                        Log.e(TAG, "Phản hồi API rỗng");
                         noResultsText.setVisibility(View.VISIBLE);
                         searchResultsRecyclerView.setVisibility(View.GONE);
                         searchResultsAdapter.updateList(new ArrayList<>());
                         Toast.makeText(getContext(), "Không thể tìm kiếm sách: Dữ liệu trả về trống", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Log.e(TAG, "Failed to search books: " + response.code() + " - " + response.message());
+                    Log.e(TAG, "Không thể tìm kiếm sách: " + response.code() + " - " + response.message());
                     if (response.errorBody() != null) {
                         try {
-                            Log.e(TAG, "Error body: " + response.errorBody().string());
+                            Log.e(TAG, "Lỗi API: " + response.errorBody().string());
                         } catch (Exception e) {
-                            Log.e(TAG, "Error reading error body: " + e.getMessage());
+                            Log.e(TAG, "Lỗi đọc phản hồi: " + e.getMessage());
                         }
                     }
                     noResultsText.setVisibility(View.VISIBLE);
@@ -413,7 +437,7 @@ public class SearchFragment extends Fragment {
 
             @Override
             public void onFailure(Call<BookResponse> call, Throwable t) {
-                Log.e(TAG, "Search API call failed: " + t.getMessage());
+                Log.e(TAG, "Lỗi gọi API tìm kiếm: " + t.getMessage());
                 noResultsText.setVisibility(View.VISIBLE);
                 searchResultsRecyclerView.setVisibility(View.GONE);
                 searchResultsAdapter.updateList(new ArrayList<>());
