@@ -196,7 +196,7 @@ const ListNotification = () => {
     setCustomerFilter(value);
     setFilteredCustomers(
       customers.filter((c) =>
-        c.fullName.toLowerCase().includes(value.toLowerCase())
+        c.username.toLowerCase().includes(value.toLowerCase())
       )
     );
   };
@@ -321,6 +321,7 @@ const ListNotification = () => {
           title="Thêm thông báo"
           titleColor="success"
           inputs={[
+            // Sửa phần render input "Tên khách hàng" trong Popup Thêm
             {
               label: "Tên khách hàng",
               name: "customerId",
@@ -332,16 +333,16 @@ const ListNotification = () => {
                 >
                   <input
                     type="text"
-                    placeholder="Nhập tên khách hàng để tìm"
+                    placeholder="Nhập username khách hàng để tìm"
                     value={
                       newNotification.customerId
-                        ? newNotification.customerName
-                        : customerFilter
+                        ? newNotification.customerName // Hiển thị tên đã chọn
+                        : customerFilter // Hiển thị text đang nhập để tìm kiếm
                     }
                     onChange={(e) => {
                       const value = e.target.value;
-                      setCustomerFilter(value);
-                      // Nếu đang chọn khách thì xóa chọn để cho phép nhập lại
+
+                      // Nếu đang có customer được chọn, xóa selection và cho phép tìm kiếm mới
                       if (newNotification.customerId) {
                         setNewNotification((prev) => ({
                           ...prev,
@@ -349,39 +350,60 @@ const ListNotification = () => {
                           customerName: "",
                         }));
                       }
-                      handleCustomerFilter(value);
+
+                      // Cập nhật filter và hiển thị dropdown
+                      setCustomerFilter(value);
+                      setFilteredCustomers(
+                        customers.filter((c) =>
+                          c.username.toLowerCase().includes(value.toLowerCase())
+                        )
+                      );
                       setDropdownOpen(true);
                     }}
                     className="dropdown-input"
                     autoComplete="off"
                     onFocus={() => {
-                      setDropdownOpen(true);
-                      handleCustomerFilter(customerFilter);
+                      // Khi focus, nếu chưa chọn customer thì hiển thị dropdown
+                      if (!newNotification.customerId) {
+                        setDropdownOpen(true);
+                        setFilteredCustomers(
+                          customers.filter((c) =>
+                            c.username
+                              .toLowerCase()
+                              .includes(customerFilter.toLowerCase())
+                          )
+                        );
+                      }
                     }}
                     style={{ cursor: "pointer" }}
+                    // Không set readOnly để cho phép nhập tự do
                   />
+
+                  {/* Hiển thị dropdown khi chưa chọn customer */}
                   {dropdownOpen && !newNotification.customerId && (
                     <div className="dropdown-list">
                       {filteredCustomers.length > 0 ? (
                         filteredCustomers.map((c) => (
                           <div
                             key={c.id}
-                            className={`dropdown-item${
-                              newNotification.customerId === String(c.id)
-                                ? " selected"
-                                : ""
-                            }`}
-                            onClick={() => {
+                            className="dropdown-item"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+
+                              console.log("Selected customer:", c); // Debug log
+
                               setNewNotification((prev) => ({
                                 ...prev,
                                 customerId: String(c.id),
-                                customerName: c.fullName,
+                                customerName: c.username,
                               }));
-                              setCustomerFilter(""); // reset filter khi đã chọn
+                              setCustomerFilter(""); // Reset filter
                               setDropdownOpen(false);
                             }}
+                            style={{ cursor: "pointer", padding: "8px 12px" }}
                           >
-                            {c.fullName}
+                            {c.username}
                           </div>
                         ))
                       ) : (
@@ -391,6 +413,8 @@ const ListNotification = () => {
                       )}
                     </div>
                   )}
+
+                  {/* Nút xóa selection khi đã chọn customer */}
                   {newNotification.customerId && (
                     <span
                       className="dropdown-clear"
@@ -411,7 +435,7 @@ const ListNotification = () => {
                           customerName: "",
                         }));
                         setCustomerFilter("");
-                        setDropdownOpen(true);
+                        setDropdownOpen(false); // Đóng dropdown khi xóa
                       }}
                     >
                       ×
