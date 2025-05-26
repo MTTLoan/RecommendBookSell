@@ -231,21 +231,6 @@ export const changePasswordValidator = validate({
 
 // Validator cho cập nhật hồ sơ
 export const updateProfileValidator = validate({
-  username: {
-    ...usernameSchema,
-    optional: true,
-    custom: {
-      options: async (value, { req }) => {
-        if (value) {
-          const user = await userService.User.findOne({ username: value });
-          if (user && user.id !== req.user.id) {
-            throw new Error("Tên người dùng đã tồn tại");
-          }
-        }
-        return true;
-      },
-    },
-  },
   fullName: { ...fullNameSchema, optional: true },
   phoneNumber: {
     ...phoneNumberSchema,
