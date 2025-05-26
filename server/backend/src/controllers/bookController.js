@@ -202,7 +202,7 @@ export const getNewBooks = async (req, res) => {
     })
       .select('id name description images price stockQuantity categoryId createdAt author averageRating ratingCount')
       .sort({ createdAt: -1 }) // Sắp xếp theo thời gian giảm dần
-      .limit(20); // Giới hạn 10 sách mới nhất
+      .limit(20); // Giới hạn 20 sách mới nhất
 
     if (!books || books.length === 0) {
       return res.status(200).json({
