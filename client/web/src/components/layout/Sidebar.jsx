@@ -42,6 +42,18 @@ const Sidebar = () => (
           </NavLink>
         </li>
         <li>
+        <NavLink to="/notifications" activeClassName="active">
+          <span className="material-symbols-outlined sidebar-icon">notifications</span>
+          Thông báo
+        </NavLink>
+        </li>
+        <li>
+        <NavLink to="/reviews" activeClassName="active">
+          <span className="material-symbols-outlined sidebar-icon">rate_review</span>
+          Đánh giá
+        </NavLink>
+        </li>
+        <li>
           <NavLink to="/reports" activeClassName="active">
             <span className="material-symbols-outlined sidebar-icon">show_chart</span>
             Báo cáo hệ thống đề xuất

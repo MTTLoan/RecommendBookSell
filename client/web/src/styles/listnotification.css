@@ -1,5 +1,22 @@
 /* Trang sản phẩm */
-
+.table-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  gap: 16px;
+}
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid #3fbf48;
+  border-top: 4px solid #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 /* Title */
 .product-header h1 {
     font-size: 24px;
@@ -25,7 +42,7 @@
   }
   
   .subtitle.active {
-    color: #3fbf48; /* Màu xanh cho trạng thái active */
+    color: #3fbf48 !important; /* Màu xanh cho trạng thái active */
     font-weight: bold;
   }
 
@@ -41,8 +58,8 @@
   }
   
   .product-image {
-    width: 60px; /* Kích thước hình ảnh */
-    height: 60px;
+    width: 40px; /* Kích thước hình ảnh */
+    height: 40px;
     object-fit: cover;
     border-radius: 4px;
   }
@@ -179,26 +196,129 @@
     color: #3fbf48;
   }
 
-  /* Modal overlay phủ toàn màn hình */
-.modal-overlay {
+/* Tình trạng */
+.status-instock {
+  background-color: #b2ffb4;
+  color: #04910c;
+  font-weight: bold;
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: inline-block;
+}
+
+.status-outstock {
+  background-color: #ffdcdc;
+  color: #f00;
+  font-weight: bold;
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: inline-block;
+}
+
+.status-other {
+  background-color: #f0f0f0;
+  color: #888;
+  font-weight: bold;
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: inline-block;
+}
+
+.modal-backdrop {
   position: fixed;
-  z-index: 9999;
+  z-index: 1000;
   inset: 0;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.18);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-/* Nội dung modal */
-.modal-content {
-  font-family: 'Quicksand', sans-serif;
+.modal-confirm {
   background: #fff;
-  padding: 32px 24px;
-  border-radius: 8px;
+  border-radius: 10px;
+  padding: 32px 28px 22px 28px;
   min-width: 320px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  text-align: center;
 }
-.modal-content input { width: 100%; margin-bottom: 12px; padding: 8px; }
-.modal-content button { margin-right: 8px; }
+.modal-confirm h3 {
+  margin-bottom: 12px;
+  font-size: 20px;
+  color: #d32f2f;
+}
+.modal-confirm p {
+  margin-bottom: 24px;
+  color: #333;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+.btn-cancel {
+  background: #fff;
+  color: #3fbf48;
+  border: 1.5px solid #3fbf48;
+  border-radius: 6px;
+  padding: 8px 22px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.btn-cancel:hover {
+  background: #ecfff4;
+  color: #249c36;
+  border-color: #249c36;
+}
+.btn-delete {
+  background: #d32f2f;
+  color: #fff;
+  border: 1.5px solid #d32f2f;
+  border-radius: 6px;
+  padding: 8px 22px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.btn-delete:hover {
+  background: #b71c1c;
+  border-color: #b71c1c;
+}
 
+/* Dropdown */
+.dropdown-select {
+  position: relative;
+  width: 100%;
+}
+.dropdown-list {
+  position: absolute;
+  top: 38px;
+  left: 0;
+  right: 0;
+  z-index: 1001; /* Đảm bảo nổi trên modal */
+  max-height: 160px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px #eee;
+}
+.dropdown-item {
+  padding: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.dropdown-item.selected,
+.dropdown-item:hover {
+  background: #e0f7fa;
+}
+.dropdown-empty {
+  padding: 8px;
+  color: #888;
+}
 
+/* Modal popup */
+.modal-confirm {
+  max-width: 480px !important; /* Giới hạn chiều rộng popup */
+  width: 100%;
+}

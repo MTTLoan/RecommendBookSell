@@ -1,5 +1,6 @@
 import Notification from "../models/Notification.js";
 import Order from "../models/Order.js";
+import User from "../models/User.js";
 import Book from "../models/Book.js";
 import Counter from "../models/Counter.js";
 import mongoose from "mongoose";
@@ -137,6 +138,72 @@ export const markAsRead = async (req, res) => {
     notification.isRead = true;
     const updatedNotification = await notification.save();
     res.status(200).json(updatedNotification);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getAllNotificationsForAdmin = async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Bạn không có quyền truy cập" });
+    }
+
+    const notifications = await Notification.find().sort({ createdAt: -1 });
+
+    const userIds = [...new Set(notifications.map((n) => n.userId))];
+    const users = await User.find({ id: { $in: userIds } });
+    const userMap = {};
+    users.forEach((u) => {
+      userMap[u.id] = u;
+    });
+
+    const result = notifications.map((n) => ({
+      id: n.id,
+      customerName: userMap[n.userId]?.fullName || "Ẩn",
+      title: n.title,
+      content: n.message,
+      createdAt: n.createdAt,
+    }));
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteNotification = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ message: "Bạn không có quyền xóa" });
+    }
+    const { id } = req.params;
+    const result = await Notification.deleteOne({ id: Number(id) });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: "Không tìm thấy thông báo" });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateNotification = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ message: "Bạn không có quyền sửa" });
+    }
+    const { id } = req.params;
+    const { message } = req.body;
+    const notification = await Notification.findOne({ id: Number(id) });
+    if (!notification) {
+      return res.status(404).json({ message: "Không tìm thấy thông báo" });
+    }
+    notification.message = message;
+    await notification.save();
+    res.json({ success: true, data: notification });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

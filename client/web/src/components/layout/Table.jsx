@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import '../../styles/table.css';
+import React, { useState, useEffect } from "react";
+import "../../styles/table.css";
 
 const Table = ({
   title,
@@ -19,47 +19,64 @@ const Table = ({
   showCheckbox = true,
   showSort = true,
   showNavigationBar = false,
+  filterValue,
+  setFilterValue,
   tabs = [],
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(20);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [selectedRows, setSelectedRows] = useState([]);
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
-  const [filterText, setFilterText] = useState('Lọc');
-  const [activeTab, setActiveTab] = useState(tabs.length > 0 ? tabs[0] : '');
+  const [filterText, setFilterText] = useState("Lọc");
+  const [activeTab, setActiveTab] = useState(tabs.length > 0 ? tabs[0] : "");
 
-  const totalPages = Math.ceil(data.length / rowsPerPage);
+  let filteredData = data;
+  const filterCol = columns.find(
+    (col) => Array.isArray(col.filters) && col.filters.length > 0
+  );
+  if (
+    filterCol &&
+    filterText &&
+    filterText !== "Lọc" &&
+    filterText !== "Tất cả"
+  ) {
+    if (typeof filterCol.onFilter === "function") {
+      filteredData = data.filter((row) => filterCol.onFilter(filterText, row));
+    } else {
+      filteredData = data.filter((row) => row[filterCol.key] === filterText);
+    }
+  }
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = Math.min(startIndex + rowsPerPage, data.length);
-  const paginatedData = data.slice(startIndex, endIndex);
-
+  const endIndex = Math.min(startIndex + rowsPerPage, filteredData.length);
+  const paginatedData = filteredData.slice(startIndex, endIndex);
   // Xử lý sắp xếp
   const handleSort = (key) => {
     if (!showSort) return;
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
     }
     setSortConfig({ key, direction });
   };
 
   const sortedData = [...paginatedData].sort((a, b) => {
     if (sortConfig.key) {
-      const col = columns.find(c => c.key === sortConfig.key);
-      if (col && typeof col.sorter === 'function') {
-        return sortConfig.direction === 'asc'
+      const col = columns.find((c) => c.key === sortConfig.key);
+      if (col && typeof col.sorter === "function") {
+        return sortConfig.direction === "asc"
           ? col.sorter(a, b)
           : -col.sorter(a, b);
       } else {
         // Nếu sort theo id (mã), so sánh số
-        if (sortConfig.key === 'id') {
-          return sortConfig.direction === 'asc'
+        if (sortConfig.key === "id") {
+          return sortConfig.direction === "asc"
             ? Number(a.id) - Number(b.id)
             : Number(b.id) - Number(a.id);
         }
         // So sánh mặc định
-        if (sortConfig.direction === 'asc') {
+        if (sortConfig.direction === "asc") {
           return a[sortConfig.key] > b[sortConfig.key] ? 1 : -1;
         } else {
           return a[sortConfig.key] < b[sortConfig.key] ? 1 : -1;
@@ -97,31 +114,62 @@ const Table = ({
     );
   };
 
+  useEffect(() => {
+    if (
+      filterValue === null ||
+      filterValue === "" ||
+      filterValue === undefined
+    ) {
+      setFilterText("Tất cả");
+    } else {
+      const filterCol = columns.find(
+        (col) => Array.isArray(col.filters) && col.filters.length > 0
+      );
+      if (filterCol) {
+        const found = filterCol.filters.find((f) => f.value === filterValue);
+        setFilterText(found ? found.text : filterValue);
+      } else {
+        setFilterText(filterValue);
+      }
+    }
+  }, [filterValue, columns]);
+
+  const handleFilterOptionClick = (value) => {
+    const filterCol = columns.find(
+      (col) => Array.isArray(col.filters) && col.filters.length > 0
+    );
+    if (value === "") {
+      setFilterText("Tất cả");
+    } else if (filterCol) {
+      const found = filterCol.filters.find((f) => f.value === value);
+      setFilterText(found ? found.text : value);
+    } else {
+      setFilterText(value);
+    }
+    if (typeof setFilterValue === "function") setFilterValue(value);
+    setIsFilterDropdownOpen(false);
+    setCurrentPage(1);
+  };
+
   // Xử lý toggle dropdown filter
   const toggleFilterDropdown = () => {
     setIsFilterDropdownOpen((prev) => !prev);
   };
 
-  // Xử lý chọn một tùy chọn trong dropdown filter
-  const handleFilterOptionClick = (option) => {
-    setFilterText(option);
-    setIsFilterDropdownOpen(false);
+  // Xử lý tìm kiếm
+  const handleSearchInput = (e) => {
+    setSearchValue(e.target.value);
   };
 
-    // Xử lý tìm kiếm
-const handleSearchInput = (e) => {
-  setSearchValue(e.target.value);
-};
+  const handleSearchKeyDown = (e) => {
+    if (e.key === "Enter" && onSearch) {
+      onSearch(searchValue);
+    }
+  };
 
-const handleSearchKeyDown = (e) => {
-  if (e.key === 'Enter' && onSearch) {
-    onSearch(searchValue);
-  }
-};
-
-const handleSearchClick = () => {
-  if (onSearch) onSearch(searchValue);
-};
+  const handleSearchClick = () => {
+    if (onSearch) onSearch(searchValue);
+  };
 
   return (
     <div className="table-container">
@@ -144,11 +192,13 @@ const handleSearchClick = () => {
               onChange={handleSearchInput}
               onKeyDown={handleSearchKeyDown}
             />
-            <span className="material-symbols-outlined search-icon"
-              style={{ cursor: 'pointer' }}
+            <span
+              className="material-symbols-outlined search-icon"
+              style={{ cursor: "pointer" }}
               onClick={handleSearchClick}
             >
-              search</span>
+              search
+            </span>
           </div>
         )}
 
@@ -158,21 +208,39 @@ const handleSearchClick = () => {
             <div className="table-filter">
               <button className="filter-button" onClick={toggleFilterDropdown}>
                 <span className="filter-text">{filterText}</span>
-                <span className="material-symbols-outlined filter-icon">filter_list</span>
+                <span className="material-symbols-outlined filter-icon">
+                  filter_list
+                </span>
               </button>
               {isFilterDropdownOpen && (
                 <ul className="filter-dropdown">
-                  <li onClick={() => handleFilterOptionClick('Tất cả')}>Tất cả</li>
-                  <li onClick={() => handleFilterOptionClick('Còn hàng')}>Còn hàng</li>
-                  <li onClick={() => handleFilterOptionClick('Hết hàng')}>Hết hàng</li>
+                  <li onClick={() => handleFilterOptionClick("")}>Tất cả</li>
+                  {columns
+                    .find(
+                      (col) =>
+                        Array.isArray(col.filters) && col.filters.length > 0
+                    )
+                    ?.filters.map((filter) => (
+                      <li
+                        key={filter.value}
+                        onClick={() => handleFilterOptionClick(filter.value)}
+                      >
+                        {filter.text}
+                      </li>
+                    ))}
                 </ul>
               )}
             </div>
           )}
           {showDownload && (
-            <button className="table-download" onClick={() => console.log('Tải xuống')}>
+            <button
+              className="table-download"
+              onClick={() => console.log("Tải xuống")}
+            >
               <span className="download-text">{downloadButtonText}</span>
-              <span className="material-symbols-outlined download-icon">download</span>
+              <span className="material-symbols-outlined download-icon">
+                download
+              </span>
             </button>
           )}
           {showAddButton && (
@@ -190,7 +258,7 @@ const handleSearchClick = () => {
           {tabs.map((tab, index) => (
             <span
               key={index}
-              className={`nav-tab ${activeTab === tab ? 'active' : ''}`}
+              className={`nav-tab ${activeTab === tab ? "active" : ""}`}
               onClick={() => setActiveTab(tab)}
             >
               {tab}
@@ -205,28 +273,38 @@ const handleSearchClick = () => {
           <thead>
             <tr>
               {showCheckbox && (
-                <th style={{ width: '100px' }}>
+                <th style={{ width: "100px" }}>
                   <input
                     type="checkbox"
                     onChange={(e) => handleSelectAll(e.target.checked)}
-                    checked={sortedData.every((row) => selectedRows.includes(row.id))}
+                    checked={sortedData.every((row) =>
+                      selectedRows.includes(row.id)
+                    )}
                   />
                 </th>
               )}
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  style={col.width ? { width: col.width, minWidth: col.width, maxWidth: col.width } : {}}
+                  style={
+                    col.width
+                      ? {
+                          width: col.width,
+                          minWidth: col.width,
+                          maxWidth: col.width,
+                        }
+                      : {}
+                  }
                   onClick={() => !col.disableSort && handleSort(col.key)}
                 >
                   {col.label}
                   {showSort && !col.disableSort && (
                     <span className="sort-icon material-symbols-outlined">
                       {sortConfig.key === col.key
-                        ? sortConfig.direction === 'asc'
-                          ? 'arrow_upward'
-                          : 'arrow_downward'
-                        : 'unfold_more'}
+                        ? sortConfig.direction === "asc"
+                          ? "arrow_upward"
+                          : "arrow_downward"
+                        : "unfold_more"}
                     </span>
                   )}
                 </th>
@@ -237,10 +315,10 @@ const handleSearchClick = () => {
             {sortedData.map((row, index) => (
               <tr
                 key={index}
-                className={selectedRows.includes(row.id) ? 'selected-row' : ''}
+                className={selectedRows.includes(row.id) ? "selected-row" : ""}
               >
                 {showCheckbox && (
-                  <td style={{ width: '70px' }}>
+                  <td style={{ width: "70px" }}>
                     <input
                       type="checkbox"
                       checked={selectedRows.includes(row.id)}
@@ -249,8 +327,18 @@ const handleSearchClick = () => {
                   </td>
                 )}
                 {columns.map((col) => (
-                  <td key={col.key}
-                    style={col.width ? { width: col.width, minWidth: col.width, maxWidth: col.width } : {}}>
+                  <td
+                    key={col.key}
+                    style={
+                      col.width
+                        ? {
+                            width: col.width,
+                            minWidth: col.width,
+                            maxWidth: col.width,
+                          }
+                        : {}
+                    }
+                  >
                     {col.render ? col.render(row) : row[col.key]}
                   </td>
                 ))}
@@ -263,7 +351,9 @@ const handleSearchClick = () => {
       {/* Phân trang */}
       <div className="table-footer">
         <div className="pagination-left">
-          Hiển thị {startIndex + 1}-{endIndex} của {data.length} dòng
+          Hiển thị {filteredData.length === 0 ? 0 : startIndex + 1}-
+          {filteredData.length === 0 ? 0 : startIndex + paginatedData.length}{" "}
+          của {filteredData.length} dòng
         </div>
         <div className="pagination-right">
           <span>Trang</span>

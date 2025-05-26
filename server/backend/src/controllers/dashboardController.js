@@ -1,134 +1,167 @@
-// const db = require('../config/db'); // Sequelize hoặc Knex tùy bạn dùng
-// const { Op } = require('sequelize');
-// const { Statistics, Orders, Users } = require('../models');
+import Order from "../models/Order.js";
+import User from "../models/User.js";
+import Book from "../models/Book.js";
+import Category from "../models/Category.js";
 
-// exports.getDashboardData = async (req, res) => {
-//   try {
-//     const today = new Date();
-//     const week = getWeekNumber(today);
-//     const month = today.getMonth() + 1;
-//     const year = today.getFullYear();
+function getMonthRange(monthOffset = 0) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + monthOffset;
+  const start = new Date(year, month, 1, 0, 0, 0, 0);
+  const end = new Date(year, month + 1, 0, 23, 59, 59, 999);
+  return { start, end };
+}
 
-//     // Biểu đồ doanh thu 30 ngày (demo: lấy theo ngày)
-//     const chartData = await Statistics.findAll({
-//       where: { year },
-//       order: [['date', 'ASC']],
-//       attributes: ['date', 'totalRevenue']
-//     });
+export const getDashboardStats = async (req, res) => {
+  try {
+    const filterCategory = req.query.category || null;
 
-//     // 4 widgets chính
-//     const latest = await Statistics.findOne({ where: { year, week }, order: [['date', 'DESC']] });
-//     const previous = await Statistics.findOne({ where: { year, week: week - 1 } });
+    // --- Thời gian ---
+    const { start: curStart, end: curEnd } = getMonthRange(0);
+    const { start: prevStart, end: prevEnd } = getMonthRange(-1);
 
-//     const percentChange = (cur, prev) => {
-//       if (!prev || prev === 0) return 0;
-//       return +(((cur - prev) / prev) * 100).toFixed(1);
-//     };
+    // --- Đơn hàng ---
+    const ordersThisMonth = await Order.find({
+      status: "Đã giao",
+      orderDate: { $gte: curStart, $lte: curEnd },
+    });
+    const ordersLastMonth = await Order.find({
+      status: "Đã giao",
+      orderDate: { $gte: prevStart, $lte: prevEnd },
+    });
 
-//     const widgets = [
-//       {
-//         label: 'Tổng doanh thu',
-//         value: `${latest?.totalRevenue?.toLocaleString()} đ`,
-//         change: percentChange(latest?.totalRevenue, previous?.totalRevenue),
-//       },
-//       {
-//         label: 'Khách hàng mới',
-//         value: await Users.count({
-//           where: {
-//             createdAt: {
-//               [Op.gte]: startOfWeek(today),
-//               [Op.lt]: endOfWeek(today)
-//             }
-//           }
-//         }),
-//         change: 1.5, // hoặc tính % từ tuần trước
-//       },
-//       {
-//         label: 'Đơn hàng mới',
-//         value: latest?.totalOrders || 0,
-//         change: percentChange(latest?.totalOrders, previous?.totalOrders),
-//       },
-//       {
-//         label: 'Sản phẩm đã bán',
-//         value: await getTotalProductsSold(week, year),
-//         change: -1.5 // giả định
-//       }
-//     ];
+    // --- Doanh thu ---
+    const revenue = ordersThisMonth.reduce(
+      (sum, o) => sum + (o.totalAmount || 0),
+      0
+    );
+    const revenuePrev = ordersLastMonth.reduce(
+      (sum, o) => sum + (o.totalAmount || 0),
+      0
+    );
+    const revenueChange =
+      revenuePrev === 0
+        ? revenue > 0
+          ? 100
+          : 0
+        : ((revenue - revenuePrev) / revenuePrev) * 100;
 
-//     // Sản phẩm bán chạy
-//     const topProducts = await getTopProductsSold(5, week, year);
+    // --- Khách hàng ---
+    const customers = await User.countDocuments({
+      role: "user",
+      createdAt: { $gte: curStart, $lte: curEnd },
+    });
+    const customersPrev = await User.countDocuments({
+      role: "user",
+      createdAt: { $gte: prevStart, $lte: prevEnd },
+    });
+    const customersChange =
+      customersPrev === 0
+        ? customers > 0
+          ? 100
+          : 0
+        : ((customers - customersPrev) / customersPrev) * 100;
 
-//     res.json({ chartData, widgets, topProducts });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
+    // --- Đơn hàng ---
+    const orders = await Order.countDocuments({
+      orderDate: { $gte: curStart, $lte: curEnd },
+    });
+    const ordersPrev = await Order.countDocuments({
+      orderDate: { $gte: prevStart, $lte: prevEnd },
+    });
+    const ordersChange =
+      ordersPrev === 0
+        ? orders > 0
+          ? 100
+          : 0
+        : ((orders - ordersPrev) / ordersPrev) * 100;
 
-// function getWeekNumber(date) {
-//   const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-//   const days = Math.floor((date - firstDayOfYear) / (24 * 60 * 60 * 1000));
-//   return Math.ceil((days + firstDayOfYear.getDay() + 1) / 7);
-// }
+    // --- Sản phẩm ---
+    const products = await Book.countDocuments({
+      createdAt: { $gte: curStart, $lte: curEnd },
+    });
+    const productsPrev = await Book.countDocuments({
+      createdAt: { $gte: prevStart, $lte: prevEnd },
+    });
+    const productsChange =
+      productsPrev === 0
+        ? products > 0
+          ? 100
+          : 0
+        : ((products - productsPrev) / productsPrev) * 100;
 
-// function startOfWeek(d) {
-//   const date = new Date(d);
-//   const day = date.getDay();
-//   const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-//   return new Date(date.setDate(diff));
-// }
+    // --- Lấy tất cả Book và Category ---
+    const allBooks = await Book.find({});
+    const bookMap = {};
+    allBooks.forEach((b) => {
+      bookMap[Number(b.id)] = {
+        name: b.name,
+        categoryId: b.categoryId,
+        price: b.price,
+      };
+    });
 
-// function endOfWeek(d) {
-//   const date = startOfWeek(d);
-//   return new Date(date.setDate(date.getDate() + 7));
-// }
+    const allCategories = await Category.find({});
+    const categoryMap = {};
+    allCategories.forEach((cat) => {
+      categoryMap[cat.id] = cat.name;
+    });
 
-// async function getTotalProductsSold(week, year) {
-//   const orders = await Orders.findAll({
-//     where: db.Sequelize.where(db.Sequelize.fn('YEARWEEK', db.Sequelize.col('orderDate'), 1), `${year}${week}`),
-//     attributes: ['items']
-//   });
+    // --- Top sản phẩm bán chạy tháng này ---
+    const productSales = {};
+    ordersThisMonth.forEach((order) => {
+      order.items.forEach((item) => {
+        const bookId = Number(item.bookId);
+        const book = bookMap[item.bookId] || {};
+        // Nếu filterCategory, chỉ cộng sản phẩm thuộc category đó
+        if (
+          filterCategory &&
+          String(book.categoryId) !== String(filterCategory)
+        )
+          return;
+        if (!productSales[bookId]) {
+          productSales[bookId] = {
+            quantity: 0,
+            name: item.bookName || book.name || "Không xác định",
+            price: item.unitPrice || book.price,
+            bookId: bookId,
+            categoryId: book.categoryId,
+          };
+        }
+        productSales[bookId].quantity += item.quantity;
+      });
+    });
 
-//   let total = 0;
-//   orders.forEach(order => {
-//     const items = JSON.parse(order.items || '[]');
-//     items.forEach(item => total += item.quantity);
-//   });
+    const topProducts = Object.values(productSales)
+      .map((p) => ({
+        name: p.name,
+        price: p.price,
+        quantity: p.quantity,
+        category: categoryMap[p.categoryId] || "Không xác định",
+        categoryId: p.categoryId,
+      }))
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 10);
 
-//   return total;
-// }
+    // Trả về tất cả danh mục để FE render filter
+    const allCategoryOptions = allCategories.map((cat) => ({
+      value: cat.id,
+      text: cat.name,
+    }));
 
-// async function getTopProductsSold(limit, week, year) {
-//   const orders = await Orders.findAll({
-//     where: db.Sequelize.where(db.Sequelize.fn('YEARWEEK', db.Sequelize.col('orderDate'), 1), `${year}${week}`),
-//     attributes: ['items']
-//   });
-
-//   const countMap = {};
-
-//   orders.forEach(order => {
-//     const items = JSON.parse(order.items || '[]');
-//     items.forEach(item => {
-//       if (!countMap[item.bookId]) {
-//         countMap[item.bookId] = { quantity: 0, unitPrice: item.unitPrice };
-//       }
-//       countMap[item.bookId].quantity += item.quantity;
-//     });
-//   });
-
-//   const sorted = Object.entries(countMap)
-//     .map(([bookId, data]) => ({
-//       id: bookId,
-//       sold: data.quantity,
-//       price: data.unitPrice
-//     }))
-//     .sort((a, b) => b.sold - a.sold)
-//     .slice(0, limit);
-
-//   // Nếu bạn có bảng Book, join vào để lấy tên
-//   return sorted.map(p => ({
-//     name: `Sản phẩm #${p.id}`,
-//     price: p.price.toLocaleString(),
-//     sold: p.sold
-//   }));
-// }
+    res.json({
+      revenue,
+      revenueChange: isNaN(revenueChange) ? 0 : Math.round(revenueChange),
+      customers,
+      customersChange: isNaN(customersChange) ? 0 : Math.round(customersChange),
+      orders,
+      ordersChange: isNaN(ordersChange) ? 0 : Math.round(ordersChange),
+      products,
+      productsChange: isNaN(productsChange) ? 0 : Math.round(productsChange),
+      topProducts,
+      allCategoryOptions,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};

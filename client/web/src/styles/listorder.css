@@ -1,0 +1,181 @@
+/* Trang sản phẩm */
+
+/* Title */
+.product-header h1 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    padding-top: 10px;
+    margin-bottom: 10px;
+  }
+  
+  /* Subtitle */
+  .product-subtitle {
+    display: flex;
+    padding-top: 10px;
+    gap: 15px !important;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+    color: #888; /* Màu xám cho subtitle không được chọn */
+    cursor: pointer;
+    padding-bottom: 20px;
+    transition: color 0.3s, font-weight 0.3s;
+  }
+  
+  .subtitle.active {
+    color: #3fbf48 !important; /* Màu xanh cho trạng thái active */
+    font-weight: bold;
+  }
+
+.product-info {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Khoảng cách giữa hình ảnh và thông tin */
+  }
+  
+  .product-checkbox {
+    margin-right: 10px;
+    cursor: pointer;
+  }
+  
+  .product-image {
+    width: 60px; /* Kích thước hình ảnh */
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  
+  .product-details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .product-id {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+  }
+  
+  .product-name {
+    font-size: 14px;
+    color: #555;
+    margin: 0;
+  }
+  
+  /* Cột thao tác */
+  .actions {
+    display: flex;
+    gap: 10px; /* Khoảng cách giữa các icon */
+  }
+  
+  .action-icon {
+    font-size: 20px;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+  
+  .action-icon:hover {
+    color: #3fbf48;
+  }
+
+.product-header h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+    color: #333;
+  }
+  
+  .product-subtitle {
+    font-size: 14px;
+    color: #888;
+    margin-top: 5px;
+  }
+  
+  /* Thanh công cụ */
+  .product-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+  }
+  
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  
+  .search-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 500px !important;
+  }
+  
+  .search-icon {
+    position: absolute;
+    right: 10px;
+    font-size: 20px;
+    color: #888;
+    cursor: pointer;
+  }
+  
+  .toolbar-right button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .filter-button,
+  .download-button,
+  .add-button {
+    background-color: #f0f0f0;
+    transition: background-color 0.3s;
+  }
+  
+  .filter-button:hover,
+  .download-button:hover,
+  .add-button:hover {
+    background-color: #ecfff4;
+    color: #3fbf48;
+  }
+  
+  /* Dropdown */
+  .filter-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 10px 0;
+    margin: 5px 0 0;
+    z-index: 1000;
+  }
+  
+  .filter-dropdown li {
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .filter-dropdown li:hover {
+    background-color: #ecfff4;
+    color: #3fbf48;
+  }
+

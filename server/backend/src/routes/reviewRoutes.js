@@ -1,5 +1,5 @@
 import express from "express";
-import { submitReview } from "../controllers/reviewController.js";
+import { submitReview, getReviewStatsForBooks, getReviewsByBookId } from "../controllers/reviewController.js";
 import userJwtMiddleware from "../middleware/user_jwt.js";
 import Review from "../models/Review.js";
 import mongoose from "mongoose";
@@ -39,5 +39,8 @@ router.get("/:orderId/reviews", userJwtMiddleware, async (req, res) => {
     });
   }
 });
+
+router.post("/stats", getReviewStatsForBooks);
+router.get("/book/:bookId", getReviewsByBookId);
 
 export default router;
