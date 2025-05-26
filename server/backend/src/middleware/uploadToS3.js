@@ -20,7 +20,6 @@ const uploadAvatar = multer({
       cb(null, fileName);
     },
     contentType: multerS3.AUTO_CONTENT_TYPE,
-    acl: "public-read",
   }),
   limits: { fileSize: 5 * 1024 * 1024 },
 }).single("avatar");
