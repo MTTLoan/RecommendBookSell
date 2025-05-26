@@ -69,6 +69,7 @@ const TITLE_OPTIONS = [
 const ListNotification = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [customerLoading, setCustomerLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -76,6 +77,7 @@ const ListNotification = () => {
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [newNotification, setNewNotification] = useState({
     customerId: "",
+    customerName: "",
     title: "",
     content: "",
   });
@@ -84,10 +86,8 @@ const ListNotification = () => {
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [showTitleDropdown, setShowTitleDropdown] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [titleFilter, setTitleFilter] = useState("");
-  const [searchText, setSearchText] = useState("");
-  const [showTitleFilterDropdown, setShowTitleFilterDropdown] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [error, setError] = useState("");
 
   const filteredNotifications = notifications.filter((noti) =>
     noti.customerName?.toLowerCase().includes(searchValue.toLowerCase())
@@ -118,14 +118,22 @@ const ListNotification = () => {
   };
 
   const loadCustomers = async () => {
+    setCustomerLoading(true);
     try {
       const data = await fetchAllCustomers();
-      setCustomers(data || []);
-      setFilteredCustomers(data || []);
-    } catch {
+      console.log("Loaded customers:", data); // Log dữ liệu
+      if (!data || data.length === 0) {
+        setError("Không tìm thấy khách hàng nào. Vui lòng kiểm tra dữ liệu.");
+      }
+      setCustomers(data);
+      setFilteredCustomers(data);
+    } catch (error) {
+      console.error("Error loading customers:", error);
+      setError("Lỗi khi tải danh sách khách hàng: " + error.message);
       setCustomers([]);
       setFilteredCustomers([]);
     }
+    setCustomerLoading(false);
   };
 
   // Thêm thông báo
@@ -134,12 +142,35 @@ const ListNotification = () => {
       !newNotification.customerId ||
       !newNotification.title ||
       !newNotification.content
-    )
+    ) {
+      setError(
+        "Vui lòng điền đầy đủ thông tin: Tên khách hàng, Tiêu đề, Nội dung"
+      );
       return;
-    await addNotification(newNotification);
-    setShowAdd(false);
-    setNewNotification({ customerId: "", title: "", content: "" });
-    loadData();
+    }
+    try {
+      await addNotification({
+        userId: Number(newNotification.customerId),
+        title: newNotification.title,
+        message: newNotification.content,
+      });
+      setShowAdd(false);
+      setNewNotification({
+        customerId: "",
+        customerName: "",
+        title: "",
+        content: "",
+      });
+      setCustomerFilter("");
+      setError("");
+      loadData();
+    } catch (error) {
+      console.error("Error adding notification:", error);
+      setError(
+        "Lỗi khi thêm thông báo: " +
+          (error.response?.data?.message || error.message)
+      );
+    }
   };
 
   // Sửa thông báo
@@ -175,17 +206,19 @@ const ListNotification = () => {
     setNewNotification({
       ...newNotification,
       title: value,
-      // Nếu là system thì để trống, còn lại thì sinh nội dung mẫu (nếu có orderId)
       content:
         value === "system"
           ? ""
-          : TITLE_OPTIONS.find((opt) => opt.value === value)?.content(
-              newNotification.orderId || ""
-            ) || "",
+          : TITLE_OPTIONS.find((opt) => opt.value === value)?.content("") || "",
     });
   };
 
   const columns = [
+    {
+      key: "id",
+      label: "Mã thông báo",
+      render: (noti) => noti.id,
+    },
     {
       key: "customerName",
       label: "Tên khách hàng",
@@ -274,7 +307,7 @@ const ListNotification = () => {
             showDownload={false}
             showAddButton={true}
             addButtonText="Thêm thông báo"
-            showCheckbox={true}
+            showCheckbox={false}
             showSort={true}
             onAdd={() => setShowAdd(true)}
             searchValue={searchValue}
@@ -302,41 +335,31 @@ const ListNotification = () => {
                     placeholder="Nhập tên khách hàng để tìm"
                     value={
                       newNotification.customerId
-                        ? customers.find(
-                            (c) => c.id === newNotification.customerId
-                          )?.fullName || ""
+                        ? newNotification.customerName
                         : customerFilter
                     }
                     onChange={(e) => {
-                      setCustomerFilter(e.target.value);
-                      setNewNotification({
-                        ...newNotification,
-                        customerId: "",
-                      });
-                      setFilteredCustomers(
-                        customers.filter((c) =>
-                          c.fullName
-                            .toLowerCase()
-                            .includes(e.target.value.toLowerCase())
-                        )
-                      );
+                      const value = e.target.value;
+                      setCustomerFilter(value);
+                      // Nếu đang chọn khách thì xóa chọn để cho phép nhập lại
+                      if (newNotification.customerId) {
+                        setNewNotification((prev) => ({
+                          ...prev,
+                          customerId: "",
+                          customerName: "",
+                        }));
+                      }
+                      handleCustomerFilter(value);
+                      setDropdownOpen(true);
                     }}
                     className="dropdown-input"
                     autoComplete="off"
-                    onFocus={(e) => {
+                    onFocus={() => {
                       setDropdownOpen(true);
-                      if (!newNotification.customerId)
-                        handleCustomerFilter(e.target.value);
+                      handleCustomerFilter(customerFilter);
                     }}
-                    onClick={(e) => {
-                      setDropdownOpen(true);
-                      if (!newNotification.customerId)
-                        handleCustomerFilter(e.target.value);
-                    }}
-                    readOnly={!!newNotification.customerId}
                     style={{ cursor: "pointer" }}
                   />
-                  {/* Dropdown chỉ hiện khi dropdownOpen và chưa chọn khách */}
                   {dropdownOpen && !newNotification.customerId && (
                     <div className="dropdown-list">
                       {filteredCustomers.length > 0 ? (
@@ -344,16 +367,17 @@ const ListNotification = () => {
                           <div
                             key={c.id}
                             className={`dropdown-item${
-                              newNotification.customerId === c.id
+                              newNotification.customerId === String(c.id)
                                 ? " selected"
                                 : ""
                             }`}
                             onClick={() => {
-                              setNewNotification({
-                                ...newNotification,
-                                customerId: c.id,
-                              });
-                              setCustomerFilter("");
+                              setNewNotification((prev) => ({
+                                ...prev,
+                                customerId: String(c.id),
+                                customerName: c.fullName,
+                              }));
+                              setCustomerFilter(""); // reset filter khi đã chọn
                               setDropdownOpen(false);
                             }}
                           >
@@ -367,7 +391,6 @@ const ListNotification = () => {
                       )}
                     </div>
                   )}
-                  {/* Nếu đã chọn khách, hiện nút xóa chọn */}
                   {newNotification.customerId && (
                     <span
                       className="dropdown-clear"
@@ -382,10 +405,11 @@ const ListNotification = () => {
                       }}
                       title="Bỏ chọn"
                       onClick={() => {
-                        setNewNotification({
-                          ...newNotification,
+                        setNewNotification((prev) => ({
+                          ...prev,
                           customerId: "",
-                        });
+                          customerName: "",
+                        }));
                         setCustomerFilter("");
                         setDropdownOpen(true);
                       }}
@@ -396,6 +420,7 @@ const ListNotification = () => {
                 </div>
               ),
             },
+            // Các input khác (Tiêu đề, Nội dung) giữ nguyên
             {
               label: "Tiêu đề",
               name: "title",

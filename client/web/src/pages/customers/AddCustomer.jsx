@@ -27,7 +27,7 @@ const AddCustomer = () => {
     addressDistrict: "",
     addressWard: "",
     addressDetail: "",
-    role: "customer",
+    role: "user",
     verified: false,
     avatar: "",
   });
@@ -91,11 +91,7 @@ const AddCustomer = () => {
       formData.append("avatar", customer.avatar);
     }
     try {
-      if (isEdit) {
-        await adminUpdateUser(customer.id, formData); // Sửa
-      } else {
-        await adminAddUser(formData); // Thêm
-      }
+      await adminAddUser(formData); // Chỉ thêm mới, không cần kiểm tra isEdit
       navigate("/customers");
     } catch (err) {
       alert("Lưu thất bại!");
@@ -259,7 +255,7 @@ const AddCustomer = () => {
                   onChange={(e) => handleChange("role", e.target.value)}
                   required
                 >
-                  <option value="customer">Khách hàng</option>
+                  <option value="user">Khách hàng</option>
                   <option value="admin">Quản trị viên</option>
                 </select>
               </div>

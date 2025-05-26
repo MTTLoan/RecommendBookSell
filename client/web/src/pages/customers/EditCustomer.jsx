@@ -238,11 +238,11 @@ const EditCustomer = () => {
                 <label className="input-label">Quyền người dùng</label>
                 <select
                   className="input"
-                  value={customer.role || "customer"}
+                  value={customer.role || "user"}
                   onChange={(e) => handleChange("role", e.target.value)}
                   required
                 >
-                  <option value="customer">Khách hàng</option>
+                  <option value="user">Khách hàng</option>
                   <option value="admin">Quản trị viên</option>
                 </select>
               </div>

@@ -13,7 +13,7 @@ const UserSchema = new mongoose.Schema(
     addressWard: { type: Number },
     addressDetail: { type: String },
     password: { type: String, required: true },
-    role: { type: String, default: "customer" },
+    role: { type: String, default: "user" },
     birthday: { type: Date },
     avatar: { type: String },
     token: { type: String },

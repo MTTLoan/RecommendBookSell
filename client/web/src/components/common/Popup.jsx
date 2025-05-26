@@ -55,11 +55,14 @@ const Popup = ({
             {title}
           </h3>
         )}
-        {content && (
-          <p style={{ color: COLOR_MAP[contentColor] || contentColor }}>
-            {content}
-          </p>
-        )}
+        {content &&
+          (typeof content === "string" ? (
+            <p style={{ color: COLOR_MAP[contentColor] || contentColor }}>
+              {content}
+            </p>
+          ) : (
+            content
+          ))}
         {detail && (
           <div
             style={{

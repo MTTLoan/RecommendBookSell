@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../styles/table.css";
 
 const Table = ({
@@ -19,6 +19,8 @@ const Table = ({
   showCheckbox = true,
   showSort = true,
   showNavigationBar = false,
+  filterValue,
+  setFilterValue,
   tabs = [],
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -112,12 +114,26 @@ const Table = ({
     );
   };
 
-  // Xử lý toggle dropdown filter
-  const toggleFilterDropdown = () => {
-    setIsFilterDropdownOpen((prev) => !prev);
-  };
+  useEffect(() => {
+    if (
+      filterValue === null ||
+      filterValue === "" ||
+      filterValue === undefined
+    ) {
+      setFilterText("Tất cả");
+    } else {
+      const filterCol = columns.find(
+        (col) => Array.isArray(col.filters) && col.filters.length > 0
+      );
+      if (filterCol) {
+        const found = filterCol.filters.find((f) => f.value === filterValue);
+        setFilterText(found ? found.text : filterValue);
+      } else {
+        setFilterText(filterValue);
+      }
+    }
+  }, [filterValue, columns]);
 
-  // Xử lý chọn một tùy chọn trong dropdown filter
   const handleFilterOptionClick = (value) => {
     const filterCol = columns.find(
       (col) => Array.isArray(col.filters) && col.filters.length > 0
@@ -130,8 +146,14 @@ const Table = ({
     } else {
       setFilterText(value);
     }
+    if (typeof setFilterValue === "function") setFilterValue(value);
     setIsFilterDropdownOpen(false);
     setCurrentPage(1);
+  };
+
+  // Xử lý toggle dropdown filter
+  const toggleFilterDropdown = () => {
+    setIsFilterDropdownOpen((prev) => !prev);
   };
 
   // Xử lý tìm kiếm

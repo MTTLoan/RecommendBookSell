@@ -19,9 +19,11 @@ const uploadAvatar = multer({
       const fileName = `avatars/${Date.now()}-${file.originalname}`;
       cb(null, fileName);
     },
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    acl: "public-read",
   }),
   limits: { fileSize: 5 * 1024 * 1024 },
-}).single('avatar');
+});
 export default uploadAvatar;
 
 const deleteS3File = async (fileUrl) => {

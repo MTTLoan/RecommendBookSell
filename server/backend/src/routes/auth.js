@@ -27,6 +27,6 @@ router.post("/logout", user_jwt, logoutController);
 router.post("/change-password", user_jwt, changePasswordValidator, changePasswordController);
 router.get("/profile", user_jwt, getProfileController);
 router.put('/update-profile', user_jwt, updateProfileValidator, updateProfileController);
-router.post("/upload-avatar", user_jwt, uploadAvatar, uploadAvatarController);
+router.post("/upload-avatar", user_jwt, uploadAvatar.single("avatar"), uploadAvatarController);
 
 export default router;
