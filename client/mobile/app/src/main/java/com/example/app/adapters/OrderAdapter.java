@@ -24,6 +24,10 @@ import com.example.app.models.request.StatusUpdateRequest;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -68,6 +72,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         ApiService apiService = RetrofitClient.getApiService();
         String token = AuthUtils.getToken(holder.itemView.getContext());
 
+        // Kiểm tra xem đơn hàng có trong vòng 7 ngày trước không
+        boolean isWithinSevenDays = isOrderWithinSevenDays(order.getOrderDate());
+
         switch (order.getStatus()) {
             case "Đang đóng gói":
                 holder.btnCancelOrder.setVisibility(View.VISIBLE);
@@ -88,13 +95,15 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 ));
                 break;
             case "Đã giao":
-                holder.btnReturn.setVisibility(View.VISIBLE);
-                holder.btnReturn.setOnClickListener(v -> showConfirmDialog(
-                        holder.itemView.getContext(),
-                        "Xác nhận trả hàng",
-                        "Bạn muốn yêu cầu trả hàng/hoàn tiền?",
-                        () -> updateOrderStatus(apiService, token, order, "Trả hàng", holder.itemView.getContext())
-                ));
+                if (isWithinSevenDays) {
+                    holder.btnReturn.setVisibility(View.VISIBLE);
+                    holder.btnReturn.setOnClickListener(v -> showConfirmDialog(
+                            holder.itemView.getContext(),
+                            "Xác nhận trả hàng",
+                            "Bạn muốn yêu cầu trả hàng/hoàn tiền?",
+                            () -> updateOrderStatus(apiService, token, order, "Trả hàng", holder.itemView.getContext())
+                    ));
+                }
                 // Kiểm tra xem đơn hàng đã có review chưa
                 checkHasReviews(apiService, token, order, holder);
                 break;
@@ -110,6 +119,28 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             intent.putExtra("order", order); // Truyền order để hiển thị chi tiết
             holder.itemView.getContext().startActivity(intent);
         });
+    }
+
+    // Phương thức kiểm tra xem orderDate có trong vòng 7 ngày trước không
+    private boolean isOrderWithinSevenDays(String orderDate) {
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.getDefault());
+            Date orderDateParsed = inputFormat.parse(orderDate);
+            if (orderDateParsed == null) return false;
+
+            // Lấy thời gian hiện tại
+            Date currentDate = new Date();
+
+            // Tính thời gian 7 ngày trước
+            long sevenDaysInMillis = 7 * 24 * 60 * 60 * 1000L; // 7 ngày tính bằng mili giây
+            Date sevenDaysAgo = new Date(currentDate.getTime() - sevenDaysInMillis);
+
+            // Kiểm tra xem orderDate có nằm trong khoảng từ 7 ngày trước đến hiện tại không
+            return orderDateParsed.after(sevenDaysAgo) && orderDateParsed.before(currentDate);
+        } catch (ParseException e) {
+            Log.e("OrderAdapter", "Error parsing order date: " + e.getMessage());
+            return false; // Nếu có lỗi phân tích ngày, không hiển thị nút trả hàng
+        }
     }
 
     private void checkHasReviews(ApiService apiService, String token, Order order, OrderViewHolder holder) {
