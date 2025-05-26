@@ -2,7 +2,6 @@ package com.example.app.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +33,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class RecommendationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context context;
     private List<Book> bookList;
     private Map<Integer, String> categoryMap;
@@ -44,7 +43,7 @@ public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int VIEW_TYPE_BEST_SELLER = 1;
     private int viewType;
 
-    public BookAdapter(Context context, List<Book> bookList, List<Category> categoryList, int viewType) {
+    public RecommendationAdapter(Context context, List<Book> bookList, List<Category> categoryList, int viewType) {
         this.context = context;
         this.bookList = bookList != null ? bookList : new ArrayList<>();
         this.viewType = viewType;
@@ -133,8 +132,13 @@ public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 Toast.makeText(context, "ID sách không hợp lệ.", Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            Log.d("BookAdapter", "Clicked bookId: " + book.getId());
+            recordClick(book.getId());
+
             Intent intent = new Intent(context, BookDetailActivity.class);
             intent.putExtra("bookId", book.getId());
+            intent.putExtra("fromRecommendation", true); // Đánh dấu từ đề xuất
             context.startActivity(intent);
         });
     }

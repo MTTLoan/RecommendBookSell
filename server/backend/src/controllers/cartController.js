@@ -2,71 +2,82 @@
 import mongoose from "mongoose";
 import Cart from "../models/Cart.js";
 import Book from "../models/Book.js";
+import Counter from "../models/Counter.js";
+
+const getNextSequence = async (name) => {
+  const counter = await Counter.findOneAndUpdate(
+    { _id: name },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true }
+  );
+  return counter.seq;
+};
 
 // Hàm thêm vào giỏ hàng (giữ nguyên)
 export const addToCart = async (req, res) => {
   try {
-    const user = req.user;
-    if (!user) {
-      return res.status(401).json({ message: "Người dùng không hợp lệ" });
-    }
-
+    const userId = req.user.id;
     const { items } = req.body;
+
     if (!items || !Array.isArray(items) || items.length === 0) {
-      console.log("Invalid input data:", req.body);
-      return res
-        .status(400)
-        .json({ message: "Danh sách sản phẩm không hợp lệ" });
+      return res.status(400).json({ message: "Items are required" });
     }
 
-    let cart = await Cart.findOne({ userId: user.id });
+    let cart = await Cart.findOne({ userId });
 
     if (!cart) {
-      const counterResult = await mongoose.connection.db
-        .collection("counters")
-        .findOneAndUpdate(
-          { _id: "cartId" },
-          { $inc: { seq: 1 } },
-          { returnDocument: "after", upsert: true }
-        );
-
-      console.log("Counter result:", counterResult);
-
-      if (!counterResult || typeof counterResult.seq !== "number") {
-        throw new Error("Failed to retrieve or increment counter for cartId");
-      }
-
-      const cartId = counterResult.seq;
-
       cart = new Cart({
-        id: cartId,
-        userId: user.id,
-        items: items,
+        id: await getNextSequence("cartId"),
+        userId,
+        items: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-    } else {
-      items.forEach((newItem) => {
-        const existingItemIndex = cart.items.findIndex(
-          (item) => item.bookId === newItem.bookId
-        );
-        if (existingItemIndex >= 0) {
-          cart.items[existingItemIndex].quantity += newItem.quantity;
-        } else {
-          cart.items.push(newItem);
-        }
-      });
-      cart.updatedAt = new Date();
     }
 
-    console.log("Saving cart:", cart);
-    const updatedCart = await cart.save();
-    console.log("Cart saved:", updatedCart);
+    for (const item of items) {
+      const { bookId, quantity, recommend = false } = item;
 
-    res.status(200).json(updatedCart);
+      if (!bookId || !quantity || quantity < 1) {
+        return res.status(400).json({ message: "Invalid bookId or quantity" });
+      }
+
+      const book = await Book.findOne({ id: bookId });
+      if (!book) {
+        return res
+          .status(404)
+          .json({ message: `Book with id ${bookId} not found` });
+      }
+
+      const existingItem = cart.items.find((i) => i.bookId === bookId);
+      if (existingItem) {
+        existingItem.quantity += quantity;
+        if (recommend) existingItem.recommend = true; // Cập nhật recommend nếu từ đề xuất
+      } else {
+        cart.items.push({ bookId, quantity, recommend, selected: false });
+      }
+
+      // Ghi nhận hành động add_to_cart nếu từ đề xuất
+      if (recommend) {
+        const tracking = new mongoose.model("RecommendationTracking")({
+          id: await getNextSequence("recommendationTrackingId"),
+          userId,
+          bookId,
+          action: "add_to_cart",
+          timestamp: new Date(),
+          cartId: cart.id,
+        });
+        await tracking.save();
+      }
+    }
+
+    cart.updatedAt = new Date();
+    await cart.save();
+
+    return res.status(200).json(cart);
   } catch (error) {
-    console.error("Error adding to cart:", error.message);
-    res.status(500).json({ message: "Lỗi máy chủ: " + error.message });
+    console.error("Error adding to cart:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 

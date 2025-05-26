@@ -4,6 +4,7 @@ const OrderItemSchema = new mongoose.Schema({
   bookId: { type: Number, ref: "Book", required: true },
   quantity: { type: Number, required: true },
   unitPrice: { type: Number, required: true },
+  recommend: { type: Boolean, default: false },
 });
 
 const OrderSchema = new mongoose.Schema(

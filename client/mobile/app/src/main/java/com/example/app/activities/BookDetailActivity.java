@@ -138,8 +138,11 @@ public class BookDetailActivity extends AppCompatActivity {
                 return;
             }
 
+            // Kiểm tra xem sách có đến từ đề xuất không
+            boolean isFromRecommendation = getIntent().getBooleanExtra("fromRecommendation", false);
+
             // Tạo CartItem
-            CartItem cartItem = new CartItem(bookId, quantity);
+            CartItem cartItem = new CartItem(bookId, quantity, currentBook, isFromRecommendation);
             List<CartItem> items = new ArrayList<>();
             items.add(cartItem);
 
@@ -154,6 +157,23 @@ public class BookDetailActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         Toast.makeText(BookDetailActivity.this, "Đã thêm " + quantity + " sản phẩm vào giỏ hàng", Toast.LENGTH_SHORT).show();
                         Log.d("BookDetailActivity", "Added to cart: " + response.body().toString());
+
+                        // Ghi nhận hành động add_to_cart nếu từ đề xuất
+                        if (isFromRecommendation) {
+                            apiService.recordRecommendationAddToCart("Bearer " + token, bookId, response.body().getId()).enqueue(new Callback<Void>() {
+                                @Override
+                                public void onResponse(Call<Void> call, Response<Void> response) {
+                                    if (response.isSuccessful()) {
+                                        Log.d("BookDetailActivity", "Add to cart recorded for bookId: " + bookId);
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<Void> call, Throwable t) {
+                                    Log.e("BookDetailActivity", "Error recording add to cart: " + t.getMessage());
+                                }
+                            });
+                        }
                     } else {
                         String errorMsg = "Lỗi khi thêm vào giỏ hàng";
                         try {
@@ -183,7 +203,6 @@ public class BookDetailActivity extends AppCompatActivity {
             });
         });
     }
-
     private void toggleDescription() {
         isDescriptionExpanded = !isDescriptionExpanded;
         tvDescription.setMaxLines(isDescriptionExpanded ? Integer.MAX_VALUE : 5);
