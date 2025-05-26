@@ -274,6 +274,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onFailure(Call<BookResponse> call, Throwable t) {
                 showFailureError("sách đề xuất", t);
+                Log.e("HomeFragment", String.valueOf(t));
             }
         });
     }
