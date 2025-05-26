@@ -10,7 +10,7 @@ import {
   updateNotification,
   deleteNotification,
 } from "../../services/notificationService";
-import { fetchAllCustomers } from "../../services/authService"; // Hàm lấy danh sách khách hàng
+import { fetchAllCustomers } from "../../services/authService";
 
 const TITLE_OPTIONS = [
   {
@@ -80,6 +80,7 @@ const ListNotification = () => {
     customerName: "",
     title: "",
     content: "",
+    orderId: "",
   });
   const [customers, setCustomers] = useState([]);
   const [customerFilter, setCustomerFilter] = useState("");
@@ -149,10 +150,18 @@ const ListNotification = () => {
       return;
     }
     try {
+      const orderIdMatch = newNotification.content.match(/#(\d+)/);
+      const orderId = orderIdMatch ? Number(orderIdMatch[1]) : null;
+
+      const titleLabel =
+        TITLE_OPTIONS.find((opt) => opt.value === newNotification.title)
+          ?.label || newNotification.title;
+
       await addNotification({
         userId: Number(newNotification.customerId),
-        title: newNotification.title,
+        title: titleLabel, // Lưu label vào DB
         message: newNotification.content,
+        orderId,
       });
       setShowAdd(false);
       setNewNotification({
@@ -160,6 +169,7 @@ const ListNotification = () => {
         customerName: "",
         title: "",
         content: "",
+        orderId: "",
       });
       setCustomerFilter("");
       setError("");
@@ -213,6 +223,15 @@ const ListNotification = () => {
     });
   };
 
+  const handleContentChange = (value) => {
+    const orderIdMatch = value.match(/#(\d+)/);
+    setNewNotification({
+      ...newNotification,
+      content: value,
+      orderId: orderIdMatch ? orderIdMatch[1] : "",
+    });
+  };
+
   const columns = [
     {
       key: "id",
@@ -232,7 +251,7 @@ const ListNotification = () => {
         noti.title,
       filters: TITLE_OPTIONS.map((opt) => ({
         text: opt.label,
-        value: opt.label,
+        value: opt.value,
       })),
       onFilter: (value, record) => record.title === value,
     },
@@ -321,7 +340,6 @@ const ListNotification = () => {
           title="Thêm thông báo"
           titleColor="success"
           inputs={[
-            // Sửa phần render input "Tên khách hàng" trong Popup Thêm
             {
               label: "Tên khách hàng",
               name: "customerId",
@@ -336,13 +354,13 @@ const ListNotification = () => {
                     placeholder="Nhập username khách hàng để tìm"
                     value={
                       newNotification.customerId
-                        ? newNotification.customerName // Hiển thị tên đã chọn
-                        : customerFilter // Hiển thị text đang nhập để tìm kiếm
+                        ? newNotification.customerName
+                        : customerFilter
                     }
                     onChange={(e) => {
                       const value = e.target.value;
-
-                      // Nếu đang có customer được chọn, xóa selection và cho phép tìm kiếm mới
+                      setCustomerFilter(value);
+                      // Nếu đã chọn khách thì xóa chọn để nhập lại
                       if (newNotification.customerId) {
                         setNewNotification((prev) => ({
                           ...prev,
@@ -350,9 +368,6 @@ const ListNotification = () => {
                           customerName: "",
                         }));
                       }
-
-                      // Cập nhật filter và hiển thị dropdown
-                      setCustomerFilter(value);
                       setFilteredCustomers(
                         customers.filter((c) =>
                           c.username.toLowerCase().includes(value.toLowerCase())
@@ -363,23 +378,17 @@ const ListNotification = () => {
                     className="dropdown-input"
                     autoComplete="off"
                     onFocus={() => {
-                      // Khi focus, nếu chưa chọn customer thì hiển thị dropdown
-                      if (!newNotification.customerId) {
-                        setDropdownOpen(true);
-                        setFilteredCustomers(
-                          customers.filter((c) =>
-                            c.username
-                              .toLowerCase()
-                              .includes(customerFilter.toLowerCase())
-                          )
-                        );
-                      }
+                      setDropdownOpen(true);
+                      setFilteredCustomers(
+                        customers.filter((c) =>
+                          c.username
+                            .toLowerCase()
+                            .includes(customerFilter.toLowerCase())
+                        )
+                      );
                     }}
                     style={{ cursor: "pointer" }}
-                    // Không set readOnly để cho phép nhập tự do
                   />
-
-                  {/* Hiển thị dropdown khi chưa chọn customer */}
                   {dropdownOpen && !newNotification.customerId && (
                     <div className="dropdown-list">
                       {filteredCustomers.length > 0 ? (
@@ -387,18 +396,13 @@ const ListNotification = () => {
                           <div
                             key={c.id}
                             className="dropdown-item"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-
-                              console.log("Selected customer:", c); // Debug log
-
+                            onMouseDown={() => {
                               setNewNotification((prev) => ({
                                 ...prev,
                                 customerId: String(c.id),
                                 customerName: c.username,
                               }));
-                              setCustomerFilter(""); // Reset filter
+                              setCustomerFilter("");
                               setDropdownOpen(false);
                             }}
                             style={{ cursor: "pointer", padding: "8px 12px" }}
@@ -413,8 +417,6 @@ const ListNotification = () => {
                       )}
                     </div>
                   )}
-
-                  {/* Nút xóa selection khi đã chọn customer */}
                   {newNotification.customerId && (
                     <span
                       className="dropdown-clear"
@@ -435,7 +437,7 @@ const ListNotification = () => {
                           customerName: "",
                         }));
                         setCustomerFilter("");
-                        setDropdownOpen(false); // Đóng dropdown khi xóa
+                        setDropdownOpen(true);
                       }}
                     >
                       ×
@@ -491,8 +493,9 @@ const ListNotification = () => {
               label: "Nội dung",
               name: "content",
               type: "textarea",
-              placeholder: "Nội dung",
+              placeholder: "Nội dung (bao gồm #<orderId> nếu có, ví dụ: #1234)",
               value: newNotification.content || "",
+              onChange: (e) => handleContentChange(e.target.value),
             },
           ]}
           onInputChange={(name, value) =>
