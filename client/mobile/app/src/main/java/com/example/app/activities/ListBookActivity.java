@@ -33,6 +33,10 @@ public class ListBookActivity extends AppCompatActivity {
     private ApiService apiService;
     private List<Category> categoryList;
 
+    private static final int CATEGORY_RECOMMENDATION = 0;
+    private static final int CATEGORY_BEST_SELLERS = 7;
+    private static final int CATEGORY_NEW_BOOKS = 8; // Thêm category cho sách mới
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,11 +50,13 @@ public class ListBookActivity extends AppCompatActivity {
         // Get data from Intent
         int categoryId = getIntent().getIntExtra("category_id", 0);
         String categoryName = getIntent().getStringExtra("category_name");
-        List<Book> bookListFromIntent = (List<Book>) getIntent().getSerializableExtra("book_list");
+        List<Book> bookListFromIntent = getIntent().getParcelableArrayListExtra("book_list"); // Use Parcelable
 
-        // Set title, default to "Đề xuất dành riêng cho bạn" for recommendations
+        // Set title
         if (categoryName == null || categoryName.equals("Unknown")) {
-            categoryName = categoryId == 0 ? "Đề xuất dành riêng cho bạn" : "Đang tải danh mục...";
+            categoryName = categoryId == CATEGORY_RECOMMENDATION ? "Đề xuất dành riêng cho bạn" :
+                    categoryId == CATEGORY_BEST_SELLERS ? "Sách bán chạy nhất" :
+                            categoryId == CATEGORY_NEW_BOOKS ? "Sách mới nhất tháng" : "Đang tải danh mục...";
         }
         tvTitle.setText(categoryName);
 
@@ -63,7 +69,7 @@ public class ListBookActivity extends AppCompatActivity {
         categoryList = new ArrayList<>();
 
         // Setup RecyclerView
-        listBookAdapter = new BookAdapter(this, filteredBookList, categoryList);
+        listBookAdapter = new BookAdapter(this, filteredBookList, categoryList, 0);
         listBookRecyclerView.setHasFixedSize(true);
         listBookRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         listBookRecyclerView.setAdapter(listBookAdapter);
@@ -71,8 +77,12 @@ public class ListBookActivity extends AppCompatActivity {
         // Initialize ApiService
         apiService = RetrofitClient.getApiService();
 
-        // If book_list is provided (e.g., recommendations from SearchFragment), use it
-        if (bookListFromIntent != null && !bookListFromIntent.isEmpty()) {
+        // Handle based on categoryId
+        if (categoryId == CATEGORY_BEST_SELLERS) {
+            fetchBestSellers(); // Fetch best sellers directly
+        } else if (categoryId == CATEGORY_NEW_BOOKS) {
+            fetchNewBooks(); // Fetch new books directly
+        } else if (bookListFromIntent != null && !bookListFromIntent.isEmpty()) {
             filteredBookList.clear();
             filteredBookList.addAll(bookListFromIntent);
             listBookAdapter.notifyDataSetChanged();
@@ -89,10 +99,10 @@ public class ListBookActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     categoryList.clear();
                     categoryList.addAll(response.body().getCategories());
-                    listBookAdapter.setCategories(new ArrayList<>(categoryList)); // Update adapter with categories
+                    listBookAdapter.setCategories(new ArrayList<>(categoryList));
 
-                    // Update title only for non-recommendation categories
-                    if (categoryId != 0) {
+                    // Update title only for non-recommendation, non-best-sellers, non-new-books categories
+                    if (categoryId != CATEGORY_RECOMMENDATION && categoryId != CATEGORY_BEST_SELLERS && categoryId != CATEGORY_NEW_BOOKS) {
                         Category category = categoryList.stream()
                                 .filter(c -> c.getId() == categoryId)
                                 .findFirst()
@@ -103,12 +113,12 @@ public class ListBookActivity extends AppCompatActivity {
                     }
 
                     // Fetch books only if no book_list was provided
-                    if (getIntent().getSerializableExtra("book_list") == null) {
+                    if (getIntent().getParcelableArrayListExtra("book_list") == null) {
                         fetchBooks(categoryId);
                     }
                 } else {
                     showApiError("Không thể lấy danh mục.", response);
-                    if (getIntent().getSerializableExtra("book_list") == null) {
+                    if (getIntent().getParcelableArrayListExtra("book_list") == null) {
                         fetchBooks(categoryId);
                     }
                 }
@@ -117,7 +127,7 @@ public class ListBookActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<CategoryResponse> call, Throwable t) {
                 showFailureError("danh mục", t);
-                if (getIntent().getSerializableExtra("book_list") == null) {
+                if (getIntent().getParcelableArrayListExtra("book_list") == null) {
                     fetchBooks(categoryId);
                 }
             }
@@ -145,6 +155,54 @@ public class ListBookActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<BookResponse> call, Throwable t) {
                 showFailureError("sách", t);
+            }
+        });
+    }
+
+    private void fetchBestSellers() {
+        apiService.getBestSellers().enqueue(new Callback<BookResponse>() {
+            @Override
+            public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getBooks() != null) {
+                    filteredBookList.clear();
+                    filteredBookList.addAll(response.body().getBooks());
+                    listBookAdapter.notifyDataSetChanged();
+
+                    if (filteredBookList.isEmpty()) {
+                        Toast.makeText(ListBookActivity.this, "Không có sách bán chạy nào.", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    showApiError("Không thể lấy sách bán chạy nhất.", response);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BookResponse> call, Throwable t) {
+                showFailureError("sách bán chạy nhất", t);
+            }
+        });
+    }
+
+    private void fetchNewBooks() {
+        apiService.getNewBooks().enqueue(new Callback<BookResponse>() {
+            @Override
+            public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getBooks() != null) {
+                    filteredBookList.clear();
+                    filteredBookList.addAll(response.body().getBooks());
+                    listBookAdapter.notifyDataSetChanged();
+
+                    if (filteredBookList.isEmpty()) {
+                        Toast.makeText(ListBookActivity.this, "Không có sách mới nào.", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    showApiError("Không thể lấy sách mới nhất.", response);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BookResponse> call, Throwable t) {
+                showFailureError("sách mới nhất", t);
             }
         });
     }

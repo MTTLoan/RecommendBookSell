@@ -239,7 +239,7 @@ public class PersonalInfoActivity extends AppCompatActivity {
                     spinnerProvince.setAdapter(provinceAdapter);
 
                     // Đặt giá trị mặc định từ currentUser nếu có
-                    if (currentUser != null && currentUser.getAddressProvince() != -1) {
+                    if (currentUser != null && currentUser.getAddressProvince() != null && currentUser.getAddressProvince() != -1) {
                         Integer provinceCode = currentUser.getAddressProvince();
                         for (int i = 0; i < provinceCodes.size(); i++) {
                             if (provinceCodes.get(i).equals(provinceCode)) {
@@ -284,7 +284,6 @@ public class PersonalInfoActivity extends AppCompatActivity {
                 districtCodes.clear();
                 districtMap.clear();
 
-                // Thêm tùy chọn mặc định
                 districtNames.add("Chọn quận/huyện");
 
                 for (int i = 0; i < districtsArray.length(); i++) {
@@ -299,12 +298,11 @@ public class PersonalInfoActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     updateDistrictSpinner();
 
-                    // Đặt giá trị mặc định từ currentUser nếu có
-                    if (currentUser != null && currentUser.getAddressDistrict() != -1) {
+                    if (currentUser != null && currentUser.getAddressDistrict() != null && currentUser.getAddressDistrict() != -1) {
                         Integer districtCode = currentUser.getAddressDistrict();
                         for (int i = 0; i < districtCodes.size(); i++) {
                             if (districtCodes.get(i).equals(districtCode)) {
-                                spinnerDistrict.setSelection(i + 1); // +1 vì có "Chọn quận/huyện"
+                                spinnerDistrict.setSelection(i + 1);
                                 break;
                             }
                         }
@@ -343,7 +341,6 @@ public class PersonalInfoActivity extends AppCompatActivity {
                 wardCodes.clear();
                 wardMap.clear();
 
-                // Thêm tùy chọn mặc định
                 wardNames.add("Chọn phường/xã");
 
                 for (int i = 0; i < wardsArray.length(); i++) {
@@ -358,12 +355,11 @@ public class PersonalInfoActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     updateWardSpinner();
 
-                    // Đặt giá trị mặc định từ currentUser nếu có
-                    if (currentUser != null && currentUser.getAddressWard() != -1) {
+                    if (currentUser != null && currentUser.getAddressWard() != null && currentUser.getAddressWard() != -1) {
                         Integer wardCode = currentUser.getAddressWard();
                         for (int i = 0; i < wardCodes.size(); i++) {
                             if (wardCodes.get(i).equals(wardCode)) {
-                                spinnerWard.setSelection(i + 1); // +1 vì có "Chọn phường/xã"
+                                spinnerWard.setSelection(i + 1);
                                 break;
                             }
                         }

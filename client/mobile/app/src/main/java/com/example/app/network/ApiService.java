@@ -120,6 +120,11 @@ public interface ApiService {
             @Query("maxPrice") Float maxPrice
     );
 
+    @GET("/api/books/best-sellers")
+    Call<BookResponse> getBestSellers();
+    @GET("/api/books/new-books")
+    Call<BookResponse> getNewBooks();
+
     @GET("/api/categories/all-categories")
     Call<CategoryResponse> getCategories();
 
@@ -140,4 +145,16 @@ public interface ApiService {
 
     @POST("orders")
     Call<Order> addOrder(@Header("Authorization") String authorization, @Body Order order);
+
+    @GET("/api/recommendations/")
+    Call<BookResponse> getRecommendations(@Header("Authorization") String token);
+
+    @POST("/api/recommendations/click")
+    Call<Void> recordRecommendationClick(@Header("Authorization") String token, @Query("bookId") int bookId);
+
+    @POST("/api/recommendations/add-to-cart")
+    Call<Void> recordRecommendationAddToCart(@Header("Authorization") String token, @Query("bookId") int bookId, @Query("cartId") int cartId);
+
+    @POST("/api/recommendations/purchase")
+    Call<Void> recordRecommendationPurchase(@Header("Authorization") String token, @Query("bookId") int bookId, @Query("orderId") int orderId);
 }

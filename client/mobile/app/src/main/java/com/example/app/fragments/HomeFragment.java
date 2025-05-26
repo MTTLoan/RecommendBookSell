@@ -7,11 +7,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
@@ -20,20 +22,23 @@ import com.example.app.R;
 import com.example.app.activities.ListBookActivity;
 import com.example.app.adapters.BannerAdapter;
 import com.example.app.adapters.BookAdapter;
+import com.example.app.adapters.RecommendationAdapter;
 import com.example.app.models.Book;
 import com.example.app.models.Category;
 import com.example.app.models.response.BookResponse;
 import com.example.app.models.response.CategoryResponse;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
+import com.example.app.utils.AuthUtils;
 import com.example.app.utils.HeaderController;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.Random;
 
 import retrofit2.Call;
@@ -44,22 +49,25 @@ public class HomeFragment extends Fragment {
 
     private ViewPager2 viewPager2;
     private BannerAdapter bannerAdapter;
-    private final Handler handler = new Handler();
+    private Handler handler;
     private Runnable autoSlideRunnable;
 
-    private final Map<Integer, RecyclerView> recyclerViewMap = new HashMap<>();
-    private final Map<Integer, BookAdapter> adapterMap = new HashMap<>();
-    private final List<Category> categoryList = new ArrayList<>();
-    private final Map<Integer, List<Book>> bookListMap = new HashMap<>(); // Store book lists for each category
-
+    private RecyclerView bestSellersRecyclerView;
+    private RecyclerView newBooksRecyclerView;
+    private RecyclerView recommendationsRecyclerView;
+    private BookAdapter bestSellersAdapter;
+    private BookAdapter newBooksAdapter;
+    private RecommendationAdapter recommendationsAdapter;
+    private List<Category> categoryList = new ArrayList<>();
+    private List<Book> bestSellersList = new ArrayList<>();
+    private List<Book> newBooksList = new ArrayList<>();
+    private List<Book> recommendationList = new ArrayList<>();
     private ApiService apiService;
 
     // Constants
     private static final int CATEGORY_RECOMMENDATION = 0;
-    private static final int CATEGORY_CHILDREN = 1;
-    private static final int CATEGORY_LITERATURE = 2;
-    private static final int CATEGORY_ECONOMIC = 3;
-    private static final int CATEGORY_LIFE_SKILLS = 4;
+    private static final int CATEGORY_BEST_SELLERS = 7;
+    private static final int CATEGORY_NEW_BOOKS = 8;
 
     @Nullable
     @Override
@@ -71,9 +79,17 @@ public class HomeFragment extends Fragment {
         apiService = RetrofitClient.getApiService();
 
         setupBanner(view);
+        setupNewBooksRecyclerView(view);
+        setupBestSellersRecyclerView(view);
+        setupRecommendationsRecyclerView(view);
         fetchCategories();
-        setupRecyclerViews(view);
         fetchBooks();
+
+        // Đặt tiêu đề tháng hiện tại
+        TextView newBooksTitle = view.findViewById(R.id.newBooksTitle);
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/yyyy", Locale.getDefault());
+        String currentMonth = sdf.format(Calendar.getInstance().getTime());
+        newBooksTitle.setText("Sách mới nhất tháng " + currentMonth);
 
         return view;
     }
@@ -86,58 +102,56 @@ public class HomeFragment extends Fragment {
         startAutoSlide(imageList.size());
     }
 
-    private void setupRecyclerViews(View view) {
-        int[][] configs = {
-                {CATEGORY_CHILDREN, R.id.childrenBooksRecyclerView, R.id.childrenBooksTitle},
-                {CATEGORY_LITERATURE, R.id.literatureBooksRecyclerView, R.id.literatureBooksTitle},
-                {CATEGORY_ECONOMIC, R.id.economicBooksRecyclerView, R.id.economicBooksTitle},
-                {CATEGORY_LIFE_SKILLS, R.id.lifeSkillsBooksRecyclerView, R.id.lifeSkillsBooksTitle}
-        };
+    private void setupNewBooksRecyclerView(View view) {
+        newBooksRecyclerView = view.findViewById(R.id.newBooksRecyclerView);
+        newBooksRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        newBooksRecyclerView.setNestedScrollingEnabled(false);
+        newBooksAdapter = new BookAdapter(requireContext(), newBooksList, categoryList, 0);
+        newBooksRecyclerView.setAdapter(newBooksAdapter);
 
-        for (int[] config : configs) {
-            int categoryId = config[0];
-            int recyclerId = config[1];
-            int titleId = config[2];
-            setupBookSection(view, categoryId, recyclerId, titleId);
-        }
-
-        setupBookSection(view, CATEGORY_RECOMMENDATION, R.id.recommendationsRecyclerView, R.id.recommendationsTitle);
+        TextView newBooksTitle = view.findViewById(R.id.newBooksTitle);
+        newBooksTitle.setOnClickListener(v -> openListBookActivity(CATEGORY_NEW_BOOKS)); // Thêm sự kiện click
     }
 
-    private void setupBookSection(View view, int categoryId, int recyclerViewId, int titleViewId) {
-        RecyclerView recyclerView = view.findViewById(recyclerViewId);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        BookAdapter adapter = new BookAdapter(requireContext(), new ArrayList<>(), categoryList);
-        recyclerView.setAdapter(adapter);
+    private void setupBestSellersRecyclerView(View view) {
+        bestSellersRecyclerView = view.findViewById(R.id.bestSellersRecyclerView);
+        bestSellersRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        bestSellersRecyclerView.setNestedScrollingEnabled(false);
+        bestSellersAdapter = new BookAdapter(requireContext(), bestSellersList, categoryList, 1);
+        bestSellersRecyclerView.setAdapter(bestSellersAdapter);
 
-        recyclerViewMap.put(categoryId, recyclerView);
-        adapterMap.put(categoryId, adapter);
+        TextView bestSellersTitle = view.findViewById(R.id.bestSellersTitle);
+        bestSellersTitle.setText("Sách bán chạy nhất");
+        bestSellersTitle.setOnClickListener(v -> openListBookActivity(CATEGORY_BEST_SELLERS));
+    }
 
-        View titleView = view.findViewById(titleViewId);
-        titleView.setOnClickListener(v -> openListBookActivity(categoryId));
+    private void setupRecommendationsRecyclerView(View view) {
+        recommendationsRecyclerView = view.findViewById(R.id.recommendationsRecyclerView);
+        recommendationsRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2, GridLayoutManager.VERTICAL, false));
+        recommendationsRecyclerView.setNestedScrollingEnabled(false);
+        recommendationsAdapter = new RecommendationAdapter(requireContext(), recommendationList, categoryList, 0);
+        recommendationsRecyclerView.setAdapter(recommendationsAdapter);
+
+        View recommendationsTitle = view.findViewById(R.id.recommendationsTitle);
+        recommendationsTitle.setOnClickListener(v -> openListBookActivity(CATEGORY_RECOMMENDATION));
     }
 
     private void openListBookActivity(int categoryId) {
         Intent intent = new Intent(requireContext(), ListBookActivity.class);
         intent.putExtra("category_id", categoryId);
-        String name = categoryId == CATEGORY_RECOMMENDATION
-                ? "Đề xuất dành riêng cho bạn"
-                : categoryList.stream()
-                .filter(c -> c.getId() == categoryId)
-                .map(Category::getName)
-                .findFirst()
-                .orElse("Unknown");
+        String name = categoryId == CATEGORY_RECOMMENDATION ? "Đề xuất dành riêng cho bạn" :
+                categoryId == CATEGORY_BEST_SELLERS ? "Sách bán chạy nhất" :
+                        categoryId == CATEGORY_NEW_BOOKS ? "Sách mới nhất tháng" : "Danh mục khác";
         intent.putExtra("category_name", name);
 
-        // For recommendations, pass the filtered book list
-        if (categoryId == CATEGORY_RECOMMENDATION) {
-            List<Book> recommendationList = bookListMap.getOrDefault(categoryId, new ArrayList<>());
-            if (recommendationList.isEmpty()) {
-                Toast.makeText(getContext(), "Đang tải sách đề xuất, vui lòng thử lại sau.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            intent.putExtra("book_list", new ArrayList<>(recommendationList));
+        List<Book> bookList = categoryId == CATEGORY_RECOMMENDATION ? recommendationList :
+                categoryId == CATEGORY_BEST_SELLERS ? bestSellersList :
+                        categoryId == CATEGORY_NEW_BOOKS ? newBooksList : new ArrayList<>();
+        if (bookList.isEmpty()) {
+            Toast.makeText(getContext(), "Đang tải sách, vui lòng thử lại sau.", Toast.LENGTH_SHORT).show();
+            return;
         }
+        intent.putParcelableArrayListExtra("book_list", new ArrayList<>(bookList));
 
         startActivity(intent);
     }
@@ -149,7 +163,10 @@ public class HomeFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     categoryList.clear();
                     categoryList.addAll(response.body().getCategories());
-                    adapterMap.values().forEach(a -> a.setCategories(new ArrayList<>(categoryList)));
+                    Log.d("HomeFragment", "Categories loaded: " + categoryList.size());
+                    bestSellersAdapter.setCategories(new ArrayList<>(categoryList));
+                    newBooksAdapter.setCategories(new ArrayList<>(categoryList));
+                    recommendationsAdapter.setCategories(new ArrayList<>(categoryList));
                 } else {
                     showApiError("Không thể lấy danh mục.", response);
                 }
@@ -163,56 +180,102 @@ public class HomeFragment extends Fragment {
     }
 
     private void fetchBooks() {
-        int[] categoryIds = {CATEGORY_CHILDREN, CATEGORY_LITERATURE, CATEGORY_ECONOMIC, CATEGORY_LIFE_SKILLS, CATEGORY_RECOMMENDATION};
-        for (int categoryId : categoryIds) {
-            BookAdapter adapter = adapterMap.get(categoryId);
-            if (adapter != null) {
-                fetchBooksForCategory(categoryId, adapter);
-            }
-        }
+        fetchBestSellersBooks();
+        fetchNewBooks();
+        fetchRecommendations();
     }
 
-    private void fetchBooksForCategory(int categoryId, BookAdapter adapter) {
-        Call<BookResponse> call = apiService.getBooks(categoryId == CATEGORY_RECOMMENDATION ? null : categoryId);
+    private void fetchBestSellersBooks() {
+        Call<BookResponse> call = apiService.getBestSellers();
         call.enqueue(new Callback<BookResponse>() {
             @Override
             public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    bestSellersList.clear();
                     List<Book> books = response.body().getBooks();
-                    if (categoryId == CATEGORY_RECOMMENDATION) {
-                        // Filter books with averageRating == 5 (up to 5, shuffled)
-                        books = getTopRatedRecommendations(books, 5);
+                    if (books != null) {
+                        bestSellersList.addAll(books);
+                        Log.d("HomeFragment", "Best Sellers loaded: " + books.size() + " books");
+                        for (Book book : books) {
+                            Log.d("HomeFragment", "Book ID: " + book.getId() + ", Category ID: " + book.getCategoryId());
+                        }
+                    } else {
+                        Log.w("HomeFragment", "Best Sellers books is null");
                     }
-                    bookListMap.put(categoryId, books); // Store the book list
-                    adapter.setBooks(books);
+                    bestSellersAdapter.setBooks(bestSellersList);
                 } else {
-                    showApiError("Không thể lấy sách cho danh mục " + categoryId + ".", response);
+                    showApiError("Không thể lấy sách bán chạy nhất.", response);
                 }
             }
 
             @Override
             public void onFailure(Call<BookResponse> call, Throwable t) {
-                showFailureError("sách cho danh mục " + categoryId, t);
+                showFailureError("sách bán chạy nhất", t);
             }
         });
     }
 
-    private List<Book> getTopRatedRecommendations(List<Book> books, int count) {
-        if (books == null || books.isEmpty()) return new ArrayList<>();
-
-        // Filter books with averageRating == 5
-        List<Book> topRatedBooks = new ArrayList<>();
-        for (Book book : books) {
-            if (book.getAverageRating() == 5.0) { // Assuming getAverageRating() returns the averageRating
-                topRatedBooks.add(book);
+    private void fetchNewBooks() {
+        Call<BookResponse> call = apiService.getNewBooks();
+        call.enqueue(new Callback<BookResponse>() {
+            @Override
+            public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    newBooksList.clear();
+                    List<Book> books = response.body().getBooks();
+                    if (books != null) {
+                        newBooksList.addAll(books);
+                        Log.d("HomeFragment", "New Books loaded: " + books.size() + " books");
+                        for (Book book : books) {
+                            Log.d("HomeFragment", "New Book ID: " + book.getId() + ", Category ID: " + book.getCategoryId());
+                        }
+                    } else {
+                        Log.w("HomeFragment", "New Books is null");
+                    }
+                    newBooksAdapter.setBooks(newBooksList);
+                } else {
+                    showApiError("Không thể lấy sách mới nhất.", response);
+                }
             }
+
+            @Override
+            public void onFailure(Call<BookResponse> call, Throwable t) {
+                showFailureError("sách mới nhất", t);
+            }
+        });
+    }
+
+    private void fetchRecommendations() {
+        String token = AuthUtils.getToken(requireContext());
+        if (token == null) {
+            Toast.makeText(requireContext(), "Vui lòng đăng nhập để xem đề xuất.", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        // Shuffle the list to ensure variety in recommendations
-        Collections.shuffle(topRatedBooks, new Random());
+        Call<BookResponse> call = apiService.getRecommendations("Bearer " + token);
+        call.enqueue(new Callback<BookResponse>() {
+            @Override
+            public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    recommendationList.clear();
+                    List<Book> books = response.body().getBooks();
+                    if (books != null) {
+                        recommendationList.addAll(books);
+                        Log.d("HomeFragment", "Recommendations loaded: " + books.size() + " books");
+                    } else {
+                        Log.w("HomeFragment", "Recommendations books is null");
+                    }
+                    recommendationsAdapter.setBooks(recommendationList);
+                } else {
+                    showApiError("Không thể lấy sách đề xuất.", response);
+                }
+            }
 
-        // Return up to 'count' books
-        return topRatedBooks.subList(0, Math.min(count, topRatedBooks.size()));
+            @Override
+            public void onFailure(Call<BookResponse> call, Throwable t) {
+                showFailureError("sách đề xuất", t);
+            }
+        });
     }
 
     private void showApiError(String baseMessage, Response<?> response) {
@@ -238,6 +301,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void startAutoSlide(int itemCount) {
+        handler = new Handler();
         autoSlideRunnable = new Runnable() {
             @Override
             public void run() {
@@ -252,18 +316,24 @@ public class HomeFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        handler.removeCallbacks(autoSlideRunnable);
+        if (handler != null) {
+            handler.removeCallbacks(autoSlideRunnable);
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        handler.postDelayed(autoSlideRunnable, 4000);
+        if (handler != null) {
+            handler.postDelayed(autoSlideRunnable, 4000);
+        }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        handler.removeCallbacks(autoSlideRunnable);
+        if (handler != null) {
+            handler.removeCallbacks(autoSlideRunnable);
+        }
     }
 }
