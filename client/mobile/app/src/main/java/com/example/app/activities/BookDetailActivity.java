@@ -138,8 +138,9 @@ public class BookDetailActivity extends AppCompatActivity {
                 return;
             }
 
-            // Kiểm tra xem sách có đến từ đề xuất không
+            // Lấy giá trị fromRecommendation
             boolean isFromRecommendation = getIntent().getBooleanExtra("fromRecommendation", false);
+            Log.d("BookDetailActivity", "isFromRecommendation: " + isFromRecommendation); // Debug
 
             // Tạo CartItem
             CartItem cartItem = new CartItem(bookId, quantity, currentBook, isFromRecommendation);
@@ -151,8 +152,8 @@ public class BookDetailActivity extends AppCompatActivity {
             cart.setItems(items);
 
             // Lấy thông tin isRecommended
-            boolean isRecommended = getIntent().getBooleanExtra("isRecommended", false);
-            cart.setRecommended(isRecommended); // Thêm trường recommended vào Cart
+//            boolean isRecommended = getIntent().getBooleanExtra("isRecommended", false);
+//            cart.setRecommended(isRecommended); // Thêm trường recommended vào Cart
 
             // Gọi API thêm vào giỏ hàng
             apiService.addToCart("Bearer " + token, cart).enqueue(new Callback<Cart>() {
@@ -162,13 +163,15 @@ public class BookDetailActivity extends AppCompatActivity {
                         Toast.makeText(BookDetailActivity.this, "Đã thêm " + quantity + " sản phẩm vào giỏ hàng", Toast.LENGTH_SHORT).show();
                         Log.d("BookDetailActivity", "Added to cart: " + response.body().toString());
 
-                        // Ghi nhận hành động add_to_cart nếu từ đề xuất
+                        // Ghi nhận add_to_cart nếu từ đề xuất
                         if (isFromRecommendation) {
                             apiService.recordRecommendationAddToCart("Bearer " + token, bookId, response.body().getId()).enqueue(new Callback<Void>() {
                                 @Override
                                 public void onResponse(Call<Void> call, Response<Void> response) {
                                     if (response.isSuccessful()) {
                                         Log.d("BookDetailActivity", "Add to cart recorded for bookId: " + bookId);
+                                    } else {
+                                        Log.e("BookDetailActivity", "Failed to record add_to_cart, status: " + response.code());
                                     }
                                 }
 
@@ -201,7 +204,7 @@ public class BookDetailActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<Cart> call, Throwable t) {
-                    Log.e("BookDetailActivity", "Add to cart failed: " + t.getMessage(), t);
+                    Log.e("BookDetailActivity", "Add to cart failed: " + t.getMessage());
                     Toast.makeText(BookDetailActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });

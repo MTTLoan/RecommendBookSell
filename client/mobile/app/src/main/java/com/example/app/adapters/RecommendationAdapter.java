@@ -138,7 +138,7 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
             Intent intent = new Intent(context, BookDetailActivity.class);
             intent.putExtra("bookId", book.getId());
-            intent.putExtra("fromRecommendation", true); // Đánh dấu từ đề xuất
+            intent.putExtra("fromRecommendation", true);
             context.startActivity(intent);
         });
     }
