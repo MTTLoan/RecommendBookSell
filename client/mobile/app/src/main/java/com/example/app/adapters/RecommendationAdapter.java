@@ -2,7 +2,6 @@ package com.example.app.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +33,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class RecommendationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context context;
     private List<Book> bookList;
     private Map<Integer, String> categoryMap;
@@ -44,7 +43,7 @@ public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int VIEW_TYPE_BEST_SELLER = 1;
     private int viewType;
 
-    public BookAdapter(Context context, List<Book> bookList, List<Category> categoryList, int viewType) {
+    public RecommendationAdapter(Context context, List<Book> bookList, List<Category> categoryList, int viewType) {
         this.context = context;
         this.bookList = bookList != null ? bookList : new ArrayList<>();
         this.viewType = viewType;
@@ -133,8 +132,13 @@ public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 Toast.makeText(context, "ID sách không hợp lệ.", Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            Log.d("BookAdapter", "Clicked bookId: " + book.getId());
+            recordClick(book.getId());
+
             Intent intent = new Intent(context, BookDetailActivity.class);
             intent.putExtra("bookId", book.getId());
+            intent.putExtra("fromRecommendation", true);
             context.startActivity(intent);
         });
     }
@@ -176,4 +180,29 @@ public class BookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
+    private void recordClick(int bookId) {
+        String token = AuthUtils.getToken(context);
+        if (token == null) {
+            Toast.makeText(context, "Vui lòng đăng nhập để ghi nhận hành động.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ApiService apiService = RetrofitClient.getApiService();
+        Call<Void> call = apiService.recordRecommendationClick("Bearer " + token, bookId);
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d("BookAdapter", "Click recorded successfully for bookId: " + bookId);
+                } else {
+                    Log.e("BookAdapter", "Failed to record click, code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("BookAdapter", "Error recording click: " + t.getMessage());
+            }
+        });
+    }
 }
