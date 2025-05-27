@@ -9,7 +9,8 @@ import "../../styles/auth.css";
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
-  const email = searchParams.get("email") || "";
+  const emailFromUrl = searchParams.get("email") || "";
+  const [email, setEmail] = useState(emailFromUrl);
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -21,6 +22,10 @@ const ResetPassword = () => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    if (!email) {
+      setError("Vui lòng nhập email đã nhận mã xác nhận.");
+      return;
+    }
     if (!otp) {
       setError("Vui lòng nhập mã xác nhận (OTP) đã gửi về email.");
       return;
@@ -58,6 +63,19 @@ const ResetPassword = () => {
           <h1 className="auth-title">Khôi phục mật khẩu</h1>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
+              {/* Nếu không có email trên URL, cho phép nhập email */}
+              <Input
+                label="Email"
+                type="email"
+                name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Nhập email đã nhận mã xác nhận"
+                required
+                autoFocus
+              />
+            </div>
+            <div className="mb-4">
               <Input
                 label="Mã xác nhận (OTP)"
                 type="text"
@@ -90,21 +108,12 @@ const ResetPassword = () => {
                 required
               />
             </div>
-            {!email && (
-              <div className="auth-error">
-                Vui lòng truy cập từ liên kết quên mật khẩu để tự động điền
-                email.
-              </div>
-            )}
             {error && <div className="auth-error">{error}</div>}
             {success && <div className="auth-success">{success}</div>}
-            <Button type="submit" disabled={!email}>
-              Đổi mật khẩu
-            </Button>
+            <Button type="submit">Đổi mật khẩu</Button>
           </form>
         </div>
       </div>
-
       {/* Right side - Image */}
       <div
         className="auth-image-container"
