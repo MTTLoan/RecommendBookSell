@@ -31,13 +31,11 @@ const getRecommendations = async (req, res) => {
     async (error, stdout, stderr) => {
       if (error) {
         console.error(`Error: ${error.message}`);
-        return res
-          .status(500)
-          .json({
-            success: false,
-            msg: "Lỗi khi gọi script gợi ý",
-            error: error.message,
-          });
+        return res.status(500).json({
+          success: false,
+          msg: "Lỗi khi gọi script gợi ý",
+          error: error.message,
+        });
       }
       if (stderr) {
         console.error(`Stderr: ${stderr}`);
@@ -49,13 +47,11 @@ const getRecommendations = async (req, res) => {
       try {
         const result = JSON.parse(stdout);
         if (result.error) {
-          return res
-            .status(400)
-            .json({
-              success: false,
-              msg: "Lỗi từ script gợi ý",
-              error: result.error,
-            });
+          return res.status(400).json({
+            success: false,
+            msg: "Lỗi từ script gợi ý",
+            error: result.error,
+          });
         }
 
         // Lấy danh sách bookId từ kết quả của script Python
@@ -77,13 +73,11 @@ const getRecommendations = async (req, res) => {
         });
       } catch (parseError) {
         console.error(`Parse Error: ${parseError.message}`);
-        res
-          .status(500)
-          .json({
-            success: false,
-            msg: "Lỗi khi phân tích kết quả từ script",
-            error: parseError.message,
-          });
+        res.status(500).json({
+          success: false,
+          msg: "Lỗi khi phân tích kết quả từ script",
+          error: parseError.message,
+        });
       }
     }
   );

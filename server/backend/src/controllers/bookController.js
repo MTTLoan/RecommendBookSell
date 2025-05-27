@@ -111,14 +111,31 @@ export const getBookReviews = async (req, res) => {
 };
 
 // Lấy danh sách sách bán chạy nhất (the bestsellers)
-// Get all-time best sellers
 export const getBestSellers = async (req, res) => {
   try {
-    // Aggregate orders to calculate total quantity sold per book
+    // Tính thời gian cho tháng trước
+    const currentDate = new Date(); 
+    const startOfLastMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() - 1,
+      1
+    ); 
+    const endOfLastMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      0
+    );
+
+    // Aggregate orders to calculate total quantity sold per book for last month
     const bestSellers = await Order.aggregate([
       {
         $match: {
           status: "Đã giao",
+          // Lọc đơn hàng trong khoảng thời gian
+          orderDate: {
+            $gte: startOfLastMonth,
+            $lte: endOfLastMonth,
+          },
         },
       },
       {
@@ -138,10 +155,10 @@ export const getBestSellers = async (req, res) => {
       {
         $limit: 20,
       },
-      // Step 6: Lookup to join with the books collection
+      // Lookup to join with the books collection
       {
         $lookup: {
-          from: "books", // The name of the books collection
+          from: "books", // Tên của collection books
           localField: "_id",
           foreignField: "id",
           as: "bookDetails",
@@ -150,33 +167,33 @@ export const getBestSellers = async (req, res) => {
       {
         $unwind: "$bookDetails",
       },
-      // Step 8: Project the desired fields
+      // Project các trường cần thiết
       {
         $project: {
           _id: 0,
           id: "$bookDetails.id",
           name: "$bookDetails.name",
           price: "$bookDetails.price",
-          images: "$bookDetails.images", // Take only the first image categoryId: '$bookDetails.categoryId',
+          images: "$bookDetails.images",
           categoryId: "$bookDetails.categoryId",
           totalQuantitySold: 1,
         },
       },
     ]);
 
-    // Check if any best sellers were found
+    // Kiểm tra xem có sách bán chạy nào được tìm thấy không
     if (!bestSellers || bestSellers.length === 0) {
       return res.status(200).json({
         success: true,
-        msg: "Không tìm thấy sách bán chạy.",
+        msg: "Không tìm thấy sách bán chạy trong tháng trước.",
         book: [],
       });
     }
 
-    // Return the response in the expected format
+    // Trả về kết quả
     res.status(200).json({
       success: true,
-      msg: "Lấy danh sách sách bán chạy thành công.",
+      msg: "Lấy danh sách sách bán chạy tháng trước thành công.",
       book: bestSellers,
     });
   } catch (error) {

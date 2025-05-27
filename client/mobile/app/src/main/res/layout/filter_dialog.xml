@@ -91,7 +91,6 @@
         app:layout_constraintTop_toTopOf="@id/tvPrice"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Price RangeSlider -->
     <com.google.android.material.slider.RangeSlider
         android:id="@+id/sliderPrice"
         android:layout_width="0dp"
@@ -99,10 +98,15 @@
         android:valueFrom="0"
         android:valueTo="700000"
         android:stepSize="10000"
+        app:trackHeight="6dp"
+        app:thumbRadius="10dp"
+        app:haloRadius="14dp"
+        app:tickVisible="false"
+        app:labelBehavior="floating"
         app:layout_constraintTop_toBottomOf="@id/tvPrice"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="8dp" />
 
     <!-- Apply Button -->
     <Button

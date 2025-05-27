@@ -16,6 +16,7 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import recommendationRoutes from "./routes/recommendationRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -69,6 +70,8 @@ app.use("/api/dashboard", dashboardRoutes);
 
 // recommendation routes
 app.use("/api/recommendations", recommendationRoutes);
+
+app.use("/api/reports", reportRoutes);
 
 app.use(errorHandler);
 
