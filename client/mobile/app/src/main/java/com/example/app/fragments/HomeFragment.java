@@ -62,6 +62,7 @@ public class HomeFragment extends Fragment {
     private List<Book> bestSellersList = new ArrayList<>();
     private List<Book> newBooksList = new ArrayList<>();
     private List<Book> recommendationList = new ArrayList<>();
+
     private ApiService apiService;
 
     // Constants
@@ -274,7 +275,6 @@ public class HomeFragment extends Fragment {
             @Override
             public void onFailure(Call<BookResponse> call, Throwable t) {
                 showFailureError("sách đề xuất", t);
-                Log.e("HomeFragment", String.valueOf(t));
             }
         });
     }
