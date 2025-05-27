@@ -1,3 +1,4 @@
+// File: Dashboard.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
@@ -6,8 +7,12 @@ import Widget from "../../components/common/Widget";
 import Chart from "../../components/layout/Chart";
 import Table from "../../components/layout/Table";
 import { isAuthenticated } from "../../services/authService";
-import { fetchDashboardStats } from "../../services/statisticService";
+import {
+  fetchDashboardStats,
+  fetchRevenueData,
+} from "../../services/statisticService";
 import "../../styles/dashboard.css";
+import { getWidgetProps } from "../../utils/widgetUtils";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -23,21 +28,39 @@ const Dashboard = () => {
     productsChange: 0,
     topProducts: [],
     allCategoryOptions: [],
+    availableYears: [],
   });
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [revenueData, setRevenueData] = useState([]); // Dữ liệu doanh thu cho biểu đồ
+  const [filterValue, setFilterValue] = useState(""); // Bộ lọc danh mục
+  const [monthFilter, setMonthFilter] = useState(new Date().getMonth()); // Bộ lọc tháng (mặc định là tháng hiện tại)
+  const [yearFilter, setYearFilter] = useState(new Date().getFullYear()); // Bộ lọc năm (mặc định là năm hiện tại)
+  const [error, setError] = useState(null); // Lưu lỗi nếu có
 
+  // Kiểm tra xác thực người dùng
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate("/auth/login");
     }
   }, [navigate]);
 
+  // Lấy dữ liệu thống kê tổng quan
   useEffect(() => {
     const fetchStatsData = async () => {
+      console.log("Đang lấy dữ liệu với bộ lọc:", {
+        filterValue,
+        monthFilter,
+        yearFilter,
+      });
       try {
-        const res = await fetchDashboardStats(categoryFilter);
+        const res = await fetchDashboardStats(
+          filterValue,
+          monthFilter,
+          yearFilter
+        );
         setStats(res);
-      } catch {
+        setError(null);
+      } catch (error) {
+        console.error("Lỗi fetch dữ liệu:", error);
         setStats({
           revenue: 0,
           revenueChange: 0,
@@ -49,21 +72,42 @@ const Dashboard = () => {
           productsChange: 0,
           topProducts: [],
           allCategoryOptions: [],
+          availableYears: [],
         });
+        setError("Đã xảy ra lỗi khi lấy dữ liệu. Vui lòng thử lại sau.");
       }
     };
     fetchStatsData();
-  }, [categoryFilter]);
+  }, [filterValue, monthFilter, yearFilter]);
 
-  // Tạo filter cho Table từ allCategoryOptions
-  const categoryOptions = stats.allCategoryOptions || [];
+  // Lấy dữ liệu doanh thu cho biểu đồ
+  useEffect(() => {
+    const fetchRevenueChartData = async () => {
+      try {
+        const data = await fetchRevenueData(
+          filterValue,
+          monthFilter,
+          yearFilter
+        );
+        setRevenueData(data);
+      } catch (error) {
+        console.error("Lỗi fetch dữ liệu doanh thu:", error);
+        setRevenueData([]);
+        setError(
+          "Đã xảy ra lỗi khi lấy dữ liệu doanh thu. Vui lòng thử lại sau."
+        );
+      }
+    };
+    fetchRevenueChartData();
+  }, [filterValue, monthFilter, yearFilter]);
 
+  // Cấu hình cột cho bảng Top sản phẩm
   const columns = [
     { key: "name", label: "Tên sản phẩm" },
     {
       key: "category",
       label: "Danh mục",
-      filters: categoryOptions,
+      filters: stats.allCategoryOptions || [],
     },
     { key: "price", label: "Giá" },
     { key: "quantity", label: "Số lượng bán" },
@@ -74,7 +118,6 @@ const Dashboard = () => {
       <Navbar />
       <Sidebar />
       <main className="dashboard-content">
-        {/* Title */}
         <div className="dashboard-title">
           <h1>Tổng quan</h1>
           <div className="dashboard-subtitles">
@@ -88,72 +131,49 @@ const Dashboard = () => {
             </span>
           </div>
         </div>
-
-        {/* Nội dung */}
+        {error && <div className="error-message">{error}</div>}
         {activeSubtitle === "Tổng quan" && (
           <div>
             <div className="dashboard-top">
-              {/* Bên trái: chart */}
               <div className="dashboard-chart">
-                <Chart />
+                {/* Truyền dữ liệu doanh thu vào Chart */}
+                <Chart revenueData={revenueData} />
               </div>
-              {/* Bên phải: widget */}
               <div className="dashboard-widgets">
                 <Widget
-                  title="Doanh thu"
-                  value={stats.revenue?.toLocaleString("vi-VN") + " VND"}
-                  percentage={Math.abs(stats.revenueChange)}
-                  isIncrease={stats.revenueChange >= 0}
-                  description={
-                    stats.revenueChange === 0
-                      ? "Không thay đổi so với tháng trước"
-                      : (stats.revenueChange > 0 ? "Tăng " : "Giảm ") +
-                        Math.abs(stats.revenueChange) +
-                        "% so với tháng trước"
-                  }
+                  {...getWidgetProps(
+                    "Doanh thu",
+                    stats.revenue?.toLocaleString("vi-VN") + " VND",
+                    stats.revenueChange,
+                    monthFilter
+                  )}
                 />
                 <Widget
-                  title="Khách hàng"
-                  value={stats.customers}
-                  percentage={Math.abs(stats.customersChange)}
-                  isIncrease={stats.customersChange >= 0}
-                  description={
-                    stats.customersChange === 0
-                      ? "Không thay đổi so với tháng trước"
-                      : (stats.customersChange > 0 ? "Tăng " : "Giảm ") +
-                        Math.abs(stats.customersChange) +
-                        "% so với tháng trước"
-                  }
+                  {...getWidgetProps(
+                    "Khách hàng",
+                    stats.customers,
+                    stats.customersChange,
+                    monthFilter
+                  )}
                 />
                 <Widget
-                  title="Đơn hàng"
-                  value={stats.orders}
-                  percentage={Math.abs(stats.ordersChange)}
-                  isIncrease={stats.ordersChange >= 0}
-                  description={
-                    stats.ordersChange === 0
-                      ? "Không thay đổi so với tháng trước"
-                      : (stats.ordersChange > 0 ? "Tăng " : "Giảm ") +
-                        Math.abs(stats.ordersChange) +
-                        "% so với tháng trước"
-                  }
+                  {...getWidgetProps(
+                    "Đơn hàng",
+                    stats.orders,
+                    stats.ordersChange,
+                    monthFilter
+                  )}
                 />
                 <Widget
-                  title="Sản phẩm"
-                  value={stats.products}
-                  percentage={Math.abs(stats.productsChange)}
-                  isIncrease={stats.productsChange >= 0}
-                  description={
-                    stats.productsChange === 0
-                      ? "Không thay đổi so với tháng trước"
-                      : (stats.productsChange > 0 ? "Tăng " : "Giảm ") +
-                        Math.abs(stats.productsChange) +
-                        "% so với tháng trước"
-                  }
+                  {...getWidgetProps(
+                    "Sản phẩm",
+                    stats.products,
+                    stats.productsChange,
+                    monthFilter
+                  )}
                 />
               </div>
             </div>
-            {/* Bên dưới */}
             <div
               className="dashboard-bottom"
               style={{ width: "100%", marginTop: 32 }}
@@ -165,13 +185,29 @@ const Dashboard = () => {
                 showHeader={true}
                 showSearch={false}
                 showFilter={true}
+                showMonthFilter={true}
+                showYearFilter={true}
                 showDownload={true}
                 showAddButton={false}
                 showCheckbox={false}
                 showSort={true}
-                style={{ width: "100%" }}
-                filterValue={categoryFilter}
-                setFilterValue={setCategoryFilter}
+                filterValue={filterValue}
+                setFilterValue={setFilterValue}
+                monthFilter={monthFilter}
+                setMonthFilter={setMonthFilter}
+                yearFilter={yearFilter}
+                setYearFilter={setYearFilter}
+                availableYears={stats.availableYears || []}
+                widgetStats={stats} // Truyền dữ liệu widget
+                chartData={revenueData} // Truyền dữ liệu biểu đồ
+                exportConfig={{
+                  fileNamePrefix: "Báo cáo Tổng quan",
+                  worksheetNames: {
+                    widget: "ThongKeTongQuan",
+                    table: "TopSanPham",
+                    chart: "DoanhThu",
+                  },
+                }}
               />
             </div>
           </div>
