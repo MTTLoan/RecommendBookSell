@@ -244,7 +244,6 @@ const Reports = () => {
     XLSX.writeFile(workbook, fileName);
   };
 
-  // Định dạng giá trị doanh thu
   const formatRevenue = (value) => {
     return `${Number(value).toLocaleString("vi-VN")} VND`;
   };
@@ -254,65 +253,71 @@ const Reports = () => {
       <Navbar user={user} onLogout={logout} />
       <Sidebar />
       <main className="dashboard-content">
-        <div className="dashboard-title">
-          <h1>Báo cáo hệ thống đề xuất</h1>
-          <div className="dashboard-subtitles">
-            <span
-              className={`subtitle ${
-                activeSubtitle === "Báo cáo" ? "active" : ""
-              }`}
-              onClick={() => setActiveSubtitle("Báo cáo")}
-            >
-              Báo cáo
-            </span>
-          </div>
-        </div>
-        <div className="table-header">
-          <div className="table-actions">
-            <div className="table-filter">
-              <button className="filter-button" onClick={toggleMonthDropdown}>
-                <span className="filter-text">{monthText}</span>
-                <span className="material-symbols-outlined filter-icon">
-                  filter_list
-                </span>
-              </button>
-              {isMonthDropdownOpen && (
-                <ul className="filter-dropdown">
-                  {monthOptions.map((month) => (
-                    <li
-                      key={month.value ?? "all"}
-                      onClick={() => handleMonthOptionClick(month.value)}
-                    >
-                      {month.text}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div className="table-filter">
-              <button className="filter-button" onClick={toggleYearDropdown}>
-                <span className="filter-text">{yearText}</span>
-                <span className="material-symbols-outlined filter-icon">
-                  filter_list
-                </span>
-              </button>
-              {isYearDropdownOpen && (
-                <ul className="filter-dropdown">
-                  <li onClick={() => handleYearOptionClick(null)}>Năm</li>
-                  {availableYears.map((year) => (
-                    <li key={year} onClick={() => handleYearOptionClick(year)}>
-                      {year}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <button className="table-download" onClick={handleDownloadExcel}>
-              <span className="download-text">Tải xuống</span>
-              <span className="material-symbols-outlined download-icon">
-                download
+        {/* Bọc tiêu đề và bộ lọc trong một container flex */}
+        <div className="header-section">
+          <div className="dashboard-title">
+            <h1>Báo cáo hệ thống đề xuất</h1>
+            <div className="dashboard-subtitles">
+              <span
+                className={`subtitle ${
+                  activeSubtitle === "Báo cáo" ? "active" : ""
+                }`}
+                onClick={() => setActiveSubtitle("Báo cáo")}
+              >
+                Báo cáo
               </span>
-            </button>
+            </div>
+          </div>
+          <div className="table-header">
+            <div className="table-actions">
+              <div className="table-filter">
+                <button className="filter-button" onClick={toggleMonthDropdown}>
+                  <span className="filter-text">{monthText}</span>
+                  <span className="material-symbols-outlined filter-icon">
+                    filter_list
+                  </span>
+                </button>
+                {isMonthDropdownOpen && (
+                  <ul className="filter-dropdown">
+                    {monthOptions.map((month) => (
+                      <li
+                        key={month.value ?? "all"}
+                        onClick={() => handleMonthOptionClick(month.value)}
+                      >
+                        {month.text}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="table-filter">
+                <button className="filter-button" onClick={toggleYearDropdown}>
+                  <span className="filter-text">{yearText}</span>
+                  <span className="material-symbols-outlined filter-icon">
+                    filter_list
+                  </span>
+                </button>
+                {isYearDropdownOpen && (
+                  <ul className="filter-dropdown">
+                    <li onClick={() => handleYearOptionClick(null)}>Năm</li>
+                    {availableYears.map((year) => (
+                      <li
+                        key={year}
+                        onClick={() => handleYearOptionClick(year)}
+                      >
+                        {year}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <button className="table-download" onClick={handleDownloadExcel}>
+                <span className="download-text">Tải xuống</span>
+                <span className="material-symbols-outlined download-icon">
+                  download
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -325,7 +330,7 @@ const Reports = () => {
               <div className="dashboard-widgets">
                 <Widget
                   title="Doanh thu từ hệ thống đề xuất"
-                  value={formatRevenue(stats.revenue.value)} // Áp dụng định dạng
+                  value={formatRevenue(stats.revenue.value)}
                   percentage={stats.revenue.percentage}
                   isIncrease={stats.revenue.isIncrease}
                   description="So với tháng trước"
@@ -366,7 +371,7 @@ const Reports = () => {
                   showHeader={true}
                   showSearch={false}
                   showFilter={true}
-                  showDownload={true}
+                  showDownload={false}
                   showAddButton={false}
                   showCheckbox={false}
                   showSort={true}
