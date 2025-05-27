@@ -1,5 +1,9 @@
 import express from "express";
-import { submitReview, getReviewStatsForBooks, getReviewsByBookId } from "../controllers/reviewController.js";
+import {
+  submitReview,
+  getReviewStatsForBooks,
+  getReviewsByBookId,
+} from "../controllers/reviewController.js";
 import userJwtMiddleware from "../middleware/user_jwt.js";
 import Review from "../models/Review.js";
 import mongoose from "mongoose";
@@ -7,7 +11,7 @@ import mongoose from "mongoose";
 const router = express.Router();
 
 // Route lấy tất cả đánh giá
-router.get("/", async (req, res) => {
+router.get("/", userJwtMiddleware, async (req, res) => {
   try {
     const reviews = await Review.find().select("userId bookId rating comment");
     res.status(200).json(reviews);
@@ -40,7 +44,7 @@ router.get("/:orderId/reviews", userJwtMiddleware, async (req, res) => {
   }
 });
 
-router.post("/stats", getReviewStatsForBooks);
-router.get("/book/:bookId", getReviewsByBookId);
+router.post("/stats", userJwtMiddleware, getReviewStatsForBooks);
+router.get("/book/:bookId", userJwtMiddleware, getReviewsByBookId);
 
 export default router;

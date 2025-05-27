@@ -13,8 +13,11 @@ const api = axios.create({
 });
 
 export const searchNameBooks = async (query) => {
+  const token = localStorage.getItem("token");
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
   const res = await axios.get(
-    `${API_BASE_URL}/books/search?q=${encodeURIComponent(query)}`
+    `${API_BASE_URL}/books/search?q=${encodeURIComponent(query)}`,
+    { headers }
   );
   return res.data.books || [];
 };
@@ -25,12 +28,20 @@ export const fetchBooks = async () => {
 };
 
 export const fetchBookDetail = async (id) => {
-  const res = await axios.get(`${API_BASE_URL}/books/book-detail/${id}`);
+  const token = localStorage.getItem("token");
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const res = await axios.get(`${API_BASE_URL}/books/book-detail/${id}`, {
+    headers,
+  });
   return res.data.book;
 };
 
 export const addBook = async (bookData) => {
-  const res = await axios.post(`${API_BASE_URL}/books/add-book`, bookData);
+  const token = localStorage.getItem("token");
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const res = await axios.post(`${API_BASE_URL}/books/add-book`, bookData, {
+    headers,
+  });
   return res.data.book;
 };
 
@@ -45,15 +56,22 @@ export const peekNextBookId = async () => {
 };
 
 export const updateBook = async (id, bookData) => {
+  const token = localStorage.getItem("token");
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
   const res = await axios.put(
     `${API_BASE_URL}/books/update-book/${id}`,
-    bookData
+    bookData,
+    { headers }
   );
   return res.data.book;
 };
 
 export const deleteBook = async (id) => {
-  const res = await axios.delete(`${API_BASE_URL}/books/delete-book/${id}`);
+  const token = localStorage.getItem("token");
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const res = await axios.delete(`${API_BASE_URL}/books/delete-book/${id}`, {
+    headers,
+  });
   return res.data;
 };
 

@@ -12,9 +12,15 @@ export const fetchDashboardStats = async (category, month, year) => {
 
     console.log("Gửi yêu cầu API với params:", params);
 
-    // Gửi yêu cầu GET với query params
+    // Lấy token từ localStorage
+    const token = localStorage.getItem("token");
+    // Thiết lập headers, chỉ định Authorization nếu có token
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    // Gửi yêu cầu GET với query params và headers
     const response = await axios.get(`${API_BASE_URL}/dashboard/stats`, {
       params,
+      headers,
     });
 
     console.log("Dữ liệu từ API:", response.data);
@@ -36,9 +42,15 @@ export const fetchRevenueData = async (category, month, year) => {
 
     console.log("Gửi yêu cầu API doanh thu với params:", params);
 
-    // Gửi yêu cầu GET với query params
+    // Lấy token từ localStorage
+    const token = localStorage.getItem("token");
+    // Thiết lập headers, chỉ định Authorization nếu có token
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    // Gửi yêu cầu GET với query params và headers
     const response = await axios.get(`${API_BASE_URL}/dashboard/revenue`, {
       params,
+      headers,
     });
 
     console.log("Dữ liệu doanh thu từ API:", response.data);

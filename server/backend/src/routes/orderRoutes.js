@@ -34,6 +34,6 @@ router.post("/", userJwtMiddleware, addOrder);
 router.put("/admin/:id/status", userJwtMiddleware, adminUpdateOrderStatus);
 //router.put("/:id", userJwtMiddleware, updateOrder);
 
-router.get("/", getAllOrders);
+router.get("/", userJwtMiddleware, getAllOrders);
 
 export default router;

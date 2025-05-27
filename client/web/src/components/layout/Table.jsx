@@ -51,7 +51,6 @@ const Table = ({
   exportConfig = {}, // Thêm config cho xuất file Excel
   chartData = [],
   onDownload, // Thêm prop onDownload để tuỳ chỉnh xuất file
-  loading, // Thêm prop loading để hiển thị trạng thái tải dữ liệu
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(20);
@@ -461,9 +460,7 @@ const Table = ({
       )}
       {/* Bảng dữ liệu */}
       <div className="table-content-spacing table-scroll">
-        {loading ? (
-          <div className="loading-message">Đang tải dữ liệu...</div>
-        ) : data && data.length > 0 ? (
+        {data && data.length > 0 ? (
           <table className="table">
             <thead>
               <tr>

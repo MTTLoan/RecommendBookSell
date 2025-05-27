@@ -18,7 +18,7 @@ router.get("/search", user_jwt, adminSearchUsersController);
 router.delete("/:id", user_jwt, adminDeleteUserController);
 router.get("/:id", user_jwt, adminGetUserDetailController);
 router.get("/", user_jwt, adminGetAllUsersController);
-router.post("/", uploadAvatar, adminAddUserController);
-router.put("/:id", uploadAvatar, adminUpdateUserController);
+router.post("/", user_jwt, uploadAvatar, adminAddUserController);
+router.put("/:id", user_jwt, uploadAvatar, adminUpdateUserController);
 
 export default router;

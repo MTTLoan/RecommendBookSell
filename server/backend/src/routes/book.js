@@ -19,6 +19,7 @@ import {
   deleteBook,
 } from "../controllers/bookController.js";
 import Book from "../models/Book.js";
+import user_jwt from "../middleware/user_jwt.js";
 import uploadProductImages from "../middleware/uploadProductImages.js";
 
 const router = express.Router();
@@ -32,17 +33,17 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/all-book", getBooks);
+router.get("/all-book", user_jwt, getBooks);
 router.get("/book-detail/:id", getBookDetail);
 router.get("/book-detail/:bookId/reviews", getBookReviews);
 router.get("/search", searchRateLimiter, handleValidationErrors, searchBooks);
 router.get("/best-sellers", getBestSellers);
 router.get("/new-books", getNewBooks);
 router.get("/peek-next-id", peekNextBookIdApi);
-router.post("/add-book", createBook);
-router.put("/update-book/:id", updateBook);
-router.delete("/delete-book/:id", deleteBook);
-router.get("/search", searchNameBooks);
+router.post("/add-book", user_jwt, createBook);
+router.put("/update-book/:id", user_jwt, updateBook);
+router.delete("/delete-book/:id", user_jwt, deleteBook);
+router.get("/search", user_jwt, searchNameBooks);
 // API upload nhiều ảnh sản phẩm
 router.post("/upload-image", uploadProductImages, (req, res) => {
   if (!req.files || req.files.length === 0) {
