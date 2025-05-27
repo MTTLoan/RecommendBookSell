@@ -113,35 +113,6 @@ const RevenueChart = ({ chartData }) => {
           <h2>Biểu đồ doanh thu</h2>
           <span className="chart-subtitle">Chú thích: Doanh thu theo ngày</span>
         </div>
-        <div className="chart-actions">
-          <div className="chart-filter">
-            <button className="filter-button" onClick={toggleDropdown}>
-              <span className="filter-text">{filter}</span>
-              <span className="material-symbols-outlined filter-icon">
-                filter_list
-              </span>
-            </button>
-            {isDropdownOpen && (
-              <ul className="filter-dropdown">
-                <li onClick={() => handleFilterChange("Tất cả")}>Tất cả</li>
-                <li onClick={() => handleFilterChange("Tháng này")}>
-                  Tháng này
-                </li>
-                <li onClick={() => handleFilterChange("Quý này")}>Quý này</li>
-                <li onClick={() => handleFilterChange("Năm nay")}>Năm nay</li>
-              </ul>
-            )}
-          </div>
-          <button
-            className="chart-download"
-            onClick={handleDownload}
-            title="Tải xuống"
-          >
-            <span className="material-symbols-outlined download-icon">
-              download
-            </span>
-          </button>
-        </div>
       </div>
       <div className="chart-body">
         <Line data={data} options={options} />

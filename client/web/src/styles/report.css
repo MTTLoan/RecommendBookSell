@@ -258,3 +258,22 @@
   border-color: #3fbf48;
   box-shadow: 0 0 5px rgba(63, 191, 72, 0.5);
 }
+
+.chart-container {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  border: none !important; /* Xóa viền của container */
+}
+
+.chart-body {
+  background-color: #fff;
+  padding: 10px;
+  border: none !important; /* Xóa viền của phần thân biểu đồ */
+}
+
+.dashboard-chart,
+.dashboard-bottom-chart {
+  background-color: #fff !important;
+  border: none !important; /* Xóa viền của các khu vực chứa biểu đồ */
+}
