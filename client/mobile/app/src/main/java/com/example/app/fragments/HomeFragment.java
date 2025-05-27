@@ -36,10 +36,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -85,12 +83,13 @@ public class HomeFragment extends Fragment {
         fetchCategories();
         fetchBooks();
 
-        // Đặt tiêu đề tháng hiện tại
-        TextView newBooksTitle = view.findViewById(R.id.newBooksTitle);
+        // Đặt tiêu đề tháng trước
+        TextView bestSellersTitle = view.findViewById(R.id.bestSellersTitle);
         SimpleDateFormat sdf = new SimpleDateFormat("MM/yyyy", Locale.getDefault());
-        String currentMonth = sdf.format(Calendar.getInstance().getTime());
-        newBooksTitle.setText("Sách mới nhất tháng " + currentMonth);
-
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, -1); // Trừ đi 1 tháng để lấy tháng trước
+        String lastMonth = sdf.format(calendar.getTime());
+        bestSellersTitle.setText("Sách bán chạy nhất tháng " + lastMonth);
         return view;
     }
 
