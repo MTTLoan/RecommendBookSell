@@ -24,28 +24,30 @@ import uploadProductImages from "../middleware/uploadProductImages.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  try {
-    const books = await Book.find().select("id name averageRating");
-    res.status(200).json(books);
-  } catch (error) {
-    res.status(500).json({ error: "Lỗi khi lấy dữ liệu sách" });
-  }
-});
-
-router.get("/all-book", user_jwt, getBooks);
-router.get("/book-detail/:id", getBookDetail);
-router.get("/book-detail/:bookId/reviews", getBookReviews);
+// Lấy danh sách sách
+router.get("/", user_jwt, getBooks);
+// Lấy chi tiết sách
+router.get("/:id", getBookDetail);
+// Lấy review của sách
+router.get("/:id/reviews", getBookReviews);
+// Tìm kiếm sách
 router.get("/search", searchRateLimiter, handleValidationErrors, searchBooks);
+// Sách bán chạy
 router.get("/best-sellers", getBestSellers);
+// Sách mới
 router.get("/new-books", getNewBooks);
+// Lấy id tiếp theo
 router.get("/peek-next-id", peekNextBookIdApi);
-router.post("/add-book", user_jwt, createBook);
-router.put("/update-book/:id", user_jwt, updateBook);
-router.delete("/delete-book/:id", user_jwt, deleteBook);
-router.get("/search", user_jwt, searchNameBooks);
-// API upload nhiều ảnh sản phẩm
-router.post("/upload-image", uploadProductImages, (req, res) => {
+// Thêm sách
+router.post("/", user_jwt, createBook);
+// Sửa sách
+router.put("/:id", user_jwt, updateBook);
+// Xóa sách
+router.delete("/:id", user_jwt, deleteBook);
+// Tìm kiếm ở admin
+router.get("/admin/search", user_jwt, searchNameBooks);
+// Upload nhiều ảnh sản phẩm
+router.post("/upload-image", user_jwt, uploadProductImages, (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res
       .status(400)
@@ -53,7 +55,6 @@ router.post("/upload-image", uploadProductImages, (req, res) => {
   }
   // Trả về mảng url ảnh
   const images = req.files.map((f) => f.location);
-  // Nếu chỉ upload 1 ảnh, trả về image cho frontend cũ
   if (images.length === 1) {
     return res.json({ success: true, image: images[0] });
   }

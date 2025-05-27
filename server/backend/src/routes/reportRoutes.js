@@ -12,13 +12,19 @@ import user_jwt from "../middleware/user_jwt.js";
 
 const router = express.Router();
 
-// Các route riêng biệt cho từng loại dữ liệu
+// Thống kê doanh thu
 router.get("/stats/revenue", user_jwt, getRevenueStats);
+// Thống kê lượt click
 router.get("/stats/clicks", user_jwt, getClickStats);
+// Thống kê thêm vào giỏ hàng
 router.get("/stats/add-to-cart", user_jwt, getAddToCartStats);
+// Thống kê mua hàng
 router.get("/stats/purchases", user_jwt, getPurchaseStats);
+// Top sản phẩm
 router.get("/top-products", user_jwt, getTopProducts);
-router.get("/chart/revenue", user_jwt, getRevenueChartData);
-router.get("/chart/category-revenue", user_jwt, getCategoryRevenueChartData);
+// Biểu đồ doanh thu
+router.get("/charts/revenue", user_jwt, getRevenueChartData);
+// Biểu đồ doanh thu theo danh mục
+router.get("/charts/category-revenue", user_jwt, getCategoryRevenueChartData);
 
 export default router;

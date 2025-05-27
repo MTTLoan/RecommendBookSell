@@ -23,8 +23,14 @@ router.get("/", userJwtMiddleware, async (req, res) => {
 // Route gửi đánh giá
 router.post("/", userJwtMiddleware, submitReview);
 
-// Endpoint kiểm tra xem đơn hàng có review chưa
-router.get("/:orderId/reviews", userJwtMiddleware, async (req, res) => {
+// Lấy thống kê review cho nhiều sách
+router.post("/stats", userJwtMiddleware, getReviewStatsForBooks);
+
+// Lấy review theo bookId
+router.get("/book/:bookId", userJwtMiddleware, getReviewsByBookId);
+
+// Kiểm tra đơn hàng đã review chưa
+router.get("/order/:orderId/review", userJwtMiddleware, async (req, res) => {
   try {
     const orderId = parseInt(req.params.orderId);
     const userId = req.user.id;
@@ -43,8 +49,5 @@ router.get("/:orderId/reviews", userJwtMiddleware, async (req, res) => {
     });
   }
 });
-
-router.post("/stats", userJwtMiddleware, getReviewStatsForBooks);
-router.get("/book/:bookId", userJwtMiddleware, getReviewsByBookId);
 
 export default router;
