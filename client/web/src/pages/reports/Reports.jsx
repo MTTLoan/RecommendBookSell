@@ -18,6 +18,22 @@ import {
   fetchCategoryRevenueChartData,
 } from "../../services/reportService";
 
+const monthOptions = [
+  { value: null, text: "Tất cả tháng" },
+  { value: 0, text: "Tháng 1" },
+  { value: 1, text: "Tháng 2" },
+  { value: 2, text: "Tháng 3" },
+  { value: 3, text: "Tháng 4" },
+  { value: 4, text: "Tháng 5" },
+  { value: 5, text: "Tháng 6" },
+  { value: 6, text: "Tháng 7" },
+  { value: 7, text: "Tháng 8" },
+  { value: 8, text: "Tháng 9" },
+  { value: 9, text: "Tháng 10" },
+  { value: 10, text: "Tháng 11" },
+  { value: 11, text: "Tháng 12" },
+];
+
 const Reports = () => {
   const navigate = useNavigate();
   const [activeSubtitle, setActiveSubtitle] = useState("Báo cáo");
@@ -37,8 +53,15 @@ const Reports = () => {
     labels: [],
     data: [],
   });
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [year, setYear] = useState(new Date().getFullYear());
+
+  const [monthFilter, setMonthFilter] = useState(4);
+  const [yearFilter, setYearFilter] = useState(2025);
+  const [monthText, setMonthText] = useState("Tháng 5");
+  const [yearText, setYearText] = useState("2025");
+  const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
+  const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
+
+  const availableYears = [2024, 2025];
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -48,16 +71,16 @@ const Reports = () => {
       fetchTopProductsData();
       fetchChartData();
     }
-  }, [navigate, month, year]);
+  }, [navigate, monthFilter, yearFilter]);
 
   const fetchStats = async () => {
     try {
       const [revenueData, clicksData, addToCartData, purchasesData] =
         await Promise.all([
-          fetchRevenueStats(month, year),
-          fetchClickStats(month, year),
-          fetchAddToCartStats(month, year),
-          fetchPurchaseStats(month, year),
+          fetchRevenueStats(monthFilter, yearFilter),
+          fetchClickStats(monthFilter, yearFilter),
+          fetchAddToCartStats(monthFilter, yearFilter),
+          fetchPurchaseStats(monthFilter, yearFilter),
         ]);
 
       setStats({
@@ -73,7 +96,7 @@ const Reports = () => {
 
   const fetchTopProductsData = async () => {
     try {
-      const data = await fetchTopProducts(month, year);
+      const data = await fetchTopProducts(monthFilter, yearFilter);
       setTopProducts(data);
     } catch (error) {
       console.error("Error fetching top products:", error);
@@ -83,8 +106,8 @@ const Reports = () => {
   const fetchChartData = async () => {
     try {
       const [revenueData, categoryData] = await Promise.all([
-        fetchRevenueChartData(month, year),
-        fetchCategoryRevenueChartData(month, year),
+        fetchRevenueChartData(monthFilter, yearFilter),
+        fetchCategoryRevenueChartData(monthFilter, yearFilter),
       ]);
 
       setRevenueChartData({
@@ -104,16 +127,127 @@ const Reports = () => {
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
 
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const years = Array.from(
-    { length: new Date().getFullYear() - 2019 },
-    (_, i) => 2020 + i
-  );
-
   const columns = [
     { key: "name", label: "Tên sản phẩm" },
     { key: "quantity", label: "Lượt bán" },
   ];
+
+  const handleMonthOptionClick = (value) => {
+    const found = monthOptions.find((m) => m.value === value);
+    setMonthText(found ? found.text : "Tất cả tháng");
+    setMonthFilter(value);
+    setIsMonthDropdownOpen(false);
+  };
+
+  const handleYearOptionClick = (value) => {
+    setYearText(value === null ? "Năm" : value.toString());
+    setYearFilter(value);
+    setIsYearDropdownOpen(false);
+  };
+
+  const toggleMonthDropdown = () => {
+    setIsMonthDropdownOpen((prev) => !prev);
+    setIsYearDropdownOpen(false);
+  };
+
+  const toggleYearDropdown = () => {
+    setIsYearDropdownOpen((prev) => !prev);
+    setIsMonthDropdownOpen(false);
+  };
+
+  const handleDownloadExcel = () => {
+    const fileNamePrefix = "Báo cáo";
+    let fileName;
+    const currentDate = new Date().toISOString().split("T")[0];
+    if (yearFilter === null) {
+      fileName = `${fileNamePrefix}_${currentDate}.xlsx`;
+    } else if (monthFilter === null) {
+      fileName = `${fileNamePrefix}_${yearFilter}.xlsx`;
+    } else {
+      const month = String(monthFilter + 1).padStart(2, "0");
+      fileName = `${fileNamePrefix}_${yearFilter}-${month}.xlsx`;
+    }
+
+    const widgetData = [
+      ["Tiêu chí", "Giá trị", "Phần trăm thay đổi", "Tăng/Giảm"],
+      [
+        "Doanh thu từ hệ thống đề xuất",
+        `${Number(stats.revenue.value).toLocaleString("vi-VN")} VND`,
+        stats.revenue.percentage,
+        stats.revenue.isIncrease ? "Tăng" : "Giảm",
+      ],
+      [
+        "Lượt nhấn vào sản phẩm gợi ý",
+        stats.clicks.value,
+        stats.clicks.percentage,
+        stats.clicks.isIncrease ? "Tăng" : "Giảm",
+      ],
+      [
+        "Lượt thêm vào giỏ hàng",
+        stats.addToCart.value,
+        stats.addToCart.percentage,
+        stats.addToCart.isIncrease ? "Tăng" : "Giảm",
+      ],
+      [
+        "Lượt mua hàng từ gợi ý",
+        stats.purchases.value,
+        stats.purchases.percentage,
+        stats.purchases.isIncrease ? "Tăng" : "Giảm",
+      ],
+    ];
+
+    const tableData = [
+      ["Tên sản phẩm", "Lượt bán"],
+      ...topProducts.map((item) => [item.name, item.quantity]),
+    ];
+
+    const revenueChartCsv = [
+      ["Ngày", "Tổng doanh thu", "Doanh thu từ đề xuất"],
+      ...revenueChartData.labels.map((label, index) => [
+        label,
+        revenueChartData.totalRevenue[index] || 0,
+        revenueChartData.recommendedRevenue[index] || 0,
+      ]),
+    ];
+
+    const categoryChartCsv = [
+      ["Danh mục", "Doanh thu"],
+      ...categoryChartData.labels.map((label, index) => [
+        label,
+        categoryChartData.data[index] || 0,
+      ]),
+    ];
+
+    const XLSX = require("xlsx");
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet(widgetData),
+      "ThongKe"
+    );
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet(tableData),
+      "DanhSach"
+    );
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet(revenueChartCsv),
+      "BieuDoDoanhThu"
+    );
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.aoa_to_sheet(categoryChartCsv),
+      "BieuDoDanhMuc"
+    );
+
+    XLSX.writeFile(workbook, fileName);
+  };
+
+  // Định dạng giá trị doanh thu
+  const formatRevenue = (value) => {
+    return `${Number(value).toLocaleString("vi-VN")} VND`;
+  };
 
   return (
     <div className="dashboard-layout">
@@ -132,27 +266,53 @@ const Reports = () => {
               Báo cáo
             </span>
           </div>
-          <div className="dashboard-date-filters">
-            <select
-              value={month}
-              onChange={(e) => setMonth(Number(e.target.value))}
-            >
-              {months.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-            <select
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-            >
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
+        </div>
+        <div className="table-header">
+          <div className="table-actions">
+            <div className="table-filter">
+              <button className="filter-button" onClick={toggleMonthDropdown}>
+                <span className="filter-text">{monthText}</span>
+                <span className="material-symbols-outlined filter-icon">
+                  filter_list
+                </span>
+              </button>
+              {isMonthDropdownOpen && (
+                <ul className="filter-dropdown">
+                  {monthOptions.map((month) => (
+                    <li
+                      key={month.value ?? "all"}
+                      onClick={() => handleMonthOptionClick(month.value)}
+                    >
+                      {month.text}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="table-filter">
+              <button className="filter-button" onClick={toggleYearDropdown}>
+                <span className="filter-text">{yearText}</span>
+                <span className="material-symbols-outlined filter-icon">
+                  filter_list
+                </span>
+              </button>
+              {isYearDropdownOpen && (
+                <ul className="filter-dropdown">
+                  <li onClick={() => handleYearOptionClick(null)}>Năm</li>
+                  {availableYears.map((year) => (
+                    <li key={year} onClick={() => handleYearOptionClick(year)}>
+                      {year}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <button className="table-download" onClick={handleDownloadExcel}>
+              <span className="download-text">Tải xuống</span>
+              <span className="material-symbols-outlined download-icon">
+                download
+              </span>
+            </button>
           </div>
         </div>
 
@@ -165,7 +325,7 @@ const Reports = () => {
               <div className="dashboard-widgets">
                 <Widget
                   title="Doanh thu từ hệ thống đề xuất"
-                  value={stats.revenue.value}
+                  value={formatRevenue(stats.revenue.value)} // Áp dụng định dạng
                   percentage={stats.revenue.percentage}
                   isIncrease={stats.revenue.isIncrease}
                   description="So với tháng trước"

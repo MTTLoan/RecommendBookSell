@@ -5,21 +5,21 @@ import Order from "../models/Order.js";
 export const getRevenueStats = async (req, res) => {
   try {
     const { month, year } = req.query;
-    const startDate = new Date(
-      year || new Date().getFullYear(),
-      (month || new Date().getMonth()) - 1,
-      1
-    );
-    const endDate = new Date(
-      year || new Date().getFullYear(),
-      month || new Date().getMonth(),
-      0,
-      23,
-      59,
-      59
-    );
+    const selectedYear = year || new Date().getFullYear();
+    let startDate, endDate;
 
-    // Lấy tổng doanh thu từ Order theo tháng và năm
+    if (month === undefined || month === "null" || month === null) {
+      // Báo cáo theo năm
+      startDate = new Date(selectedYear, 0, 1); // Ngày 1 tháng 1
+      endDate = new Date(selectedYear, 11, 31, 23, 59, 59); // Ngày 31 tháng 12
+    } else {
+      // Báo cáo theo tháng
+      const selectedMonth = month || new Date().getMonth();
+      startDate = new Date(selectedYear, selectedMonth - 1, 1);
+      endDate = new Date(selectedYear, selectedMonth, 0, 23, 59, 59);
+    }
+
+    // Lấy tổng doanh thu từ Order theo khoảng thời gian
     const recommendedOrders = await Order.aggregate([
       {
         $match: {
@@ -33,28 +33,35 @@ export const getRevenueStats = async (req, res) => {
     const totalRevenue =
       recommendedOrders.length > 0 ? recommendedOrders[0].totalRevenue : 0;
 
-    // So sánh với tháng trước
-    const lastMonthStart = new Date(startDate);
-    lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
-    const lastMonthEnd = new Date(endDate);
-    lastMonthEnd.setMonth(lastMonthEnd.getMonth() - 1);
-    const lastMonthOrders = await Order.aggregate([
+    // So sánh với khoảng thời gian trước (năm trước hoặc tháng trước)
+    let lastPeriodStart, lastPeriodEnd;
+    if (month === undefined || month === "null" || month === null) {
+      lastPeriodStart = new Date(selectedYear - 1, 0, 1);
+      lastPeriodEnd = new Date(selectedYear - 1, 11, 31, 23, 59, 59);
+    } else {
+      lastPeriodStart = new Date(startDate);
+      lastPeriodStart.setMonth(lastPeriodStart.getMonth() - 1);
+      lastPeriodEnd = new Date(endDate);
+      lastPeriodEnd.setMonth(lastPeriodEnd.getMonth() - 1);
+    }
+
+    const lastPeriodOrders = await Order.aggregate([
       {
         $match: {
           "items.recommend": true,
-          orderDate: { $gte: lastMonthStart, $lte: lastMonthEnd },
+          orderDate: { $gte: lastPeriodStart, $lte: lastPeriodEnd },
           status: "Đã giao",
         },
       },
       { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } },
     ]);
-    const lastMonthRevenue =
-      lastMonthOrders.length > 0 ? lastMonthOrders[0].totalRevenue : 0;
+    const lastPeriodRevenue =
+      lastPeriodOrders.length > 0 ? lastPeriodOrders[0].totalRevenue : 0;
 
     // Tính phần trăm thay đổi
     const revenuePercentage =
-      lastMonthRevenue > 0
-        ? ((totalRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+      lastPeriodRevenue > 0
+        ? ((totalRevenue - lastPeriodRevenue) / lastPeriodRevenue) * 100
         : 0;
 
     res.status(200).json({
@@ -71,40 +78,42 @@ export const getRevenueStats = async (req, res) => {
 export const getClickStats = async (req, res) => {
   try {
     const { month, year } = req.query;
-    const startDate = new Date(
-      year || new Date().getFullYear(),
-      (month || new Date().getMonth()) - 1,
-      1
-    );
-    const endDate = new Date(
-      year || new Date().getFullYear(),
-      month || new Date().getMonth(),
-      0,
-      23,
-      59,
-      59
-    );
+    const selectedYear = year || new Date().getFullYear();
+    let startDate, endDate;
 
-    // Lấy dữ liệu lượt nhấn theo tháng và năm
+    if (month === undefined || month === "null" || month === null) {
+      startDate = new Date(selectedYear, 0, 1);
+      endDate = new Date(selectedYear, 11, 31, 23, 59, 59);
+    } else {
+      const selectedMonth = month || new Date().getMonth();
+      startDate = new Date(selectedYear, selectedMonth - 1, 1);
+      endDate = new Date(selectedYear, selectedMonth, 0, 23, 59, 59);
+    }
+
     const clicks = await RecommendationTracking.countDocuments({
       action: "click",
       timestamp: { $gte: startDate, $lte: endDate },
     });
 
-    // So sánh với tháng trước
-    const lastMonthStart = new Date(startDate);
-    lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
-    const lastMonthEnd = new Date(endDate);
-    lastMonthEnd.setMonth(lastMonthEnd.getMonth() - 1);
-    const lastMonthClicks = await RecommendationTracking.countDocuments({
+    let lastPeriodStart, lastPeriodEnd;
+    if (month === undefined || month === "null" || month === null) {
+      lastPeriodStart = new Date(selectedYear - 1, 0, 1);
+      lastPeriodEnd = new Date(selectedYear - 1, 11, 31, 23, 59, 59);
+    } else {
+      lastPeriodStart = new Date(startDate);
+      lastPeriodStart.setMonth(lastPeriodStart.getMonth() - 1);
+      lastPeriodEnd = new Date(endDate);
+      lastPeriodEnd.setMonth(lastPeriodEnd.getMonth() - 1);
+    }
+
+    const lastPeriodClicks = await RecommendationTracking.countDocuments({
       action: "click",
-      timestamp: { $gte: lastMonthStart, $lte: lastMonthEnd },
+      timestamp: { $gte: lastPeriodStart, $lte: lastPeriodEnd },
     });
 
-    // Tính phần trăm thay đổi
     const clickPercentage =
-      lastMonthClicks > 0
-        ? ((clicks - lastMonthClicks) / lastMonthClicks) * 100
+      lastPeriodClicks > 0
+        ? ((clicks - lastPeriodClicks) / lastPeriodClicks) * 100
         : 0;
 
     res.status(200).json({
@@ -121,40 +130,42 @@ export const getClickStats = async (req, res) => {
 export const getAddToCartStats = async (req, res) => {
   try {
     const { month, year } = req.query;
-    const startDate = new Date(
-      year || new Date().getFullYear(),
-      (month || new Date().getMonth()) - 1,
-      1
-    );
-    const endDate = new Date(
-      year || new Date().getFullYear(),
-      month || new Date().getMonth(),
-      0,
-      23,
-      59,
-      59
-    );
+    const selectedYear = year || new Date().getFullYear();
+    let startDate, endDate;
 
-    // Lấy dữ liệu lượt thêm vào giỏ hàng theo tháng và năm
+    if (month === undefined || month === "null" || month === null) {
+      startDate = new Date(selectedYear, 0, 1);
+      endDate = new Date(selectedYear, 11, 31, 23, 59, 59);
+    } else {
+      const selectedMonth = month || new Date().getMonth();
+      startDate = new Date(selectedYear, selectedMonth - 1, 1);
+      endDate = new Date(selectedYear, selectedMonth, 0, 23, 59, 59);
+    }
+
     const addToCart = await RecommendationTracking.countDocuments({
       action: "add_to_cart",
       timestamp: { $gte: startDate, $lte: endDate },
     });
 
-    // So sánh với tháng trước
-    const lastMonthStart = new Date(startDate);
-    lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
-    const lastMonthEnd = new Date(endDate);
-    lastMonthEnd.setMonth(lastMonthEnd.getMonth() - 1);
-    const lastMonthAddToCart = await RecommendationTracking.countDocuments({
+    let lastPeriodStart, lastPeriodEnd;
+    if (month === undefined || month === "null" || month === null) {
+      lastPeriodStart = new Date(selectedYear - 1, 0, 1);
+      lastPeriodEnd = new Date(selectedYear - 1, 11, 31, 23, 59, 59);
+    } else {
+      lastPeriodStart = new Date(startDate);
+      lastPeriodStart.setMonth(lastPeriodStart.getMonth() - 1);
+      lastPeriodEnd = new Date(endDate);
+      lastPeriodEnd.setMonth(lastPeriodEnd.getMonth() - 1);
+    }
+
+    const lastPeriodAddToCart = await RecommendationTracking.countDocuments({
       action: "add_to_cart",
-      timestamp: { $gte: lastMonthStart, $lte: lastMonthEnd },
+      timestamp: { $gte: lastPeriodStart, $lte: lastPeriodEnd },
     });
 
-    // Tính phần trăm thay đổi
     const addToCartPercentage =
-      lastMonthAddToCart > 0
-        ? ((addToCart - lastMonthAddToCart) / lastMonthAddToCart) * 100
+      lastPeriodAddToCart > 0
+        ? ((addToCart - lastPeriodAddToCart) / lastPeriodAddToCart) * 100
         : 0;
 
     res.status(200).json({
@@ -171,40 +182,42 @@ export const getAddToCartStats = async (req, res) => {
 export const getPurchaseStats = async (req, res) => {
   try {
     const { month, year } = req.query;
-    const startDate = new Date(
-      year || new Date().getFullYear(),
-      (month || new Date().getMonth()) - 1,
-      1
-    );
-    const endDate = new Date(
-      year || new Date().getFullYear(),
-      month || new Date().getMonth(),
-      0,
-      23,
-      59,
-      59
-    );
+    const selectedYear = year || new Date().getFullYear();
+    let startDate, endDate;
 
-    // Lấy dữ liệu lượt mua hàng theo tháng và năm
+    if (month === undefined || month === "null" || month === null) {
+      startDate = new Date(selectedYear, 0, 1);
+      endDate = new Date(selectedYear, 11, 31, 23, 59, 59);
+    } else {
+      const selectedMonth = month || new Date().getMonth();
+      startDate = new Date(selectedYear, selectedMonth - 1, 1);
+      endDate = new Date(selectedYear, selectedMonth, 0, 23, 59, 59);
+    }
+
     const purchases = await RecommendationTracking.countDocuments({
       action: "purchase",
       timestamp: { $gte: startDate, $lte: endDate },
     });
 
-    // So sánh với tháng trước
-    const lastMonthStart = new Date(startDate);
-    lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
-    const lastMonthEnd = new Date(endDate);
-    lastMonthEnd.setMonth(lastMonthEnd.getMonth() - 1);
-    const lastMonthPurchases = await RecommendationTracking.countDocuments({
+    let lastPeriodStart, lastPeriodEnd;
+    if (month === undefined || month === "null" || month === null) {
+      lastPeriodStart = new Date(selectedYear - 1, 0, 1);
+      lastPeriodEnd = new Date(selectedYear - 1, 11, 31, 23, 59, 59);
+    } else {
+      lastPeriodStart = new Date(startDate);
+      lastPeriodStart.setMonth(lastPeriodStart.getMonth() - 1);
+      lastPeriodEnd = new Date(endDate);
+      lastPeriodEnd.setMonth(lastPeriodEnd.getMonth() - 1);
+    }
+
+    const lastPeriodPurchases = await RecommendationTracking.countDocuments({
       action: "purchase",
-      timestamp: { $gte: lastMonthStart, $lte: lastMonthEnd },
+      timestamp: { $gte: lastPeriodStart, $lte: lastPeriodEnd },
     });
 
-    // Tính phần trăm thay đổi
     const purchasePercentage =
-      lastMonthPurchases > 0
-        ? ((purchases - lastMonthPurchases) / lastMonthPurchases) * 100
+      lastPeriodPurchases > 0
+        ? ((purchases - lastPeriodPurchases) / lastPeriodPurchases) * 100
         : 0;
 
     res.status(200).json({
@@ -221,45 +234,37 @@ export const getPurchaseStats = async (req, res) => {
 export const getTopProducts = async (req, res) => {
   try {
     const { month, year } = req.query;
-    const startDate = new Date(
-      year || new Date().getFullYear(),
-      (month || new Date().getMonth()) - 1,
-      1
-    );
-    const endDate = new Date(
-      year || new Date().getFullYear(),
-      month || new Date().getMonth(),
-      0,
-      23,
-      59,
-      59
-    );
+    const selectedYear = year || new Date().getFullYear();
+    let startDate, endDate;
 
-    // Lấy dữ liệu từ RecommendationTracking với action là "purchase"
+    if (month === undefined || month === "null" || month === null) {
+      startDate = new Date(selectedYear, 0, 1);
+      endDate = new Date(selectedYear, 11, 31, 23, 59, 59);
+    } else {
+      const selectedMonth = month || new Date().getMonth();
+      startDate = new Date(selectedYear, selectedMonth - 1, 1);
+      endDate = new Date(selectedYear, selectedMonth, 0, 23, 59, 59);
+    }
+
     const topProducts = await RecommendationTracking.aggregate([
-      // Lọc theo action "purchase" và khoảng thời gian
       {
         $match: {
           action: "purchase",
           timestamp: { $gte: startDate, $lte: endDate },
         },
       },
-      // Nhóm theo bookId và đếm số lượng bán
       {
         $group: {
           _id: "$bookId",
           quantity: { $sum: 1 },
         },
       },
-      // Sắp xếp theo số lượng bán giảm dần
       {
         $sort: { quantity: -1 },
       },
-      // Giới hạn số lượng sản phẩm (ví dụ: top 10)
       {
         $limit: 10,
       },
-      // Kết hợp với collection Book để lấy tên sản phẩm
       {
         $lookup: {
           from: "books",
@@ -268,11 +273,9 @@ export const getTopProducts = async (req, res) => {
           as: "book",
         },
       },
-      // Bỏ mảng book để lấy object đơn
       {
         $unwind: "$book",
       },
-      // Chỉ lấy các trường cần thiết
       {
         $project: {
           name: "$book.name",
@@ -291,70 +294,106 @@ export const getTopProducts = async (req, res) => {
 export const getRevenueChartData = async (req, res) => {
   try {
     const { month, year } = req.query;
-    const startDate = new Date(
-      year || new Date().getFullYear(),
-      (month || new Date().getMonth()) - 1,
-      1
-    );
-    const endDate = new Date(
-      year || new Date().getFullYear(),
-      month || new Date().getMonth(),
-      0,
-      23,
-      59,
-      59
-    );
+    const selectedYear = year || new Date().getFullYear();
+    let startDate, endDate, labels, totalRevenueData, recommendedRevenueData;
 
-    // Tính số ngày trong tháng
-    const daysInMonth = endDate.getDate();
-    const totalRevenueData = Array(daysInMonth).fill(0);
-    const recommendedRevenueData = Array(daysInMonth).fill(0);
+    if (month === undefined || month === "null" || month === null) {
+      // Báo cáo theo năm (hiển thị theo tháng)
+      startDate = new Date(selectedYear, 0, 1);
+      endDate = new Date(selectedYear, 11, 31, 23, 59, 59);
+      labels = Array.from({ length: 12 }, (_, i) => (i + 1).toString()); // Tháng 1-12
+      totalRevenueData = Array(12).fill(0);
+      recommendedRevenueData = Array(12).fill(0);
 
-    // Lấy tổng doanh thu từ tất cả đơn hàng
-    const totalRevenue = await Order.aggregate([
-      {
-        $match: {
-          orderDate: { $gte: startDate, $lte: endDate },
-          status: "Đã giao", // Thêm điều kiện trạng thái "Đã giao"
+      // Lấy tổng doanh thu từ tất cả đơn hàng
+      const totalRevenue = await Order.aggregate([
+        {
+          $match: {
+            orderDate: { $gte: startDate, $lte: endDate },
+            status: "Đã giao",
+          },
         },
-      },
-      {
-        $group: {
-          _id: { $dayOfMonth: "$orderDate" },
-          total: { $sum: "$totalAmount" },
+        {
+          $group: {
+            _id: { $month: "$orderDate" },
+            total: { $sum: "$totalAmount" },
+          },
         },
-      },
-    ]);
+      ]);
 
-    // Lấy doanh thu từ hệ thống đề xuất
-    const recommendedRevenue = await Order.aggregate([
-      {
-        $match: {
-          "items.recommend": true,
-          orderDate: { $gte: startDate, $lte: endDate },
-          status: "Đã giao",
+      // Lấy doanh thu từ hệ thống đề xuất
+      const recommendedRevenue = await Order.aggregate([
+        {
+          $match: {
+            "items.recommend": true,
+            orderDate: { $gte: startDate, $lte: endDate },
+            status: "Đã giao",
+          },
         },
-      },
-      {
-        $group: {
-          _id: { $dayOfMonth: "$orderDate" },
-          total: { $sum: "$totalAmount" },
+        {
+          $group: {
+            _id: { $month: "$orderDate" },
+            total: { $sum: "$totalAmount" },
+          },
         },
-      },
-    ]);
+      ]);
 
-    // Điền dữ liệu vào mảng
-    totalRevenue.forEach((entry) => {
-      totalRevenueData[entry._id - 1] = entry.total;
-    });
-    recommendedRevenue.forEach((entry) => {
-      recommendedRevenueData[entry._id - 1] = entry.total;
-    });
+      totalRevenue.forEach((entry) => {
+        totalRevenueData[entry._id - 1] = entry.total;
+      });
+      recommendedRevenue.forEach((entry) => {
+        recommendedRevenueData[entry._id - 1] = entry.total;
+      });
+    } else {
+      // Báo cáo theo tháng (hiển thị theo ngày)
+      const selectedMonth = month || new Date().getMonth();
+      startDate = new Date(selectedYear, selectedMonth - 1, 1);
+      endDate = new Date(selectedYear, selectedMonth, 0, 23, 59, 59);
+      const daysInMonth = endDate.getDate();
+      labels = Array.from({ length: daysInMonth }, (_, i) =>
+        (i + 1).toString()
+      );
+      totalRevenueData = Array(daysInMonth).fill(0);
+      recommendedRevenueData = Array(daysInMonth).fill(0);
 
-    // Tạo nhãn cho các ngày trong tháng
-    const labels = Array.from({ length: daysInMonth }, (_, i) =>
-      (i + 1).toString()
-    );
+      const totalRevenue = await Order.aggregate([
+        {
+          $match: {
+            orderDate: { $gte: startDate, $lte: endDate },
+            status: "Đã giao",
+          },
+        },
+        {
+          $group: {
+            _id: { $dayOfMonth: "$orderDate" },
+            total: { $sum: "$totalAmount" },
+          },
+        },
+      ]);
+
+      const recommendedRevenue = await Order.aggregate([
+        {
+          $match: {
+            "items.recommend": true,
+            orderDate: { $gte: startDate, $lte: endDate },
+            status: "Đã giao",
+          },
+        },
+        {
+          $group: {
+            _id: { $dayOfMonth: "$orderDate" },
+            total: { $sum: "$totalAmount" },
+          },
+        },
+      ]);
+
+      totalRevenue.forEach((entry) => {
+        totalRevenueData[entry._id - 1] = entry.total;
+      });
+      recommendedRevenue.forEach((entry) => {
+        recommendedRevenueData[entry._id - 1] = entry.total;
+      });
+    }
 
     res.status(200).json({
       labels,
@@ -370,31 +409,25 @@ export const getRevenueChartData = async (req, res) => {
 export const getCategoryRevenueChartData = async (req, res) => {
   try {
     const { month, year } = req.query;
-    const startDate = new Date(
-      year || new Date().getFullYear(),
-      (month || new Date().getMonth()) - 1,
-      1
-    );
-    const endDate = new Date(
-      year || new Date().getFullYear(),
-      month || new Date().getMonth(),
-      0,
-      23,
-      59,
-      59
-    );
+    const selectedYear = year || new Date().getFullYear();
+    let startDate, endDate;
 
-    // Aggregation pipeline để tính doanh thu theo danh mục
+    if (month === undefined || month === "null" || month === null) {
+      startDate = new Date(selectedYear, 0, 1);
+      endDate = new Date(selectedYear, 11, 31, 23, 59, 59);
+    } else {
+      const selectedMonth = month || new Date().getMonth();
+      startDate = new Date(selectedYear, selectedMonth - 1, 1);
+      endDate = new Date(selectedYear, selectedMonth, 0, 23, 59, 59);
+    }
+
     const categoryRevenue = await Order.aggregate([
-      // Lọc đơn hàng trong khoảng thời gian
       {
         $match: {
           orderDate: { $gte: startDate, $lte: endDate },
         },
       },
-      // Tách mảng items thành từng document riêng
       { $unwind: "$items" },
-      // Join với collection Book để lấy category
       {
         $lookup: {
           from: "books",
@@ -403,25 +436,22 @@ export const getCategoryRevenueChartData = async (req, res) => {
           as: "book",
         },
       },
-      // Đảm bảo book tồn tại
       {
         $unwind: {
           path: "$book",
-          preserveNullAndEmptyArrays: true, // Giữ lại các document không có book tương ứng
+          preserveNullAndEmptyArrays: true,
         },
       },
-      // Nhóm theo danh mục và tính tổng doanh thu
       {
         $group: {
-          _id: "$book.categoryId", // Nhóm theo categoryId
+          _id: "$book.categoryId",
           totalRevenue: {
             $sum: {
-              $multiply: ["$items.quantity", "$items.unitPrice"], // Sử dụng unitPrice thay vì price
+              $multiply: ["$items.quantity", "$items.unitPrice"],
             },
           },
         },
       },
-      // Join với collection Category để lấy tên danh mục
       {
         $lookup: {
           from: "categories",
@@ -430,18 +460,16 @@ export const getCategoryRevenueChartData = async (req, res) => {
           as: "category",
         },
       },
-      // Đảm bảo category tồn tại
       {
         $unwind: {
           path: "$category",
           preserveNullAndEmptyArrays: true,
         },
       },
-      // Định dạng dữ liệu trả về
       {
         $project: {
           category: {
-            $ifNull: ["$category.name", "Không xác định"], // Nếu không có category, trả về "Không xác định"
+            $ifNull: ["$category.name", "Không xác định"],
           },
           totalRevenue: 1,
           _id: 0,
@@ -449,11 +477,9 @@ export const getCategoryRevenueChartData = async (req, res) => {
       },
     ]);
 
-    // Chuẩn bị dữ liệu cho biểu đồ
     const labels = categoryRevenue.map((item) => item.category);
     const data = categoryRevenue.map((item) => item.totalRevenue);
 
-    // Nếu không có dữ liệu, trả về giá trị mặc định
     if (labels.length === 0) {
       return res.status(200).json({
         labels: ["Không có dữ liệu"],
