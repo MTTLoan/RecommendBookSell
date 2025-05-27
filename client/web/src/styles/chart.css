@@ -124,3 +124,18 @@
     border-radius: 8px;
     border: 1px dashed #ddd;
   }
+
+  /* Định dạng thông điệp khi không có dữ liệu */
+.no-data-message {
+  text-align: center;
+  padding: 20px;
+  font-size: 16px;
+  color: #666;
+  background-color: #f9f9f9;
+  border: 1px dashed #ddd;
+  border-radius: 8px;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
