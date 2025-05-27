@@ -50,6 +50,8 @@ const Table = ({
   widgetStats = {},
   exportConfig = {}, // Thêm config cho xuất file Excel
   chartData = [],
+  onDownload, // Thêm prop onDownload để tuỳ chỉnh xuất file
+  loading, // Thêm prop loading để hiển thị trạng thái tải dữ liệu
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(20);
@@ -63,15 +65,39 @@ const Table = ({
   const [yearText, setYearText] = useState("Năm");
   const [activeTab, setActiveTab] = useState(tabs[0] || "");
 
-  // Lọc dữ liệu dựa trên filterValue
+  // Lọc dữ liệu dựa trên filterValue (hỗ trợ filter động cho mọi loại filter)
   let filteredData = data || [];
+  // Xác định filterCol chỉ cho UI dropdown, không dùng cho filter logic nữa
   const filterCol = columns.find(
     (col) => Array.isArray(col.filters) && col.filters.length > 0
   );
-  if (filterCol && filterValue) {
-    filteredData = data.filter(
-      (row) => String(row.categoryId) === String(filterValue)
-    );
+  if (filterValue) {
+    if (
+      ["lt100", "100-300", "300-500", "gt500", "instock", "outstock"].includes(
+        filterValue
+      )
+    ) {
+      filteredData = data.filter((row) => {
+        if (["lt100", "100-300", "300-500", "gt500"].includes(filterValue)) {
+          const price = Number(String(row.price).replace(/[^\d]/g, ""));
+          if (filterValue === "lt100") return price < 100000;
+          if (filterValue === "100-300")
+            return price >= 100000 && price <= 300000;
+          if (filterValue === "300-500")
+            return price > 300000 && price <= 500000;
+          if (filterValue === "gt500") return price > 500000;
+        } else if (filterValue === "instock") {
+          return row.status === "Còn hàng";
+        } else if (filterValue === "outstock") {
+          return row.status === "Hết hàng";
+        }
+        return true;
+      });
+    } else if (filterCol) {
+      filteredData = data.filter(
+        (row) => String(row[filterCol.key]) === String(filterValue)
+      );
+    }
   }
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
@@ -402,7 +428,10 @@ const Table = ({
             </div>
           )}
           {showDownload && (
-            <button className="table-download" onClick={handleDownloadExcel}>
+            <button
+              className="table-download"
+              onClick={onDownload ? onDownload : handleDownloadExcel}
+            >
               <span className="download-text">{downloadButtonText}</span>
               <span className="material-symbols-outlined download-icon">
                 download
@@ -430,8 +459,11 @@ const Table = ({
           ))}
         </div>
       )}
-      <div className="table-scroll">
-        {data && data.length > 0 ? (
+      {/* Bảng dữ liệu */}
+      <div className="table-content-spacing table-scroll">
+        {loading ? (
+          <div className="loading-message">Đang tải dữ liệu...</div>
+        ) : data && data.length > 0 ? (
           <table className="table">
             <thead>
               <tr>

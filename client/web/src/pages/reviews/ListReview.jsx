@@ -119,7 +119,6 @@ const ListReview = () => {
         </div>
         {loading && (
           <div className="table-loading">
-            <div className="spinner"></div>
             <span>Đang tải dữ liệu...</span>
           </div>
         )}

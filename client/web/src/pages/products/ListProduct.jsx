@@ -5,6 +5,7 @@ import Sidebar from "../../components/layout/Sidebar";
 import Table from "../../components/layout/Table";
 import { fetchBooks, deleteBook } from "../../services/bookService";
 import "../../styles/listproduct.css";
+import Popup from "../../components/common/Popup";
 
 const PRICE_FILTERS = [
   { text: "Dưới 100.000", value: "lt100" },
@@ -13,19 +14,21 @@ const PRICE_FILTERS = [
   { text: "Trên 500.000", value: "gt500" },
 ];
 
-const STATUS_OPTIONS = [
-  { text: "Còn hàng", value: "Còn hàng" },
-  { text: "Hết hàng", value: "Hết hàng" },
+const FILTER_OPTIONS = [
+  ...PRICE_FILTERS,
+  { text: "Còn hàng", value: "instock" },
+  { text: "Hết hàng", value: "outstock" },
 ];
 
 const ListProduct = () => {
-  const [selectedProducts, setSelectedProducts] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [deleteId, setDeleteId] = useState(null);
   const [products, setProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
-  const [priceFilter, setPriceFilter] = useState(null);
+  const [filterValue, setFilterValue] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
+  const [deleteSuccessTimeout, setDeleteSuccessTimeout] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,28 +57,37 @@ const ListProduct = () => {
   useEffect(() => {
     let filtered = allProducts;
 
-    // Lọc theo tên
+    // Lọc theo filterValue (giá hoặc tình trạng) TRƯỚC
+    if (filterValue) {
+      if (["lt100", "100-300", "300-500", "gt500"].includes(filterValue)) {
+        filtered = filtered.filter((record) => {
+          const price = Number(String(record.price).replace(/[^\d]/g, ""));
+          if (filterValue === "lt100") return price < 100000;
+          if (filterValue === "100-300")
+            return price >= 100000 && price <= 300000;
+          if (filterValue === "300-500")
+            return price > 300000 && price <= 500000;
+          if (filterValue === "gt500") return price > 500000;
+          return true;
+        });
+      } else if (filterValue === "instock" || filterValue === "outstock") {
+        filtered = filtered.filter((record) =>
+          filterValue === "instock"
+            ? record.status === "Còn hàng"
+            : record.status === "Hết hàng"
+        );
+      }
+    }
+
+    // Sau đó mới lọc theo tên
     if (searchValue) {
       filtered = filtered.filter((p) =>
         p.name.toLowerCase().includes(searchValue.toLowerCase())
       );
     }
 
-    // Lọc theo giá
-    if (priceFilter) {
-      filtered = filtered.filter((record) => {
-        const price = Number(String(record.price).replace(/[^\d]/g, ""));
-        if (priceFilter === "lt100") return price < 100000;
-        if (priceFilter === "100-300")
-          return price >= 100000 && price <= 300000;
-        if (priceFilter === "300-500") return price > 300000 && price <= 500000;
-        if (priceFilter === "gt500") return price > 500000;
-        return true;
-      });
-    }
-
     setProducts(filtered);
-  }, [searchValue, priceFilter, allProducts]);
+  }, [searchValue, filterValue, allProducts]);
 
   const handleAddProduct = () => {
     navigate("/products/add");
@@ -110,12 +122,23 @@ const ListProduct = () => {
       }));
       setProducts(mapped);
       setAllProducts(mapped);
+      setShowDeleteSuccess(true);
+      const timeout = setTimeout(() => {
+        setShowDeleteSuccess(false);
+      }, 3000);
+      setDeleteSuccessTimeout(timeout);
     } catch (err) {
       alert("Xóa sách thất bại!");
     }
     setDeleteId(null);
     setLoading(false);
   };
+
+  useEffect(() => {
+    return () => {
+      if (deleteSuccessTimeout) clearTimeout(deleteSuccessTimeout);
+    };
+  }, [deleteSuccessTimeout]);
 
   const cancelDelete = () => {
     setDeleteId(null);
@@ -143,15 +166,29 @@ const ListProduct = () => {
     {
       key: "price",
       label: "Giá",
-      width: "10%",
-      filters: PRICE_FILTERS,
+      width: "15%",
+      filters: FILTER_OPTIONS,
+      onFilter: (value, record) => {
+        const price = Number(String(record.price).replace(/[^\d]/g, ""));
+        if (["lt100", "100-300", "300-500", "gt500"].includes(value)) {
+          if (value === "lt100") return price < 100000;
+          if (value === "100-300") return price >= 100000 && price <= 300000;
+          if (value === "300-500") return price > 300000 && price <= 500000;
+          if (value === "gt500") return price > 500000;
+        } else if (value === "instock") {
+          return record.status === "Còn hàng";
+        } else if (value === "outstock") {
+          return record.status === "Hết hàng";
+        }
+        return true;
+      },
     },
     { key: "quantity", label: "Số lượng", width: "10%" },
     { key: "dateAdded", label: "Ngày thêm", width: "15%" },
     {
       key: "status",
       label: "Tình trạng",
-      width: "20%",
+      width: "15%",
       render: (row) => (
         <span
           className={
@@ -165,13 +202,11 @@ const ListProduct = () => {
           {row.status}
         </span>
       ),
-      filters: STATUS_OPTIONS,
-      onFilter: (value, record) => record.status === value,
     },
     {
       key: "actions",
       label: "Hành động",
-      width: "10%",
+      width: "20%",
       render: (row) => (
         <div className="actions">
           <span
@@ -204,6 +239,52 @@ const ListProduct = () => {
     },
   ];
 
+  // Thêm hàm xuất Excel cho sản phẩm
+  const handleExportProductExcel = () => {
+    const exportColumns = columns.filter((col) => col.key !== "actions");
+    const headers = exportColumns.map((col) => col.label);
+    // Lấy dữ liệu đang hiển thị (sau filter/search)
+    const exportData = products.map((row) =>
+      exportColumns.map((col) => {
+        if (col.key === "price") {
+          return row.price;
+        }
+        if (col.key === "dateAdded") {
+          return row.dateAdded;
+        }
+        if (col.key === "status") {
+          return row.status;
+        }
+        if (col.key === "name") {
+          return row.name;
+        }
+        if (col.key === "quantity") {
+          return row.quantity;
+        }
+        return row[col.key] || "";
+      })
+    );
+    const worksheetData = [headers, ...exportData];
+    // Tên file: SanPham_{Tìm: ... hoặc Tất cả}_{ngày-giờ}.xlsx
+    let filterLabel = "Tất cả";
+    if (searchValue) {
+      filterLabel = `Tìm: ${searchValue}`;
+    }
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(now.getDate()).padStart(2, "0")}_${String(
+      now.getHours()
+    ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
+    const fileName = `Sản Phẩm_${filterLabel}_${dateStr}.xlsx`;
+    const XLSX = require("xlsx");
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(wb, ws, "Danh sách sản phẩm");
+    XLSX.writeFile(wb, fileName);
+  };
+
   return (
     <div className="dashboard-layout">
       <Navbar />
@@ -233,36 +314,46 @@ const ListProduct = () => {
             searchValue={searchValue}
             setSearchValue={setSearchValue}
             showFilter={true}
+            filterOptions={FILTER_OPTIONS} // Truyền filterOptions vào Table
             showDownload={true}
             showAddButton={true}
             showCheckbox={false}
             showSort={true}
             addButtonText="Thêm sản phẩm"
             downloadButtonText="Xuất file"
-            filterValue={priceFilter}
-            setFilterValue={setPriceFilter}
+            filterValue={filterValue}
+            setFilterValue={setFilterValue}
+            onDownload={handleExportProductExcel}
           />
         )}
         {deleteId && (
-          <div className="modal-backdrop">
-            <div className="modal-confirm">
-              <h3>Xác nhận xóa sản phẩm</h3>
-              <p>Bạn có chắc muốn xóa sản phẩm này không?</p>
-              <div
-                style={{ margin: "12px 0", color: "#d32f2f", fontWeight: 500 }}
-              >
-                {selectedProducts.name}
-              </div>
-              <div className="modal-actions">
-                <button className="btn-cancel" onClick={cancelDelete}>
-                  Hủy
-                </button>
-                <button className="btn-delete" onClick={confirmDelete}>
-                  Xóa
-                </button>
-              </div>
-            </div>
-          </div>
+          <Popup
+            open={!!deleteId}
+            title="Xác nhận xóa sản phẩm"
+            titleColor="error"
+            content="Bạn có chắc muốn xóa sản phẩm này không?"
+            contentColor="error"
+            confirmText="Xóa"
+            cancelText="Hủy"
+            onConfirm={confirmDelete}
+            onCancel={cancelDelete}
+            onClose={cancelDelete}
+            hideConfirm={false}
+            hideCancel={false}
+            confirmColor="error"
+            cancelColor="gray"
+          />
+        )}
+        {showDeleteSuccess && (
+          <Popup
+            open={showDeleteSuccess}
+            title="Thành công"
+            titleColor="success"
+            content="Xóa sản phẩm thành công!"
+            contentColor="success"
+            showCancel={false}
+            showConfirm={false}
+          />
         )}
       </main>
     </div>

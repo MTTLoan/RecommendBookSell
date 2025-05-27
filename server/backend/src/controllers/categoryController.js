@@ -1,39 +1,42 @@
-import Category from '../models/Category.js';
-import Counter from '../models/Counter.js';
-import Book from '../models/Book.js';
+import Category from "../models/Category.js";
+import Counter from "../models/Counter.js";
+import Book from "../models/Book.js";
+import { deleteS3File } from "../middleware/uploadToS3.js";
 
 export const getCategoryStats = async (req, res) => {
   try {
-    console.log('Request received:', req.url, req.query);
-    console.log('Full req.query:', req.query);
-    const categoryId = req.query.categoryId ? parseInt(req.query.categoryId) : null;
-    console.log('Raw categoryId from query:', req.query.categoryId);
-    console.log('Parsed categoryId:', categoryId);
+    console.log("Request received:", req.url, req.query);
+    console.log("Full req.query:", req.query);
+    const categoryId = req.query.categoryId
+      ? parseInt(req.query.categoryId)
+      : null;
+    console.log("Raw categoryId from query:", req.query.categoryId);
+    console.log("Parsed categoryId:", categoryId);
 
     if (categoryId && isNaN(categoryId)) {
       return res.status(400).json({
         success: false,
-        msg: 'ID danh mục không hợp lệ. Vui lòng cung cấp một số hợp lệ.',
+        msg: "ID danh mục không hợp lệ. Vui lòng cung cấp một số hợp lệ.",
       });
     }
 
     const matchStage = categoryId ? { categoryId: categoryId } : {};
     const stats = await Book.aggregate([
       {
-        $match: matchStage
+        $match: matchStage,
       },
       {
         $group: {
-          _id: '$categoryId',
-          quantity: { $sum: 1 }
-        }
+          _id: "$categoryId",
+          quantity: { $sum: 1 },
+        },
       },
       {
         $project: {
-          _id: { $toInt: '$_id' },
-          quantity: 1
-        }
-      }
+          _id: { $toInt: "$_id" },
+          quantity: 1,
+        },
+      },
     ]);
 
     if (categoryId && stats.length === 0) {
@@ -41,23 +44,23 @@ export const getCategoryStats = async (req, res) => {
       if (!categoryExists) {
         return res.status(404).json({
           success: false,
-          msg: 'Không tìm thấy danh mục với ID này.',
+          msg: "Không tìm thấy danh mục với ID này.",
         });
       }
       return res.status(200).json({
         success: true,
-        msg: 'Lấy thống kê danh mục thành công.',
-        stats: [{ _id: categoryId, quantity: 0 }]
+        msg: "Lấy thống kê danh mục thành công.",
+        stats: [{ _id: categoryId, quantity: 0 }],
       });
     }
 
     return res.status(200).json({
       success: true,
-      msg: 'Lấy thống kê danh mục thành công.',
-      stats
+      msg: "Lấy thống kê danh mục thành công.",
+      stats,
     });
   } catch (error) {
-    console.error('Lỗi lấy thống kê danh mục:', error.message);
+    console.error("Lỗi lấy thống kê danh mục:", error.message);
     return res.status(500).json({
       success: false,
       msg: `Lỗi server: ${error.message}`,
@@ -68,7 +71,7 @@ export const getCategoryStats = async (req, res) => {
 // Hàm lấy id tự tăng
 async function getNextCategoryId() {
   const counter = await Counter.findByIdAndUpdate(
-    { _id: 'categoryId' },
+    { _id: "categoryId" },
     { $inc: { seq: 1 } },
     { new: true, upsert: true }
   );
@@ -81,11 +84,11 @@ export const getCategories = async (req, res) => {
     const categories = await Category.find();
     return res.status(200).json({
       success: true,
-      msg: 'Lấy danh sách danh mục thành công.',
+      msg: "Lấy danh sách danh mục thành công.",
       categories,
     });
   } catch (error) {
-    console.error('Lỗi lấy danh sách danh mục:', error.message);
+    console.error("Lỗi lấy danh sách danh mục:", error.message);
     return res.status(500).json({
       success: false,
       msg: `Lỗi server: ${error.message}`,
@@ -97,12 +100,12 @@ export const getCategories = async (req, res) => {
 export const getCategoryById = async (req, res) => {
   try {
     const categoryId = parseInt(req.params.id);
-    
+
     // Kiểm tra nếu categoryId là NaN hoặc không phải số
     if (isNaN(categoryId)) {
       return res.status(400).json({
         success: false,
-        msg: 'ID danh mục không hợp lệ. Vui lòng cung cấp một số hợp lệ.',
+        msg: "ID danh mục không hợp lệ. Vui lòng cung cấp một số hợp lệ.",
       });
     }
 
@@ -111,17 +114,17 @@ export const getCategoryById = async (req, res) => {
     if (!category) {
       return res.status(404).json({
         success: false,
-        msg: 'Không tìm thấy danh mục.',
+        msg: "Không tìm thấy danh mục.",
       });
     }
 
     return res.status(200).json({
       success: true,
-      msg: 'Lấy thông tin danh mục thành công.',
+      msg: "Lấy thông tin danh mục thành công.",
       category,
     });
   } catch (error) {
-    console.error('Lỗi lấy thông tin danh mục:', error.message);
+    console.error("Lỗi lấy thông tin danh mục:", error.message);
     return res.status(500).json({
       success: false,
       msg: `Lỗi server: ${error.message}`,
@@ -132,22 +135,46 @@ export const getCategoryById = async (req, res) => {
 // Thêm danh mục mới
 export const createCategory = async (req, res) => {
   try {
-    const { name, description, imageUrl } = req.body;
+    console.log("Request body:", req.body);
+    console.log("Request file:", req.file);
+
+    const { name, description } = req.body;
+
+    // Kiểm tra dữ liệu đầu vào
+    if (!name || name.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        msg: "Tên danh mục không được để trống.",
+      });
+    }
+
     const id = await getNextCategoryId();
+
+    // Lấy imageUrl từ file upload hoặc body
+    let imageUrl = "";
+    if (req.file && req.file.location) {
+      imageUrl = req.file.location;
+      console.log("Image uploaded to:", imageUrl);
+    }
+
     const newCategory = new Category({
       id,
-      name,
-      description,
+      name: name.trim(),
+      description: description ? description.trim() : "",
       imageUrl,
     });
+
+    console.log("Creating category:", newCategory);
     await newCategory.save();
+
     return res.status(201).json({
       success: true,
-      msg: 'Thêm danh mục thành công.',
+      msg: "Thêm danh mục thành công.",
       category: newCategory,
     });
   } catch (error) {
-    console.error('Lỗi thêm danh mục:', error.message);
+    console.error("Lỗi thêm danh mục:", error);
+    console.error("Error stack:", error.stack);
     return res.status(500).json({
       success: false,
       msg: `Lỗi server: ${error.message}`,
@@ -159,21 +186,57 @@ export const createCategory = async (req, res) => {
 export const updateCategory = async (req, res) => {
   try {
     const categoryId = parseInt(req.params.id);
-    const updateData = req.body;
-    const updatedCategory = await Category.findOneAndUpdate({ id: categoryId }, updateData, { new: true });
+    const { name, description, removeImage } = req.body;
+
+    // Lấy category cũ để kiểm tra ảnh cũ
+    const oldCategory = await Category.findOne({ id: categoryId });
+    if (!oldCategory) {
+      return res.status(404).json({
+        success: false,
+        msg: "Không tìm thấy danh mục để cập nhật.",
+      });
+    }
+
+    const updateData = { name, description };
+
+    // Nếu có yêu cầu xóa ảnh
+    if (removeImage === "true" && oldCategory.imageUrl) {
+      await deleteS3File(oldCategory.imageUrl);
+      updateData.imageUrl = "";
+    }
+    // Nếu có upload file mới
+    else if (req.file && req.file.location) {
+      // Xóa ảnh cũ nếu có
+      if (oldCategory.imageUrl) {
+        await deleteS3File(oldCategory.imageUrl);
+      }
+      updateData.imageUrl = req.file.location;
+    }
+    // Nếu không có thay đổi về ảnh, giữ nguyên
+    else if (!removeImage) {
+      updateData.imageUrl = oldCategory.imageUrl;
+    }
+
+    const updatedCategory = await Category.findOneAndUpdate(
+      { id: categoryId },
+      updateData,
+      { new: true }
+    );
+
     if (!updatedCategory) {
       return res.status(404).json({
         success: false,
-        msg: 'Không tìm thấy danh mục để cập nhật.',
+        msg: "Không tìm thấy danh mục để cập nhật.",
       });
     }
+
     return res.status(200).json({
       success: true,
-      msg: 'Cập nhật danh mục thành công.',
+      msg: "Cập nhật danh mục thành công.",
       category: updatedCategory,
     });
   } catch (error) {
-    console.error('Lỗi cập nhật danh mục:', error.message);
+    console.error("Lỗi cập nhật danh mục:", error.message);
     return res.status(500).json({
       success: false,
       msg: `Lỗi server: ${error.message}`,
@@ -186,19 +249,26 @@ export const deleteCategory = async (req, res) => {
   try {
     const categoryId = parseInt(req.params.id);
     const deletedCategory = await Category.findOneAndDelete({ id: categoryId });
+
     if (!deletedCategory) {
       return res.status(404).json({
         success: false,
-        msg: 'Không tìm thấy danh mục để xóa.',
+        msg: "Không tìm thấy danh mục để xóa.",
       });
     }
+
+    // Xóa hình ảnh khỏi S3 nếu có
+    if (deletedCategory.imageUrl) {
+      await deleteS3File(deletedCategory.imageUrl);
+    }
+
     return res.status(200).json({
       success: true,
-      msg: 'Xóa danh mục thành công.',
+      msg: "Xóa danh mục thành công.",
       category: deletedCategory,
     });
   } catch (error) {
-    console.error('Lỗi xóa danh mục:', error.message);
+    console.error("Lỗi xóa danh mục:", error.message);
     return res.status(500).json({
       success: false,
       msg: `Lỗi server: ${error.message}`,
@@ -216,7 +286,7 @@ export const searchCategories = async (req, res) => {
       });
     }
     const categories = await Category.find({
-      name: { $regex: q, $options: "i" }
+      name: { $regex: q, $options: "i" },
     });
     return res.status(200).json({
       success: true,

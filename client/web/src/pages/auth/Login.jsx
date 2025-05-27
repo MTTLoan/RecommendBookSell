@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { login } from '../../services/authService';
-import Logo from '../../components/common/Logo';
-import Input from '../../components/common/Input';
-import Button from '../../components/common/Button';
-import loginImage from '../../assets/images/login-bg.png';
-import '../../styles/auth.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "../../services/authService";
+import Logo from "../../components/common/Logo";
+import Input from "../../components/common/Input";
+import Button from "../../components/common/Button";
+import Popup from "../../components/common/Popup";
+import loginImage from "../../assets/images/login-bg.png";
+import "../../styles/auth.css";
 
 const Login = () => {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
-    identifier: '',
-    password: '',
+    identifier: "",
+    password: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,21 +27,22 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
       const response = await login(credentials);
-      if (response.user.role !== 'admin') {
-        setError('Chỉ tài khoản admin mới được đăng nhập.');
+      if (response.user.role !== "admin") {
+        setError("Chỉ tài khoản admin mới được đăng nhập.");
         return;
       }
-      // Chuyển hướng sau khi đăng nhập thành công
-      navigate('/dashboard');
+      setShowSuccess(true); // Hiện popup thành công
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigate("/dashboard");
+      }, 3000);
     } catch (err) {
-      console.error('Login error:', err);
-      setError(err.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
-    } finally {
-     
+      console.error("Login error:", err);
+      setError(err.message || "Đăng nhập thất bại. Vui lòng thử lại.");
     }
   };
 
@@ -53,6 +56,7 @@ const Login = () => {
           </div>
           <h1 className="auth-title">Đăng nhập</h1>
 
+          {/* Hiển thị lỗi duy nhất ở dòng trên cùng */}
           {error && <div className="auth-error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
@@ -84,9 +88,7 @@ const Login = () => {
               <Link to="/auth/forgot-password">Quên mật khẩu?</Link>
             </div>
 
-            <Button type="submit">
-              Đăng nhập
-            </Button>
+            <Button type="submit">Đăng nhập</Button>
           </form>
         </div>
       </div>
@@ -96,6 +98,18 @@ const Login = () => {
         className="auth-image-container"
         style={{ backgroundImage: `url(${loginImage})` }}
       ></div>
+
+      {showSuccess && (
+        <Popup
+          open={showSuccess}
+          title="Đăng nhập thành công!"
+          titleColor="success"
+          content="Chào mừng bạn quay lại hệ thống quản trị."
+          showCancel={false}
+          showConfirm={false}
+          onClose={() => setShowSuccess(false)}
+        />
+      )}
     </div>
   );
 };

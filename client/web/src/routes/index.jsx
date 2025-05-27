@@ -60,15 +60,6 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
-// Reset Password Route wrapper (requires token)
-const ResetPasswordRoute = ({ children }) => {
-  const token = new URLSearchParams(window.location.search).get("token"); // Lấy token từ URL
-  if (!token) {
-    return <Navigate to="/auth/login" replace />;
-  }
-  return children;
-};
-
 const AppRoutes = () => {
   return (
     <Routes>
@@ -92,9 +83,9 @@ const AppRoutes = () => {
       <Route
         path="/auth/reset-password"
         element={
-          <ResetPasswordRoute>
+          <PublicRoute>
             <ResetPassword />
-          </ResetPasswordRoute>
+          </PublicRoute>
         }
       />
 

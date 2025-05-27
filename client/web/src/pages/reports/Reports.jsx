@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import Sidebar from "../../components/layout/Sidebar";
@@ -63,17 +63,8 @@ const Reports = () => {
 
   const availableYears = [2024, 2025];
 
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      navigate("/auth/login");
-    } else {
-      fetchStats();
-      fetchTopProductsData();
-      fetchChartData();
-    }
-  }, [navigate, monthFilter, yearFilter]);
-
-  const fetchStats = async () => {
+  // Memoize fetchStats to avoid missing dependency warning
+  const fetchStats = useCallback(async () => {
     try {
       const [revenueData, clicksData, addToCartData, purchasesData] =
         await Promise.all([
@@ -92,18 +83,20 @@ const Reports = () => {
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
-  };
+  }, [monthFilter, yearFilter]);
 
-  const fetchTopProductsData = async () => {
+  // Memoize fetchTopProductsData
+  const fetchTopProductsData = useCallback(async () => {
     try {
       const data = await fetchTopProducts(monthFilter, yearFilter);
       setTopProducts(data);
     } catch (error) {
       console.error("Error fetching top products:", error);
     }
-  };
+  }, [monthFilter, yearFilter]);
 
-  const fetchChartData = async () => {
+  // Memoize fetchChartData
+  const fetchChartData = useCallback(async () => {
     try {
       const [revenueData, categoryData] = await Promise.all([
         fetchRevenueChartData(monthFilter, yearFilter),
@@ -123,7 +116,24 @@ const Reports = () => {
     } catch (error) {
       console.error("Error fetching chart data:", error);
     }
-  };
+  }, [monthFilter, yearFilter]);
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate("/auth/login");
+    } else {
+      fetchStats();
+      fetchTopProductsData();
+      fetchChartData();
+    }
+  }, [
+    navigate,
+    monthFilter,
+    yearFilter,
+    fetchStats,
+    fetchTopProductsData,
+    fetchChartData,
+  ]);
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
 
@@ -156,96 +166,195 @@ const Reports = () => {
   };
 
   const handleDownloadExcel = () => {
-    const fileNamePrefix = "Báo cáo";
-    let fileName;
-    const currentDate = new Date().toISOString().split("T")[0];
-    if (yearFilter === null) {
-      fileName = `${fileNamePrefix}_${currentDate}.xlsx`;
-    } else if (monthFilter === null) {
-      fileName = `${fileNamePrefix}_${yearFilter}.xlsx`;
-    } else {
-      const month = String(monthFilter + 1).padStart(2, "0");
-      fileName = `${fileNamePrefix}_${yearFilter}-${month}.xlsx`;
+    const XLSX = require("xlsx");
+    const wb = XLSX.utils.book_new();
+
+    // Định dạng thời gian theo bộ lọc
+    const timeLabel = `${yearFilter}_${
+      monthFilter !== null
+        ? (monthFilter + 1).toString().padStart(2, "0")
+        : "all"
+    }`;
+    const fileName = `Báo cáo Recommendation System_${timeLabel}.xlsx`;
+
+    // 1. Sheet: Biểu đồ doanh thu
+    if (revenueChartData && revenueChartData.labels?.length) {
+      const headers = ["Thời gian", "Tổng doanh thu", "Doanh thu từ gợi ý"];
+      const data = revenueChartData.labels.map((label, idx) => [
+        label,
+        (revenueChartData.totalRevenue[idx] || 0).toLocaleString("vi-VN"),
+        (revenueChartData.recommendedRevenue[idx] || 0).toLocaleString("vi-VN"),
+      ]);
+      const worksheetData = [headers, ...data];
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+      XLSX.utils.book_append_sheet(wb, ws, "Biểu đồ doanh thu");
     }
 
+    // 2. Sheet: Biểu đồ doanh thu theo danh mục
+    if (categoryChartData && categoryChartData.labels?.length) {
+      const headers = ["Danh mục", "Doanh thu"];
+      const data = categoryChartData.labels.map((label, idx) => [
+        label,
+        (categoryChartData.data[idx] || 0).toLocaleString("vi-VN"),
+      ]);
+      const worksheetData = [headers, ...data];
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+      XLSX.utils.book_append_sheet(wb, ws, "Biểu đồ danh mục");
+    }
+
+    // 3. Sheet: Widget thống kê
+    const widgetHeaders = [
+      "Chỉ số",
+      "Giá trị",
+      "% thay đổi",
+      "Tăng/Giảm",
+      "Mô tả",
+    ];
     const widgetData = [
-      ["Tiêu chí", "Giá trị", "Phần trăm thay đổi", "Tăng/Giảm"],
       [
         "Doanh thu từ hệ thống đề xuất",
-        `${Number(stats.revenue.value).toLocaleString("vi-VN")} VND`,
-        stats.revenue.percentage,
+        stats.revenue.value,
+        stats.revenue.percentage + "%",
         stats.revenue.isIncrease ? "Tăng" : "Giảm",
+        "So với tháng trước",
       ],
       [
         "Lượt nhấn vào sản phẩm gợi ý",
         stats.clicks.value,
-        stats.clicks.percentage,
+        stats.clicks.percentage + "%",
         stats.clicks.isIncrease ? "Tăng" : "Giảm",
+        "So với tháng trước",
       ],
       [
         "Lượt thêm vào giỏ hàng",
         stats.addToCart.value,
-        stats.addToCart.percentage,
+        stats.addToCart.percentage + "%",
         stats.addToCart.isIncrease ? "Tăng" : "Giảm",
+        "So với tháng trước",
       ],
       [
         "Lượt mua hàng từ gợi ý",
         stats.purchases.value,
-        stats.purchases.percentage,
+        stats.purchases.percentage + "%",
         stats.purchases.isIncrease ? "Tăng" : "Giảm",
+        "So với tháng trước",
       ],
     ];
+    const wsWidget = XLSX.utils.aoa_to_sheet([widgetHeaders, ...widgetData]);
+    XLSX.utils.book_append_sheet(wb, wsWidget, "Widget thống kê");
 
-    const tableData = [
-      ["Tên sản phẩm", "Lượt bán"],
-      ...topProducts.map((item) => [item.name, item.quantity]),
-    ];
+    // 4. Sheet: Top sản phẩm
+    if (topProducts && topProducts.length) {
+      const exportColumns = columns;
+      const headers = exportColumns.map((col) => col.label);
+      const exportData = topProducts.map((row) =>
+        exportColumns.map((col) => row[col.key] || "")
+      );
+      const worksheetData = [headers, ...exportData];
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+      XLSX.utils.book_append_sheet(wb, ws, "Top sản phẩm");
+    }
 
-    const revenueChartCsv = [
-      ["Ngày", "Tổng doanh thu", "Doanh thu từ đề xuất"],
-      ...revenueChartData.labels.map((label, index) => [
-        label,
-        revenueChartData.totalRevenue[index] || 0,
-        revenueChartData.recommendedRevenue[index] || 0,
-      ]),
-    ];
-
-    const categoryChartCsv = [
-      ["Danh mục", "Doanh thu"],
-      ...categoryChartData.labels.map((label, index) => [
-        label,
-        categoryChartData.data[index] || 0,
-      ]),
-    ];
-
-    const XLSX = require("xlsx");
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet(widgetData),
-      "ThongKe"
-    );
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet(tableData),
-      "DanhSach"
-    );
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet(revenueChartCsv),
-      "BieuDoDoanhThu"
-    );
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet(categoryChartCsv),
-      "BieuDoDanhMuc"
-    );
-
-    XLSX.writeFile(workbook, fileName);
+    XLSX.writeFile(wb, fileName);
   };
 
   const formatRevenue = (value) => {
     return `${Number(value).toLocaleString("vi-VN")} VND`;
+  };
+
+  // Hàm xuất Excel tổng hợp cho Table (gồm nhiều sheet)
+  const handleExportAllReportExcel = () => {
+    const XLSX = require("xlsx");
+    const wb = XLSX.utils.book_new();
+
+    // Định dạng thời gian theo bộ lọc
+    const timeLabel = `${yearFilter}_${
+      monthFilter !== null
+        ? (monthFilter + 1).toString().padStart(2, "0")
+        : "all"
+    }`;
+
+    // 1. Sheet: Biểu đồ doanh thu
+    if (revenueChartData && revenueChartData.labels?.length) {
+      const headers = ["Thời gian", "Tổng doanh thu", "Doanh thu từ gợi ý"];
+      const data = revenueChartData.labels.map((label, idx) => [
+        label,
+        (revenueChartData.totalRevenue[idx] || 0).toLocaleString("vi-VN"),
+        (revenueChartData.recommendedRevenue[idx] || 0).toLocaleString("vi-VN"),
+      ]);
+      const worksheetData = [headers, ...data];
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+      XLSX.utils.book_append_sheet(wb, ws, "Biểu đồ doanh thu");
+    }
+
+    // 2. Sheet: Biểu đồ doanh thu theo danh mục
+    if (categoryChartData && categoryChartData.labels?.length) {
+      const headers = ["Danh mục", "Doanh thu"];
+      const data = categoryChartData.labels.map((label, idx) => [
+        label,
+        (categoryChartData.data[idx] || 0).toLocaleString("vi-VN"),
+      ]);
+      const worksheetData = [headers, ...data];
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+      XLSX.utils.book_append_sheet(wb, ws, "Biểu đồ danh mục");
+    }
+
+    // 3. Sheet: Widget thống kê
+    const widgetHeaders = [
+      "Chỉ số",
+      "Giá trị",
+      "% thay đổi",
+      "Tăng/Giảm",
+      "Mô tả",
+    ];
+    const widgetData = [
+      [
+        "Doanh thu từ hệ thống đề xuất",
+        stats.revenue.value,
+        stats.revenue.percentage + "%",
+        stats.revenue.isIncrease ? "Tăng" : "Giảm",
+        "So với tháng trước",
+      ],
+      [
+        "Lượt nhấn vào sản phẩm gợi ý",
+        stats.clicks.value,
+        stats.clicks.percentage + "%",
+        stats.clicks.isIncrease ? "Tăng" : "Giảm",
+        "So với tháng trước",
+      ],
+      [
+        "Lượt thêm vào giỏ hàng",
+        stats.addToCart.value,
+        stats.addToCart.percentage + "%",
+        stats.addToCart.isIncrease ? "Tăng" : "Giảm",
+        "So với tháng trước",
+      ],
+      [
+        "Lượt mua hàng từ gợi ý",
+        stats.purchases.value,
+        stats.purchases.percentage + "%",
+        stats.purchases.isIncrease ? "Tăng" : "Giảm",
+        "So với tháng trước",
+      ],
+    ];
+    const wsWidget = XLSX.utils.aoa_to_sheet([widgetHeaders, ...widgetData]);
+    XLSX.utils.book_append_sheet(wb, wsWidget, "Widget thống kê");
+
+    // 4. Sheet: Top sản phẩm
+    if (topProducts && topProducts.length) {
+      const exportColumns = columns;
+      const headers = exportColumns.map((col) => col.label);
+      const exportData = topProducts.map((row) =>
+        exportColumns.map((col) => row[col.key] || "")
+      );
+      const worksheetData = [headers, ...exportData];
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+      XLSX.utils.book_append_sheet(wb, ws, "Top sản phẩm");
+    }
+
+    // Tên file theo bộ lọc năm_tháng
+    const fileName = `Báo cáo Recommendation System_${timeLabel}.xlsx`;
+    XLSX.writeFile(wb, fileName);
   };
 
   return (
@@ -325,7 +434,11 @@ const Reports = () => {
           <div>
             <div className="dashboard-top">
               <div className="dashboard-chart">
-                <RevenueChart chartData={revenueChartData} />
+                <RevenueChart
+                  chartData={revenueChartData}
+                  showDownload={false}
+                  showFilter={false}
+                />
               </div>
               <div className="dashboard-widgets">
                 <Widget
@@ -360,14 +473,17 @@ const Reports = () => {
             </div>
             <div className="dashboard-bottom-flex">
               <div className="dashboard-bottom-chart">
-                <CategoryChart chartData={categoryChartData} />
+                <CategoryChart
+                  chartData={categoryChartData}
+                  showDownload={false}
+                  showFilter={false}
+                />
               </div>
               <div className="dashboard-bottom-table">
                 <Table
                   title="Top sản phẩm"
                   data={topProducts}
                   columns={columns}
-                  onAdd={() => console.log("Thêm sản phẩm")}
                   showHeader={true}
                   showSearch={false}
                   showFilter={true}
@@ -375,6 +491,7 @@ const Reports = () => {
                   showAddButton={false}
                   showCheckbox={false}
                   showSort={true}
+                  onDownload={handleExportAllReportExcel}
                 />
               </div>
             </div>

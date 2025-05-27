@@ -14,6 +14,8 @@ const ListCustomer = () => {
   const [searchValue, setSearchValue] = useState("");
   const [showDelete, setShowDelete] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successTimeout, setSuccessTimeout] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,10 +49,23 @@ const ListCustomer = () => {
       await loadData();
       setShowDelete(false);
       setSelectedCustomer(null);
+      setShowSuccess(true);
+      const timeout = setTimeout(() => {
+        setShowSuccess(false);
+        navigate("/customers");
+      }, 2500);
+      setSuccessTimeout(timeout);
     } catch (err) {
       alert("Xóa khách hàng thất bại!");
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (successTimeout) clearTimeout(successTimeout);
+    };
+  }, [successTimeout]);
+
   const columns = [
     {
       key: "fullName",
@@ -134,6 +149,52 @@ const ListCustomer = () => {
     },
   ];
 
+  // Thêm hàm xuất Excel
+  const handleExportCustomerExcel = () => {
+    // Lấy các cột không phải Hành động
+    const exportColumns = columns.filter((col) => col.key !== "actions");
+    const headers = exportColumns.map((col) => col.label);
+    // Lấy dữ liệu đang hiển thị (sau filter/search)
+    const exportData = filteredCustomers.map((row) =>
+      exportColumns.map((col) => {
+        if (col.key === "revenue") {
+          return (row.revenue || 0).toLocaleString("vi-VN") + " đ";
+        }
+        if (col.key === "createdAt") {
+          return row.createdAt
+            ? new Date(row.createdAt).toLocaleDateString("vi-VN")
+            : "";
+        }
+        if (col.key === "address") {
+          return row.addressDetail || "Chưa cập nhật";
+        }
+        if (col.key === "fullName") {
+          return row.fullName;
+        }
+        return row[col.key] || "";
+      })
+    );
+    const worksheetData = [headers, ...exportData];
+    // Tên file: Khách hàng_(tìm kiếm hoặc Tất cả)_(ngày-giờ tải).xlsx
+    let filterLabel = "Tất cả";
+    if (searchValue) {
+      filterLabel = `Tìm: ${searchValue}`;
+    }
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(now.getDate()).padStart(2, "0")}_${String(
+      now.getHours()
+    ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
+    const fileName = `Khách hàng_${filterLabel}_${dateStr}.xlsx`;
+    const XLSX = require("xlsx");
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(wb, ws, "Danh sách khách hàng");
+    XLSX.writeFile(wb, fileName);
+  };
+
   return (
     <div className="dashboard-layout">
       <Navbar />
@@ -147,24 +208,31 @@ const ListCustomer = () => {
           </p>
         </div>
         {/* Bảng danh sách sản phẩm */}
-        <Table
-          title=""
-          data={filteredCustomers}
-          columns={columns}
-          showHeader={true}
-          showSearch={true}
-          showFilter={false}
-          showDownload={true}
-          showAddButton={true}
-          showCheckbox={true}
-          showSort={true}
-          addButtonText="Thêm khách hàng"
-          downloadButtonText="Xuất file"
-          searchValue={searchValue}
-          setSearchValue={setSearchValue}
-          onSearch={handleSearch}
-          onAdd={() => navigate("/customers/add")}
-        />
+        {loading ? (
+          <div style={{ padding: 40, textAlign: "center" }}>
+            Đang tải dữ liệu...
+          </div>
+        ) : (
+          <Table
+            title=""
+            data={filteredCustomers}
+            columns={columns}
+            showHeader={true}
+            showSearch={true}
+            showFilter={false}
+            showDownload={true}
+            showAddButton={true}
+            showCheckbox={false}
+            showSort={true}
+            addButtonText="Thêm khách hàng"
+            downloadButtonText="Xuất file"
+            searchValue={searchValue}
+            setSearchValue={setSearchValue}
+            onSearch={handleSearch}
+            onAdd={() => navigate("/customers/add")}
+            onDownload={handleExportCustomerExcel}
+          />
+        )}
         <Popup
           open={showDelete && selectedCustomer}
           title="Xác nhận xóa khách hàng"
@@ -181,6 +249,15 @@ const ListCustomer = () => {
           confirmColor="error"
           cancelText="Hủy"
           cancelColor="gray"
+        />
+        <Popup
+          open={showSuccess}
+          title="Thành công"
+          titleColor="success"
+          content="Xóa khách hàng thành công!"
+          contentColor="success"
+          showCancel={false}
+          showConfirm={false}
         />
       </main>
     </div>

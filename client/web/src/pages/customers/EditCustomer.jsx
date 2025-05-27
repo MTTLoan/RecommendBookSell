@@ -4,6 +4,7 @@ import Navbar from "../../components/layout/Navbar";
 import Sidebar from "../../components/layout/Sidebar";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
+import Popup from "../../components/common/Popup";
 import defaultAvatar from "../../assets/images/default-avatar.jpg";
 import "../../styles/editcustomer.css";
 import {
@@ -13,12 +14,20 @@ import {
   fetchWards,
   adminUpdateUser,
 } from "../../services/authService";
+import {
+  validateUsername,
+  isValidEmail,
+  isValidPhone,
+} from "../../utils/validators";
 
 const EditCustomer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successTimeout, setSuccessTimeout] = useState(null);
+  const [errors, setErrors] = useState({});
 
   // Dropdown địa chỉ
   const [provinces, setProvinces] = useState([]);
@@ -62,14 +71,60 @@ const EditCustomer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validate fields
+    const newErrors = {};
+    const usernameValidation = validateUsername(customer.username);
+    if (!usernameValidation.isValid) {
+      newErrors.username = usernameValidation.message;
+    }
+    if (!customer.fullName) {
+      newErrors.fullName = "Họ tên không được để trống";
+    }
+    if (!isValidEmail(customer.email)) {
+      newErrors.email = "Email không hợp lệ";
+    }
+    if (!isValidPhone(customer.phoneNumber)) {
+      newErrors.phoneNumber = "Số điện thoại không hợp lệ";
+    }
+    if (!customer.addressProvince) {
+      newErrors.addressProvince = "Vui lòng chọn tỉnh/thành phố";
+    }
+    if (!customer.addressDistrict) {
+      newErrors.addressDistrict = "Vui lòng chọn quận/huyện";
+    }
+    if (!customer.addressWard) {
+      newErrors.addressWard = "Vui lòng chọn phường/xã";
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
+    const formData = new FormData();
+    // Thêm các trường text
+    Object.keys(customer).forEach((key) => {
+      if (key !== "avatar") formData.append(key, customer[key]);
+    });
+    // Thêm file ảnh nếu có (và là file mới)
+    if (customer.avatar && typeof customer.avatar !== "string") {
+      formData.append("avatar", customer.avatar);
+    }
     try {
-      await adminUpdateUser(customer.id, customer);
-      alert("Cập nhật thành công!");
-      navigate("/customers");
+      await adminUpdateUser(customer.id, formData);
+      setShowSuccess(true); // Hiển thị popup thành công
+      const timeout = setTimeout(() => {
+        setShowSuccess(false);
+        navigate("/customers");
+      }, 3000);
+      setSuccessTimeout(timeout);
     } catch (err) {
       alert("Cập nhật thất bại!");
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (successTimeout) clearTimeout(successTimeout);
+    };
+  }, [successTimeout]);
 
   if (loading || !customer) {
     return (
@@ -126,6 +181,11 @@ const EditCustomer = () => {
                   onChange={(e) => handleChange("username", e.target.value)}
                   required
                 />
+                {errors.username && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.username}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -135,6 +195,11 @@ const EditCustomer = () => {
                   onChange={(e) => handleChange("fullName", e.target.value)}
                   required
                 />
+                {errors.fullName && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.fullName}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -144,6 +209,11 @@ const EditCustomer = () => {
                   onChange={(e) => handleChange("email", e.target.value)}
                   required
                 />
+                {errors.email && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.email}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -153,6 +223,11 @@ const EditCustomer = () => {
                   onChange={(e) => handleChange("phoneNumber", e.target.value)}
                   required
                 />
+                {errors.phoneNumber && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.phoneNumber}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -187,6 +262,11 @@ const EditCustomer = () => {
                     </option>
                   ))}
                 </select>
+                {errors.addressProvince && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.addressProvince}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <label className="input-label">Quận/Huyện</label>
@@ -206,6 +286,11 @@ const EditCustomer = () => {
                     </option>
                   ))}
                 </select>
+                {errors.addressDistrict && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.addressDistrict}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <label className="input-label">Phường/Xã</label>
@@ -223,6 +308,11 @@ const EditCustomer = () => {
                     </option>
                   ))}
                 </select>
+                {errors.addressWard && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.addressWard}
+                  </div>
+                )}
               </div>
               <div className="vp-form-group">
                 <Input
@@ -256,7 +346,13 @@ const EditCustomer = () => {
               </div>
               <div className="vp-form-group" style={{ textAlign: "center" }}>
                 <img
-                  src={customer.avatar || defaultAvatar}
+                  src={
+                    customer.avatar
+                      ? typeof customer.avatar === "string"
+                        ? customer.avatar
+                        : URL.createObjectURL(customer.avatar)
+                      : defaultAvatar
+                  }
                   alt="Avatar"
                   style={{
                     width: 100,
@@ -297,6 +393,15 @@ const EditCustomer = () => {
             </div>
           </div>
         </form>
+        <Popup
+          open={showSuccess}
+          title="Thành công"
+          titleColor="success"
+          content="Cập nhật khách hàng thành công!"
+          contentColor="success"
+          showCancel={false}
+          showConfirm={false}
+        />
       </main>
     </div>
   );

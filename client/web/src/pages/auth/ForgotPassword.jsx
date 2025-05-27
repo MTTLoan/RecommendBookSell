@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { forgotPassword } from '../../services/authService';
-import Logo from '../../components/common/Logo';
-import Input from '../../components/common/Input';
-import Button from '../../components/common/Button';
-import loginImage from '../../assets/images/login-bg.png';
-import '../../styles/auth.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { forgotPassword } from "../../services/authService";
+import Logo from "../../components/common/Logo";
+import Input from "../../components/common/Input";
+import Button from "../../components/common/Button";
+import loginImage from "../../assets/images/login-bg.png";
+import "../../styles/auth.css";
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setEmail(e.target.value);
@@ -18,15 +20,21 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-
+    setError("");
+    setSuccess("");
+    setLoading(true);
     try {
       await forgotPassword(email);
-      setSuccess('Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email của bạn.');
+      setSuccess(
+        "Mã xác nhận đã được gửi về email. Vui lòng kiểm tra email và nhập mã xác nhận để đặt lại mật khẩu."
+      );
+      setTimeout(() => {
+        navigate(`/auth/reset-password?email=${encodeURIComponent(email)}`);
+      }, 1000); // Giảm thời gian chờ để chuyển trang nhanh hơn
     } catch (err) {
-      setError(err.message || 'Gửi yêu cầu thất bại. Vui lòng thử lại.');
+      setError(err.message || "Gửi yêu cầu thất bại. Vui lòng thử lại.");
     } finally {
+      setLoading(false);
     }
   };
 
@@ -55,13 +63,13 @@ const ForgotPassword = () => {
                 required
               />
 
-          <div className="auth-forgot-password">
-            <Link to="/auth/login">Đăng nhập</Link>
-          </div>
+              <div className="auth-forgot-password">
+                <Link to="/auth/login">Đăng nhập</Link>
+              </div>
             </div>
 
-            <Button type="submit">
-              Khôi phục mật khẩu
+            <Button type="submit" disabled={loading}>
+              {loading ? "Đang gửi..." : "Khôi phục mật khẩu"}
             </Button>
           </form>
         </div>

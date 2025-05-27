@@ -19,6 +19,7 @@ import {
   deleteBook,
 } from "../controllers/bookController.js";
 import Book from "../models/Book.js";
+import uploadProductImages from "../middleware/uploadProductImages.js";
 
 const router = express.Router();
 
@@ -42,5 +43,20 @@ router.post("/add-book", createBook);
 router.put("/update-book/:id", updateBook);
 router.delete("/delete-book/:id", deleteBook);
 router.get("/search", searchNameBooks);
+// API upload nhiều ảnh sản phẩm
+router.post("/upload-image", uploadProductImages, (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res
+      .status(400)
+      .json({ success: false, msg: "Không có file ảnh nào được upload." });
+  }
+  // Trả về mảng url ảnh
+  const images = req.files.map((f) => f.location);
+  // Nếu chỉ upload 1 ảnh, trả về image cho frontend cũ
+  if (images.length === 1) {
+    return res.json({ success: true, image: images[0] });
+  }
+  return res.json({ success: true, images });
+});
 
 export default router;

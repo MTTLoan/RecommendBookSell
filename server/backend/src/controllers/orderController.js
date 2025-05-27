@@ -353,15 +353,39 @@ export const adminUpdateOrderStatus = async (req, res) => {
     // Lấy userId của chủ đơn hàng
     const notifyUserId = order.userId;
 
-    // Tăng seq cho notificationId
-    const notificationCounterResult = await mongoose.connection.db
-      .collection("counters")
-      .findOneAndUpdate(
-        { _id: "notificationId" },
-        { $inc: { seq: 1 } },
-        { returnDocument: "after", upsert: true }
+    // Tăng seq cho notificationId (xử lý cả trường hợp MongoDB trả về ở value hoặc seq)
+    let notificationId;
+    let notificationCounterResult;
+    try {
+      notificationCounterResult = await mongoose.connection.db
+        .collection("counters")
+        .findOneAndUpdate(
+          { _id: "notificationId" },
+          { $inc: { seq: 1 } },
+          { returnDocument: "after", upsert: true }
+        );
+      // Một số MongoDB sẽ trả về ở .seq, một số ở .value.seq
+      notificationId =
+        notificationCounterResult.seq ||
+        (notificationCounterResult.value &&
+          notificationCounterResult.value.seq);
+      if (!notificationId) {
+        throw new Error(
+          "Không lấy được notificationId từ counter: " +
+            JSON.stringify(notificationCounterResult)
+        );
+      }
+    } catch (err) {
+      console.error(
+        "Lỗi khi tăng notificationId:",
+        err,
+        notificationCounterResult
       );
-    const notificationId = notificationCounterResult.seq;
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi tạo notificationId: " + err.message,
+      });
+    }
 
     // Tạo thông báo
     const notification = new Notification({
@@ -369,7 +393,9 @@ export const adminUpdateOrderStatus = async (req, res) => {
       userId: notifyUserId,
       orderId: order.id,
       title: notificationTitles[status] || "Cập nhật đơn hàng",
-      message: notificationMessages[status] || `Đơn hàng #${order.id} đã cập nhật trạng thái.`,
+      message:
+        notificationMessages[status] ||
+        `Đơn hàng #${order.id} đã cập nhật trạng thái.`,
       isRead: false,
       createdAt: new Date(),
     });
@@ -496,7 +522,7 @@ export const getAllOrders = async (req, res) => {
     });
 
     // Gộp dữ liệu cho từng đơn hàng
-    const result = orders.map(order => ({
+    const result = orders.map((order) => ({
       id: order.id,
       orderDate: order.orderDate,
       totalAmount: order.totalAmount,
@@ -609,8 +635,8 @@ export const adminGetOrderById = async (req, res) => {
         const book = await Book.findOne({ id: item.bookId });
         return {
           ...item.toJSON(),
-          bookName: book ? book.name : '',
-          bookImage: book?.images?.[0]?.url || book?.images?.[0] || '',
+          bookName: book ? book.name : "",
+          bookImage: book?.images?.[0]?.url || book?.images?.[0] || "",
         };
       })
     );
@@ -620,8 +646,8 @@ export const adminGetOrderById = async (req, res) => {
       orderDate: order.orderDate,
       totalAmount: order.totalAmount,
       status: order.status,
-      customer: user?.fullName || 'Ẩn',
-      address: order.shippingDetail || '',
+      customer: user?.fullName || "Ẩn",
+      address: order.shippingDetail || "",
       items,
     });
   } catch (error) {

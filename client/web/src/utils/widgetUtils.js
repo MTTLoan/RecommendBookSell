@@ -1,13 +1,22 @@
 // Hàm tính mô tả dựa trên monthFilter và giá trị thay đổi
-export const getWidgetDescription = (changeValue, monthFilter, periodLabel = "tháng") => {
+export const getWidgetDescription = (
+  changeValue,
+  monthFilter,
+  periodLabel = "tháng"
+) => {
   const absChange = Math.abs(changeValue);
   const isIncrease = changeValue >= 0;
-  const comparisonPeriod = monthFilter === null || monthFilter === undefined ? "năm trước" : `${periodLabel} trước`;
+  const comparisonPeriod =
+    monthFilter === null || monthFilter === undefined
+      ? "năm trước"
+      : `${periodLabel} trước`;
 
   if (changeValue === 0) {
     return `Không thay đổi so với ${comparisonPeriod}`;
   }
-  return `${isIncrease ? "Tăng" : "Giảm"} ${absChange}% so với ${comparisonPeriod}`;
+  return `${
+    isIncrease ? "Tăng" : "Giảm"
+  } ${absChange}% so với ${comparisonPeriod}`;
 };
 
 // Hàm tạo dữ liệu widget cho một mục (ví dụ: Doanh thu, Khách hàng, ...)

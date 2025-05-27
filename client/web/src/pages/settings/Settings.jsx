@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import Sidebar from "../../components/layout/Sidebar";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
-import Popup from "../../components/common/Popup"; 
+import Popup from "../../components/common/Popup";
 import defaultAvatar from "../../assets/images/default-avatar.jpg";
-import { isAuthenticated, logout } from '../../services/authService';
+import { isAuthenticated, logout } from "../../services/authService";
 import "../../styles/setting.css";
 import {
   getProfile,
@@ -18,7 +18,7 @@ import { validateUsername, validateRequired } from "../../utils/validators";
 
 const Settings = () => {
   // Khởi tạo trạng thái cho component
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Tài khoản"); // Quản lý tab hiện tại (Tài khoản hoặc Bảo mật)
   const [avatar, setAvatar] = useState(null); // Lưu URL tạm thời của ảnh đại diện (hiển thị trên UI)
   const [avatarFileName, setAvatarFileName] = useState(""); // Lưu tên file ảnh đại diện được chọn
@@ -50,8 +50,8 @@ const Settings = () => {
   // Mục đích: Lấy thông tin hồ sơ người dùng từ server và cập nhật trạng thái
   useEffect(() => {
     if (!isAuthenticated()) {
-          navigate('/auth/login');
-        }
+      navigate("/auth/login");
+    }
     const fetchProfile = async () => {
       try {
         setLoading(true); // Bật trạng thái đang tải
@@ -186,7 +186,7 @@ const Settings = () => {
       setLoading(true); // Bật trạng thái đang tải
 
       // Tải ảnh đại diện nếu người dùng chọn ảnh mới
-       let avatarUpdated = false;
+      let avatarUpdated = false;
       if (avatarFileObject) {
         const avatarPayload = new FormData();
         avatarPayload.append("avatar", avatarFileObject); // Thêm file ảnh vào payload
@@ -226,7 +226,9 @@ const Settings = () => {
           };
           setFormData(profileData); // Cập nhật dữ liệu biểu mẫu
           setInitialFormData(profileData); // Cập nhật dữ liệu ban đầu
-          setAvatar(updatedUser.avatar ? `${updatedUser.avatar}?t=${Date.now()}` : null); // Cập nhật ảnh đại diện
+          setAvatar(
+            updatedUser.avatar ? `${updatedUser.avatar}?t=${Date.now()}` : null
+          ); // Cập nhật ảnh đại diện
           setAvatarFileName(updatedUser.avatar ? "Current Avatar" : ""); // Cập nhật tên file
           setAvatarFileObject(null); // Xóa file ảnh đã chọn
           setPopupConfig({
@@ -259,7 +261,11 @@ const Settings = () => {
         contentColor: "error",
       }); // Hiển thị popup lỗi
       setIsPopupOpen(true);
-      setAvatar(initialFormData?.avatar ? `${initialFormData.avatar}?t=${Date.now()}` : null); // Khôi phục ảnh cũ
+      setAvatar(
+        initialFormData?.avatar
+          ? `${initialFormData.avatar}?t=${Date.now()}`
+          : null
+      ); // Khôi phục ảnh cũ
       setAvatarFileName(initialFormData?.avatar ? "Current Avatar" : ""); // Khôi phục tên file
       setAvatarFileObject(null); // Xóa file ảnh đã chọn
     } finally {
@@ -322,7 +328,12 @@ const Settings = () => {
   // Mục đích: Đặt lại trạng thái popup khi người dùng nhấn nút đóng
   const closePopup = () => {
     setIsPopupOpen(false);
-    setPopupConfig({ title: "", content: "", titleColor: "info", contentColor: "info" });
+    setPopupConfig({
+      title: "",
+      content: "",
+      titleColor: "info",
+      contentColor: "info",
+    });
   };
 
   // Hàm xử lý khi người dùng nhấn nút "Hủy"
@@ -330,13 +341,25 @@ const Settings = () => {
   const handleCancel = () => {
     if (initialFormData) {
       setFormData(initialFormData); // Khôi phục dữ liệu biểu mẫu
-      setAvatar(initialFormData.avatar ? `${initialFormData.avatar}?t=${Date.now()}` : null); // Khôi phục ảnh đại diện
+      setAvatar(
+        initialFormData.avatar
+          ? `${initialFormData.avatar}?t=${Date.now()}`
+          : null
+      ); // Khôi phục ảnh đại diện
       setAvatarFileName(initialFormData.avatar ? "Current Avatar" : ""); // Khôi phục tên file
       setAvatarFileObject(null); // Xóa file ảnh đã chọn
       setErrors({}); // Xóa lỗi
     }
   };
-  const user = JSON.parse(sessionStorage.getItem('user')) || {};
+  const handleCancelPassword = () => {
+    setPasswordData({
+      oldPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    setErrors({ ...errors, confirmPassword: "" }); // Xóa lỗi xác nhận mật khẩu
+  };
+  const user = JSON.parse(sessionStorage.getItem("user")) || {};
   // Giao diện chính của component
   return (
     <div className="dashboard-layout">
@@ -492,6 +515,11 @@ const Settings = () => {
                   placeholder="Xác nhận mật khẩu mới"
                   error={errors.confirmPassword}
                 />
+                {errors.confirmPassword && (
+                  <div style={{ color: "red", marginTop: 4 }}>
+                    {errors.confirmPassword}
+                  </div>
+                )}
               </div>
               <div className="password-checklist">
                 <label>Yêu cầu mật khẩu:</label>
@@ -532,13 +560,7 @@ const Settings = () => {
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={() =>
-                    setPasswordData({
-                      oldPassword: "",
-                      newPassword: "",
-                      confirmPassword: "",
-                    })
-                  }
+                  onClick={handleCancelPassword}
                 >
                   Hủy
                 </Button>
@@ -555,7 +577,7 @@ const Settings = () => {
             showCancel={false} // Chỉ cần nút "Đồng ý"
             confirmText="Đồng ý"
             onConfirm={closePopup} // Nút "Đồng ý" cũng đóng popup
-            confirmColor="info"
+            confirmColor="success"
           />
         </div>
       </main>

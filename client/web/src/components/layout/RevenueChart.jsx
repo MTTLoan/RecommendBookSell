@@ -23,7 +23,11 @@ ChartJS.register(
   Legend
 );
 
-const RevenueChart = ({ chartData }) => {
+const RevenueChart = ({
+  chartData,
+  showDownload = true,
+  showFilter = true,
+}) => {
   const [filter, setFilter] = useState("Tất cả");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -110,6 +114,39 @@ const RevenueChart = ({ chartData }) => {
         <div className="chart-title">
           <h2>Biểu đồ doanh thu</h2>
           <span className="chart-subtitle">Chú thích: Doanh thu theo ngày</span>
+        </div>
+        <div className="chart-actions">
+          {showFilter && (
+            <div className="chart-filter">
+              <button className="filter-button" onClick={toggleDropdown}>
+                <span className="filter-text">{filter}</span>
+                <span className="material-symbols-outlined filter-icon">
+                  filter_list
+                </span>
+              </button>
+              {isDropdownOpen && (
+                <ul className="filter-dropdown">
+                  <li onClick={() => handleFilterChange("Tất cả")}>Tất cả</li>
+                  <li onClick={() => handleFilterChange("Tháng này")}>
+                    Tháng này
+                  </li>
+                  <li onClick={() => handleFilterChange("Quý này")}>Quý này</li>
+                  <li onClick={() => handleFilterChange("Năm nay")}>Năm nay</li>
+                </ul>
+              )}
+            </div>
+          )}
+          {showDownload && (
+            <button
+              className="chart-download"
+              onClick={handleDownload}
+              title="Tải xuống"
+            >
+              <span className="material-symbols-outlined download-icon">
+                download
+              </span>
+            </button>
+          )}
         </div>
       </div>
       <div className="chart-body">

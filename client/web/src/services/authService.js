@@ -70,7 +70,12 @@ export const login = async (credentials) => {
   } catch (error) {
     console.error("Login error:", error);
     if (error.response) {
-      throw new Error(error.response.data.message || "Đăng nhập thất bại");
+      // Ưu tiên lấy msg, nếu không có thì lấy message
+      const errMsg =
+        error.response.data.msg ||
+        error.response.data.message ||
+        "Đăng nhập thất bại";
+      throw new Error(errMsg);
     } else if (error.request) {
       throw new Error(
         "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng."
@@ -96,11 +101,14 @@ export const isAuthenticated = () => {
 // Hàm quên mật khẩu
 export const forgotPassword = async (email) => {
   console.log("Sending email to backend:", email); // Log email gửi đi
-  console.log("API URL:", `${API_BASE_URL}/auth/forgot-password`); // Log URL API
+  console.log("API URL:", `${API_BASE_URL}/forgot_password/forgot-password`); // Log URL API
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/forgot-password`, {
-      email,
-    });
+    const response = await axios.post(
+      `${API_BASE_URL}/forgot_password/forgot-password`,
+      {
+        email,
+      }
+    );
     return response.data;
   } catch (error) {
     if (error.response) {
@@ -118,8 +126,9 @@ export const forgotPassword = async (email) => {
 // Hàm đặt lại mật khẩu
 export const resetPassword = async (data) => {
   try {
+    // Đúng endpoint backend cho OTP: /forgot_password/reset-password
     const response = await axios.post(
-      `${API_BASE_URL}/auth/reset-password`,
+      `${API_BASE_URL}/forgot_password/reset-password`,
       data
     );
     return response.data;
@@ -240,7 +249,7 @@ export const fetchAdminOrderById = async (id) => {
 // Hàm lấy thông tin hồ sơ người dùng
 export const getProfile = async () => {
   try {
-    const response = await api.get("/auth/profile"); 
+    const response = await api.get("/auth/profile");
     return response.data;
   } catch (error) {
     console.error("Lỗi lấy user từ API:", error);
@@ -251,16 +260,21 @@ export const getProfile = async () => {
 // Hàm cập nhật hồ sơ
 export const updateProfileWithAvatar = async (data) => {
   try {
-    const response = await api.put('/auth/update-profile-with-avt', data /* no need to set headers here */);
+    const response = await api.put(
+      "/auth/update-profile-with-avt",
+      data /* no need to set headers here */
+    );
     return response.data;
   } catch (error) {
-    console.error('Update profile with avatar error:', error);
+    console.error("Update profile with avatar error:", error);
     if (error.response) {
-      throw new Error(error.response.data.msg || 'Cập nhật hồ sơ thất bại');
+      throw new Error(error.response.data.msg || "Cập nhật hồ sơ thất bại");
     } else if (error.request) {
-      throw new Error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.');
+      throw new Error(
+        "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng."
+      );
     } else {
-      throw new Error('Đã xảy ra lỗi. Vui lòng thử lại.');
+      throw new Error("Đã xảy ra lỗi. Vui lòng thử lại.");
     }
   }
 };
@@ -268,38 +282,83 @@ export const updateProfileWithAvatar = async (data) => {
 // Hàm upload ảnh đại diện
 export const uploadAvatar = async (formData) => {
   try {
-    const response = await api.post('/auth/upload-avatar', formData, {
+    const response = await api.post("/auth/upload-avatar", formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
     return response.data;
   } catch (error) {
-    console.error('Upload avatar error:', error);
+    console.error("Upload avatar error:", error);
     if (error.response) {
-      throw new Error(error.response.data.msg || 'Tải ảnh đại diện thất bại');
+      throw new Error(error.response.data.msg || "Tải ảnh đại diện thất bại");
     } else if (error.request) {
-      throw new Error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.');
+      throw new Error(
+        "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng."
+      );
     } else {
-      throw new Error('Đã xảy ra lỗi. Vui lòng thử lại.');
+      throw new Error("Đã xảy ra lỗi. Vui lòng thử lại.");
     }
   }
-}; 
+};
 
 // Hàm đổi mật khẩu
 export const changePassWord = async (data) => {
   try {
-    const response = await api.post('/auth/change-password', data);
+    const response = await api.post("/auth/change-password", data);
     return response.data;
   } catch (error) {
-    console.error('Change password error:', error);
+    console.error("Change password error:", error);
     if (error.response) {
-      throw new Error(error.response.data.msg || 'Đổi mật khẩu thất bại');
-    } else if (error.request) {
-      throw new Error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.');
-    } else {
-      throw new Error('Đã xảy ra lỗi. Vui lòng thử lại.');
+      throw new Error(error.response.data.msg || "Đổi mật khẩu thất bại");
     }
+  }
+};
+
+// Kiểm tra OTP hợp lệ với backend
+export async function verifyOTP(email, otp) {
+  try {
+    const res = await fetch("http://localhost:5000/api/otp/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp }),
+    });
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error("Lỗi hệ thống hoặc kết nối. Vui lòng thử lại sau.");
+    }
+    const data = await res.json();
+    // Nếu backend trả về success=false hoặc valid=false thì throw luôn để frontend catch
+    if (!data.success || !data.valid) {
+      throw new Error("Mã xác nhận (OTP) không đúng hoặc đã hết hạn.");
+    }
+    return data;
+  } catch (err) {
+    // Đảm bảo luôn throw để frontend catch
+    throw new Error(err.message || "Lỗi xác thực OTP");
   }
 }
 
+// Kiểm tra OTP hợp lệ với backend (API mới: /api/otp/check)
+export async function checkOTP(email, otp) {
+  try {
+    const res = await fetch("http://localhost:5000/api/otp/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp }),
+    });
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error("Lỗi hệ thống hoặc kết nối. Vui lòng thử lại sau.");
+    }
+    const data = await res.json();
+    if (!data.success || !data.valid) {
+      throw new Error(
+        data.msg || "Mã xác nhận (OTP) không đúng hoặc đã hết hạn."
+      );
+    }
+    return data;
+  } catch (err) {
+    throw new Error(err.message || "Lỗi xác thực OTP");
+  }
+}
