@@ -208,25 +208,31 @@ const ListCustomer = () => {
           </p>
         </div>
         {/* Bảng danh sách sản phẩm */}
-        <Table
-          title=""
-          data={filteredCustomers}
-          columns={columns}
-          showHeader={true}
-          showSearch={true}
-          showFilter={false}
-          showDownload={true}
-          showAddButton={true}
-          showCheckbox={false}
-          showSort={true}
-          addButtonText="Thêm khách hàng"
-          downloadButtonText="Xuất file"
-          searchValue={searchValue}
-          setSearchValue={setSearchValue}
-          onSearch={handleSearch}
-          onAdd={() => navigate("/customers/add")}
-          onDownload={handleExportCustomerExcel}
-        />
+        {loading ? (
+          <div style={{ padding: 40, textAlign: "center" }}>
+            Đang tải dữ liệu...
+          </div>
+        ) : (
+          <Table
+            title=""
+            data={filteredCustomers}
+            columns={columns}
+            showHeader={true}
+            showSearch={true}
+            showFilter={false}
+            showDownload={true}
+            showAddButton={true}
+            showCheckbox={false}
+            showSort={true}
+            addButtonText="Thêm khách hàng"
+            downloadButtonText="Xuất file"
+            searchValue={searchValue}
+            setSearchValue={setSearchValue}
+            onSearch={handleSearch}
+            onAdd={() => navigate("/customers/add")}
+            onDownload={handleExportCustomerExcel}
+          />
+        )}
         <Popup
           open={showDelete && selectedCustomer}
           title="Xác nhận xóa khách hàng"

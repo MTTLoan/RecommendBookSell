@@ -338,3 +338,7 @@
   .selected-row:hover {
     background-color: #c2ffdb !important; /* Màu nền khi hover trên dòng được chọn */
   }
+
+  .table-content-spacing {
+  margin-top: 24px;
+}
