@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { resetPassword } from "../../services/authService";
+import { resetPassword, checkOTP } from "../../services/authService";
 import Logo from "../../components/common/Logo";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
@@ -34,6 +34,14 @@ const ResetPassword = () => {
       setError("Mật khẩu và xác nhận mật khẩu không khớp.");
       return;
     }
+    // Gọi API kiểm tra OTP trước khi đổi mật khẩu (dùng checkOTP mới)
+    try {
+      await checkOTP(email, otp);
+    } catch (err) {
+      setError(err.message || "Đặt lại mật khẩu thất bại. Vui lòng thử lại.");
+      return; // Nếu OTP sai, không cho đổi mật khẩu
+    }
+    // Nếu OTP hợp lệ, tiếp tục đổi mật khẩu
     try {
       await resetPassword({
         email,
@@ -63,13 +71,13 @@ const ResetPassword = () => {
           <h1 className="auth-title">Khôi phục mật khẩu</h1>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              {/* Nếu không có email trên URL, cho phép nhập email */}
+              {/* Email luôn lấy từ URL hoặc đã nhập, không cho sửa */}
               <Input
                 label="Email"
                 type="email"
                 name="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                disabled
                 placeholder="Nhập email đã nhận mã xác nhận"
                 required
                 autoFocus

@@ -6,7 +6,11 @@ import "../../styles/chart.css";
 // Đăng ký các thành phần cần thiết của Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const CategoryChart = ({ chartData }) => {
+const CategoryChart = ({
+  chartData,
+  showDownload = true,
+  showFilter = true,
+}) => {
   const [filter, setFilter] = useState("Tất cả");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -90,33 +94,37 @@ const CategoryChart = ({ chartData }) => {
           </span>
         </div>
         <div className="chart-actions">
-          <div className="chart-filter">
-            <button className="filter-button" onClick={toggleDropdown}>
-              <span className="filter-text">{filter}</span>
-              <span className="material-symbols-outlined filter-icon">
-                filter_list
+          {showFilter && (
+            <div className="chart-filter">
+              <button className="filter-button" onClick={toggleDropdown}>
+                <span className="filter-text">{filter}</span>
+                <span className="material-symbols-outlined filter-icon">
+                  filter_list
+                </span>
+              </button>
+              {isDropdownOpen && (
+                <ul className="filter-dropdown">
+                  <li onClick={() => handleFilterChange("Tất cả")}>Tất cả</li>
+                  <li onClick={() => handleFilterChange("Tháng này")}>
+                    Tháng này
+                  </li>
+                  <li onClick={() => handleFilterChange("Quý này")}>Quý này</li>
+                  <li onClick={() => handleFilterChange("Năm nay")}>Năm nay</li>
+                </ul>
+              )}
+            </div>
+          )}
+          {showDownload && (
+            <button
+              className="chart-download"
+              onClick={handleDownload}
+              title="Tải xuống"
+            >
+              <span className="material-symbols-outlined download-icon">
+                download
               </span>
             </button>
-            {isDropdownOpen && (
-              <ul className="filter-dropdown">
-                <li onClick={() => handleFilterChange("Tất cả")}>Tất cả</li>
-                <li onClick={() => handleFilterChange("Tháng này")}>
-                  Tháng này
-                </li>
-                <li onClick={() => handleFilterChange("Quý này")}>Quý này</li>
-                <li onClick={() => handleFilterChange("Năm nay")}>Năm nay</li>
-              </ul>
-            )}
-          </div>
-          <button
-            className="chart-download"
-            onClick={handleDownload}
-            title="Tải xuống"
-          >
-            <span className="material-symbols-outlined download-icon">
-              download
-            </span>
-          </button>
+          )}
         </div>
       </div>
       <div className="chart-body">

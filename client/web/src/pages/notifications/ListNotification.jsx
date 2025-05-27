@@ -89,12 +89,7 @@ const ListNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [error, setError] = useState("");
-
-  const filteredNotifications = notifications
-    .filter((noti) =>
-      noti.customerName?.toLowerCase().includes(searchValue.toLowerCase())
-    )
-    .sort((a, b) => b.id - a.id);
+  const [filterValue, setFilterValue] = useState("");
 
   useEffect(() => {
     loadData();
@@ -159,12 +154,14 @@ const ListNotification = () => {
         TITLE_OPTIONS.find((opt) => opt.value === newNotification.title)
           ?.label || newNotification.title;
 
-      await addNotification({
+      const added = await addNotification({
         userId: Number(newNotification.customerId),
         title: titleLabel, // Lưu label vào DB
         message: newNotification.content,
         orderId,
       });
+      // Sau khi thêm, fetch lại danh sách và sort theo id mới nhất
+      await loadData();
       setShowAdd(false);
       setNewNotification({
         customerId: "",
@@ -175,7 +172,6 @@ const ListNotification = () => {
       });
       setCustomerFilter("");
       setError("");
-      loadData();
     } catch (error) {
       console.error("Error adding notification:", error);
       setError(
@@ -238,6 +234,7 @@ const ListNotification = () => {
     {
       key: "id",
       label: "Mã thông báo",
+      sorter: (a, b) => Number(a.id) - Number(b.id), // Thêm sorter chuẩn
       render: (noti) => noti.id,
     },
     {
@@ -253,9 +250,15 @@ const ListNotification = () => {
         noti.title,
       filters: TITLE_OPTIONS.map((opt) => ({
         text: opt.label,
-        value: opt.value,
+        value: opt.label, // SỬA: filter theo label (hiển thị trong DB)
       })),
-      onFilter: (value, record) => record.title === value,
+      onFilter: (value, record) => {
+        // So sánh theo label (vì DB lưu label, không phải value)
+        const label =
+          TITLE_OPTIONS.find((opt) => opt.value === record.title)?.label ||
+          record.title;
+        return label === value;
+      },
     },
     {
       key: "actions",
@@ -301,6 +304,25 @@ const ListNotification = () => {
     },
   ];
 
+  // Kết hợp filter theo searchValue (tên khách hàng) và filterValue (title)
+  // Luôn sort giảm dần theo id để thông báo mới nhất lên đầu bảng
+  const filteredNotifications = notifications
+    .filter((noti) => {
+      const matchSearch = noti.customerName
+        ?.toLowerCase()
+        .includes(searchValue.toLowerCase());
+      let matchTitle = true;
+      if (filterValue) {
+        // So sánh theo label (vì filterValue là label)
+        const label =
+          TITLE_OPTIONS.find((opt) => opt.value === noti.title)?.label ||
+          noti.title;
+        matchTitle = label === filterValue;
+      }
+      return matchSearch && matchTitle;
+    })
+    .sort((a, b) => Number(b.id) - Number(a.id)); // sort mới nhất lên đầu
+
   return (
     <div className="dashboard-layout">
       <Navbar />
@@ -333,6 +355,8 @@ const ListNotification = () => {
             onAdd={() => setShowAdd(true)}
             searchValue={searchValue}
             setSearchValue={setSearchValue}
+            filterValue={filterValue}
+            setFilterValue={setFilterValue}
           />
         )}
 

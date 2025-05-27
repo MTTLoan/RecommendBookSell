@@ -314,3 +314,51 @@ export const changePassWord = async (data) => {
     }
   }
 };
+
+// Kiểm tra OTP hợp lệ với backend
+export async function verifyOTP(email, otp) {
+  try {
+    const res = await fetch("http://localhost:5000/api/otp/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp }),
+    });
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error("Lỗi hệ thống hoặc kết nối. Vui lòng thử lại sau.");
+    }
+    const data = await res.json();
+    // Nếu backend trả về success=false hoặc valid=false thì throw luôn để frontend catch
+    if (!data.success || !data.valid) {
+      throw new Error("Mã xác nhận (OTP) không đúng hoặc đã hết hạn.");
+    }
+    return data;
+  } catch (err) {
+    // Đảm bảo luôn throw để frontend catch
+    throw new Error(err.message || "Lỗi xác thực OTP");
+  }
+}
+
+// Kiểm tra OTP hợp lệ với backend (API mới: /api/otp/check)
+export async function checkOTP(email, otp) {
+  try {
+    const res = await fetch("http://localhost:5000/api/otp/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp }),
+    });
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error("Lỗi hệ thống hoặc kết nối. Vui lòng thử lại sau.");
+    }
+    const data = await res.json();
+    if (!data.success || !data.valid) {
+      throw new Error(
+        data.msg || "Mã xác nhận (OTP) không đúng hoặc đã hết hạn."
+      );
+    }
+    return data;
+  } catch (err) {
+    throw new Error(err.message || "Lỗi xác thực OTP");
+  }
+}

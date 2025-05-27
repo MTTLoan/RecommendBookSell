@@ -57,14 +57,7 @@ const ListProduct = () => {
   useEffect(() => {
     let filtered = allProducts;
 
-    // Lọc theo tên
-    if (searchValue) {
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(searchValue.toLowerCase())
-      );
-    }
-
-    // Lọc theo filterValue (giá hoặc tình trạng)
+    // Lọc theo filterValue (giá hoặc tình trạng) TRƯỚC
     if (filterValue) {
       if (["lt100", "100-300", "300-500", "gt500"].includes(filterValue)) {
         filtered = filtered.filter((record) => {
@@ -84,6 +77,13 @@ const ListProduct = () => {
             : record.status === "Hết hàng"
         );
       }
+    }
+
+    // Sau đó mới lọc theo tên
+    if (searchValue) {
+      filtered = filtered.filter((p) =>
+        p.name.toLowerCase().includes(searchValue.toLowerCase())
+      );
     }
 
     setProducts(filtered);
@@ -166,7 +166,7 @@ const ListProduct = () => {
     {
       key: "price",
       label: "Giá",
-      width: "20%",
+      width: "15%",
       filters: FILTER_OPTIONS,
       onFilter: (value, record) => {
         const price = Number(String(record.price).replace(/[^\d]/g, ""));
@@ -188,7 +188,7 @@ const ListProduct = () => {
     {
       key: "status",
       label: "Tình trạng",
-      width: "20%",
+      width: "15%",
       render: (row) => (
         <span
           className={
@@ -206,7 +206,7 @@ const ListProduct = () => {
     {
       key: "actions",
       label: "Hành động",
-      width: "10%",
+      width: "20%",
       render: (row) => (
         <div className="actions">
           <span
@@ -238,6 +238,52 @@ const ListProduct = () => {
       disableSort: true,
     },
   ];
+
+  // Thêm hàm xuất Excel cho sản phẩm
+  const handleExportProductExcel = () => {
+    const exportColumns = columns.filter((col) => col.key !== "actions");
+    const headers = exportColumns.map((col) => col.label);
+    // Lấy dữ liệu đang hiển thị (sau filter/search)
+    const exportData = products.map((row) =>
+      exportColumns.map((col) => {
+        if (col.key === "price") {
+          return row.price;
+        }
+        if (col.key === "dateAdded") {
+          return row.dateAdded;
+        }
+        if (col.key === "status") {
+          return row.status;
+        }
+        if (col.key === "name") {
+          return row.name;
+        }
+        if (col.key === "quantity") {
+          return row.quantity;
+        }
+        return row[col.key] || "";
+      })
+    );
+    const worksheetData = [headers, ...exportData];
+    // Tên file: SanPham_{Tìm: ... hoặc Tất cả}_{ngày-giờ}.xlsx
+    let filterLabel = "Tất cả";
+    if (searchValue) {
+      filterLabel = `Tìm: ${searchValue}`;
+    }
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(now.getDate()).padStart(2, "0")}_${String(
+      now.getHours()
+    ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
+    const fileName = `Sản Phẩm_${filterLabel}_${dateStr}.xlsx`;
+    const XLSX = require("xlsx");
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(wb, ws, "Danh sách sản phẩm");
+    XLSX.writeFile(wb, fileName);
+  };
 
   return (
     <div className="dashboard-layout">
@@ -277,6 +323,7 @@ const ListProduct = () => {
             downloadButtonText="Xuất file"
             filterValue={filterValue}
             setFilterValue={setFilterValue}
+            onDownload={handleExportProductExcel}
           />
         )}
         {deleteId && (

@@ -12,6 +12,7 @@ import {
   deleteCategory,
   fetchCategoryStats,
 } from "../../services/categoryService";
+import * as XLSX from "xlsx";
 
 const ListCategory = () => {
   const navigate = useNavigate();
@@ -181,6 +182,42 @@ const ListCategory = () => {
     setEditPreviewImage("");
   };
 
+  // Custom Excel export for category table (đổi tên hàm để không trùng Table)
+  const handleExportCategoryExcel = () => {
+    // Lấy các cột không phải Hành động
+    const exportColumns = columns.filter((col) => col.key !== "actions");
+    const headers = exportColumns.map((col) => col.label);
+    // Lấy dữ liệu đang hiển thị (sau filter/search)
+    const exportData = categories.map((row) =>
+      exportColumns.map((col) => {
+        if (col.key === "name") {
+          // Xuất tất cả ảnh (dưới dạng link) và tên
+          return row.imageUrl ? `${row.name} (Ảnh: ${row.imageUrl})` : row.name;
+        }
+        return row[col.key] || "";
+      })
+    );
+    const worksheetData = [headers, ...exportData];
+    // Tên file: Danh mục_(trường lọc hoặc Tất cả)_(ngày-giờ tải).xlsx
+    let filterLabel = "Tất cả";
+    // Nếu có searchValue thì ghi vào tên file
+    if (searchValue) {
+      filterLabel = `Tìm: ${searchValue}`;
+    }
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(now.getDate()).padStart(2, "0")}_${String(
+      now.getHours()
+    ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
+    const fileName = `Danh mục_${filterLabel}_${dateStr}.xlsx`;
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(wb, ws, "Danh sách danh mục");
+    XLSX.writeFile(wb, fileName);
+  };
+
   const columns = [
     {
       key: "name",
@@ -273,23 +310,25 @@ const ListCategory = () => {
             Đang tải dữ liệu...
           </div>
         ) : (
-          <Table
-            title=""
-            data={categories}
-            columns={columns}
-            showHeader
-            showSearch
-            showFilter={false}
-            showDownload
-            showAddButton={true}
-            showCheckbox={false}
-            showSort={true}
-            addButtonText="Thêm danh mục"
-            downloadButtonText="Xuất file"
-            onAdd={() => setShowAdd(true)}
-            searchValue={searchValue}
-            setSearchValue={setSearchValue}
-          />
+          <>
+            <Table
+              title=""
+              data={categories}
+              columns={columns}
+              showHeader
+              showSearch
+              showFilter={false}
+              showDownload={true} // Hiện nút download mặc định của Table
+              onDownload={handleExportCategoryExcel} // Dùng handler tùy chỉnh khi bấm download
+              showAddButton={true}
+              showCheckbox={false}
+              showSort={true}
+              addButtonText="Thêm danh mục"
+              onAdd={() => setShowAdd(true)}
+              searchValue={searchValue}
+              setSearchValue={setSearchValue}
+            />
+          </>
         )}
 
         {/* Popup Thêm danh mục */}

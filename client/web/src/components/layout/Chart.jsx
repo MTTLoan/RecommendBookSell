@@ -2,7 +2,12 @@ import React, { useEffect, useRef } from "react";
 import "../../styles/chart.css";
 import Chart from "chart.js/auto"; // Nhập Chart.js
 
-const ChartComponent = ({ revenueData }) => {
+// Thêm props để ẩn filter và download
+const ChartComponent = ({
+  revenueData,
+  showDownload = true,
+  showFilter = true,
+}) => {
   const chartRef = useRef(null); // Tham chiếu đến canvas
   const chartInstanceRef = useRef(null); // Tham chiếu đến instance của Chart.js
 
@@ -96,6 +101,8 @@ const ChartComponent = ({ revenueData }) => {
 
   return (
     <div style={{ height: "300px", width: "100%", position: "relative" }}>
+      {/* Không render filter/download UI nếu showFilter/showDownload = false */}
+      {/* Nếu bạn có UI filter/download riêng thì đặt ở đây, còn nếu không thì không cần gì thêm */}
       {revenueData && revenueData.length > 0 ? (
         <canvas ref={chartRef} />
       ) : (

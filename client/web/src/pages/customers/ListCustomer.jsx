@@ -149,6 +149,52 @@ const ListCustomer = () => {
     },
   ];
 
+  // Thêm hàm xuất Excel
+  const handleExportCustomerExcel = () => {
+    // Lấy các cột không phải Hành động
+    const exportColumns = columns.filter((col) => col.key !== "actions");
+    const headers = exportColumns.map((col) => col.label);
+    // Lấy dữ liệu đang hiển thị (sau filter/search)
+    const exportData = filteredCustomers.map((row) =>
+      exportColumns.map((col) => {
+        if (col.key === "revenue") {
+          return (row.revenue || 0).toLocaleString("vi-VN") + " đ";
+        }
+        if (col.key === "createdAt") {
+          return row.createdAt
+            ? new Date(row.createdAt).toLocaleDateString("vi-VN")
+            : "";
+        }
+        if (col.key === "address") {
+          return row.addressDetail || "Chưa cập nhật";
+        }
+        if (col.key === "fullName") {
+          return row.fullName;
+        }
+        return row[col.key] || "";
+      })
+    );
+    const worksheetData = [headers, ...exportData];
+    // Tên file: Khách hàng_(tìm kiếm hoặc Tất cả)_(ngày-giờ tải).xlsx
+    let filterLabel = "Tất cả";
+    if (searchValue) {
+      filterLabel = `Tìm: ${searchValue}`;
+    }
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(now.getDate()).padStart(2, "0")}_${String(
+      now.getHours()
+    ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
+    const fileName = `Khách hàng_${filterLabel}_${dateStr}.xlsx`;
+    const XLSX = require("xlsx");
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(wb, ws, "Danh sách khách hàng");
+    XLSX.writeFile(wb, fileName);
+  };
+
   return (
     <div className="dashboard-layout">
       <Navbar />
@@ -179,6 +225,7 @@ const ListCustomer = () => {
           setSearchValue={setSearchValue}
           onSearch={handleSearch}
           onAdd={() => navigate("/customers/add")}
+          onDownload={handleExportCustomerExcel}
         />
         <Popup
           open={showDelete && selectedCustomer}

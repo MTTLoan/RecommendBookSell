@@ -2,10 +2,6 @@ import AWS from "aws-sdk";
 import multer from "multer";
 import multerS3 from "multer-s3";
 import dotenv from "dotenv";
-import AWS from "aws-sdk";
-import multer from "multer";
-import multerS3 from "multer-s3";
-import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -20,7 +16,6 @@ const uploadAvatar = multer({
   storage: multerS3({
     s3: s3,
     bucket: "upload-avatar-473",
-    bucket: "upload-avatar-473",
     key: function (req, file, cb) {
       console.log("File received:", file.originalname);
       // Lưu vào thư mục avatars
@@ -31,18 +26,6 @@ const uploadAvatar = multer({
     // acl: "public-read", // Removed to fix S3 ACL error
   }),
   limits: { fileSize: 5 * 1024 * 1024 },
-}).single("avatar");
-export default uploadAvatar;
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) => {
-    console.log("File filter - mimetype:", file.mimetype);
-    // Chỉ cho phép file ảnh
-    if (file.mimetype.startsWith("image/")) {
-      cb(null, true);
-    } else {
-      cb(new Error("Chỉ cho phép upload file ảnh"), false);
-    }
-  },
 }).single("avatar");
 
 // Wrap middleware để bắt lỗi
@@ -67,7 +50,6 @@ const deleteS3File = async (fileUrl) => {
   const bucket = "upload-avatar-473";
   const url = new URL(fileUrl);
   const key = decodeURIComponent(url.pathname).substring(1); // bỏ dấu `/` đầu
-  const bucket = "upload-avatar-473";
 
   try {
     const url = new URL(fileUrl);
@@ -82,9 +64,6 @@ const deleteS3File = async (fileUrl) => {
     console.log(`Đã xóa ảnh cũ: ${key}`);
   } catch (err) {
     console.error("Lỗi khi xóa ảnh cũ trên S3:", err.message);
-    console.error("Lỗi khi xóa ảnh cũ trên S3:", err.message);
   }
 };
-export { deleteS3File };
-
 export { deleteS3File };

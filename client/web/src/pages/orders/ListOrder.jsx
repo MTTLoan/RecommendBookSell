@@ -11,6 +11,7 @@ const ListOrder = () => {
   const [allOrders, setAllOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState("");
+  const [filterValue, setFilterValue] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,23 +32,22 @@ const ListOrder = () => {
   };
 
   useEffect(() => {
-    if (!searchValue) {
-      setOrders(allOrders);
-    } else {
-      setOrders(
-        allOrders.filter(
-          (order) =>
-            (order.customer || "")
-              .toLowerCase()
-              .includes(searchValue.toLowerCase()) ||
-            String(order.id).includes(searchValue) ||
-            (order.status || "")
-              .toLowerCase()
-              .includes(searchValue.toLowerCase())
-        )
+    let filtered = allOrders;
+    if (filterValue) {
+      filtered = filtered.filter((order) => order.status === filterValue);
+    }
+    if (searchValue) {
+      filtered = filtered.filter(
+        (order) =>
+          (order.customer || "")
+            .toLowerCase()
+            .includes(searchValue.toLowerCase()) ||
+          String(order.id).includes(searchValue) ||
+          (order.status || "").toLowerCase().includes(searchValue.toLowerCase())
       );
     }
-  }, [searchValue, allOrders]);
+    setOrders(filtered);
+  }, [searchValue, filterValue, allOrders]);
 
   const columns = [
     {
@@ -160,6 +160,54 @@ const ListOrder = () => {
     },
   ];
 
+  // Thêm hàm xuất Excel cho đơn hàng
+  const handleExportOrderExcel = () => {
+    const exportColumns = columns.filter((col) => col.key !== "actions");
+    const headers = exportColumns.map((col) => col.label);
+    // Lấy dữ liệu đang hiển thị (sau filter/search)
+    const exportData = orders.map((row) =>
+      exportColumns.map((col) => {
+        if (col.key === "order") {
+          return `Mã đơn: ${row.id}\nSố sản phẩm: ${row.items?.length || 0}`;
+        }
+        if (col.key === "customer") {
+          return row.customer || "Ẩn";
+        }
+        if (col.key === "totalAmount") {
+          return (row.totalAmount || 0).toLocaleString("vi-VN") + " VND";
+        }
+        if (col.key === "orderDate") {
+          return row.orderDate
+            ? new Date(row.orderDate).toLocaleDateString("vi-VN")
+            : "";
+        }
+        if (col.key === "status") {
+          return row.status;
+        }
+        return row[col.key] || "";
+      })
+    );
+    const worksheetData = [headers, ...exportData];
+    // Tên file: DonHang_{Tìm: ... hoặc Tất cả}_{ngày-giờ}.xlsx
+    let filterLabel = "Tất cả";
+    if (searchValue) {
+      filterLabel = `Tìm: ${searchValue}`;
+    }
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(now.getDate()).padStart(2, "0")}_${String(
+      now.getHours()
+    ).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
+    const fileName = `Đơn Hàng_${filterLabel}_${dateStr}.xlsx`;
+    const XLSX = require("xlsx");
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(wb, ws, "Danh sách đơn hàng");
+    XLSX.writeFile(wb, fileName);
+  };
+
   return (
     <div className="dashboard-layout">
       <Navbar />
@@ -191,6 +239,9 @@ const ListOrder = () => {
             downloadButtonText="Xuất file"
             searchValue={searchValue}
             setSearchValue={setSearchValue}
+            filterValue={filterValue}
+            setFilterValue={setFilterValue}
+            onDownload={handleExportOrderExcel}
           />
         )}
       </main>

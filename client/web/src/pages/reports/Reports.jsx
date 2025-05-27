@@ -115,6 +115,97 @@ const Reports = () => {
     { key: "quantity", label: "Lượt bán" },
   ];
 
+  // Hàm xuất Excel tổng hợp cho Table (gồm nhiều sheet)
+  const handleExportAllReportExcel = () => {
+    const XLSX = require("xlsx");
+    const wb = XLSX.utils.book_new();
+
+    // Định dạng thời gian theo bộ lọc
+    const timeLabel = `${year}_${month.toString().padStart(2, "0")}`;
+
+    // 1. Sheet: Biểu đồ doanh thu
+    if (revenueChartData && revenueChartData.labels?.length) {
+      const headers = ["Thời gian", "Tổng doanh thu", "Doanh thu từ gợi ý"];
+      const data = revenueChartData.labels.map((label, idx) => [
+        label,
+        (revenueChartData.totalRevenue[idx] || 0).toLocaleString("vi-VN"),
+        (revenueChartData.recommendedRevenue[idx] || 0).toLocaleString("vi-VN"),
+      ]);
+      const worksheetData = [headers, ...data];
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+      XLSX.utils.book_append_sheet(wb, ws, "Biểu đồ doanh thu");
+    }
+
+    // 2. Sheet: Biểu đồ doanh thu theo danh mục
+    if (categoryChartData && categoryChartData.labels?.length) {
+      const headers = ["Danh mục", "Doanh thu"];
+      const data = categoryChartData.labels.map((label, idx) => [
+        label,
+        (categoryChartData.data[idx] || 0).toLocaleString("vi-VN"),
+      ]);
+      const worksheetData = [headers, ...data];
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+      XLSX.utils.book_append_sheet(wb, ws, "Biểu đồ danh mục");
+    }
+
+    // 3. Sheet: Widget thống kê
+    const widgetHeaders = [
+      "Chỉ số",
+      "Giá trị",
+      "% thay đổi",
+      "Tăng/Giảm",
+      "Mô tả",
+    ];
+    const widgetData = [
+      [
+        "Doanh thu từ hệ thống đề xuất",
+        stats.revenue.value,
+        stats.revenue.percentage + "%",
+        stats.revenue.isIncrease ? "Tăng" : "Giảm",
+        "So với tháng trước",
+      ],
+      [
+        "Lượt nhấn vào sản phẩm gợi ý",
+        stats.clicks.value,
+        stats.clicks.percentage + "%",
+        stats.clicks.isIncrease ? "Tăng" : "Giảm",
+        "So với tháng trước",
+      ],
+      [
+        "Lượt thêm vào giỏ hàng",
+        stats.addToCart.value,
+        stats.addToCart.percentage + "%",
+        stats.addToCart.isIncrease ? "Tăng" : "Giảm",
+        "So với tháng trước",
+      ],
+      [
+        "Lượt mua hàng từ gợi ý",
+        stats.purchases.value,
+        stats.purchases.percentage + "%",
+        stats.purchases.isIncrease ? "Tăng" : "Giảm",
+        "So với tháng trước",
+      ],
+    ];
+    const wsWidget = XLSX.utils.aoa_to_sheet([widgetHeaders, ...widgetData]);
+    XLSX.utils.book_append_sheet(wb, wsWidget, "Widget thống kê");
+
+    // 4. Sheet: Top sản phẩm
+    if (topProducts && topProducts.length) {
+      const exportColumns = columns;
+      const headers = exportColumns.map((col) => col.label);
+      const exportData = topProducts.map((row) =>
+        exportColumns.map((col) => row[col.key] || "")
+      );
+      const worksheetData = [headers, ...exportData];
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+      XLSX.utils.book_append_sheet(wb, ws, "Top sản phẩm");
+    }
+
+    // Tên file theo bộ lọc năm_tháng
+    const fileName = `Báo cáo Recommendation System_${timeLabel}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
   return (
     <div className="dashboard-layout">
       <Navbar user={user} onLogout={logout} />
@@ -160,7 +251,11 @@ const Reports = () => {
           <div>
             <div className="dashboard-top">
               <div className="dashboard-chart">
-                <RevenueChart chartData={revenueChartData} />
+                <RevenueChart
+                  chartData={revenueChartData}
+                  showDownload={false}
+                  showFilter={false}
+                />
               </div>
               <div className="dashboard-widgets">
                 <Widget
@@ -195,21 +290,25 @@ const Reports = () => {
             </div>
             <div className="dashboard-bottom-flex">
               <div className="dashboard-bottom-chart">
-                <CategoryChart chartData={categoryChartData} />
+                <CategoryChart
+                  chartData={categoryChartData}
+                  showDownload={false}
+                  showFilter={false}
+                />
               </div>
               <div className="dashboard-bottom-table">
                 <Table
                   title="Top sản phẩm"
                   data={topProducts}
                   columns={columns}
-                  onAdd={() => console.log("Thêm sản phẩm")}
                   showHeader={true}
                   showSearch={false}
-                  showFilter={true}
+                  showFilter={false}
                   showDownload={true}
                   showAddButton={false}
                   showCheckbox={false}
                   showSort={true}
+                  onDownload={handleExportAllReportExcel}
                 />
               </div>
             </div>
