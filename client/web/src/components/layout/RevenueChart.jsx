@@ -70,14 +70,12 @@ const RevenueChart = ({
         data: chartData.totalRevenue,
         borderColor: "#3fbf48",
         backgroundColor: "rgba(63, 191, 72, 0.2)",
-        fill: true,
       },
       {
         label: "Doanh thu từ đề xuất",
         data: chartData.recommendedRevenue,
         borderColor: "#ff6384",
         backgroundColor: "rgba(255, 99, 132, 0.2)",
-        fill: true,
       },
     ],
   };

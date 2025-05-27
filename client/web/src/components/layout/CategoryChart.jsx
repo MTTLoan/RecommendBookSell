@@ -66,7 +66,7 @@ const CategoryChart = ({
           "#9966ff",
           "#ff9f40",
         ],
-        borderWidth: 1,
+        borderWidth: 0, // Xóa viền của các phần trong biểu đồ tròn
       },
     ],
   };

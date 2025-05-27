@@ -1,3 +1,4 @@
+/* Các phần CSS không thay đổi */
 .dashboard-layout {
   display: flex;
   flex-direction: row;
@@ -9,30 +10,28 @@
   font-size: 24px;
   font-weight: bold;
   color: #333;
-  margin-bottom: 10px;
 }
 
 /* Subtitle */
 .dashboard-subtitles {
   display: flex;
-  gap: 15px;
 }
 
 .subtitle {
   font-size: 14px;
-  color: #888; /* Màu xám cho subtitle không được chọn */
+  color: #888;
   cursor: pointer;
   padding-bottom: 20px;
   transition: color 0.3s, font-weight 0.3s;
 }
 
 .subtitle.active {
-  color: #3fbf48; /* Màu xanh cho subtitle được chọn */
+  color: #3fbf48;
   font-weight: bold;
 }
 
 .subtitle:hover {
-  color: #3fbf48; /* Màu xanh đậm khi hover */
+  color: #3fbf48;
 }
 
 .dashboard-content {
@@ -52,8 +51,9 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 130px;
-  width: 265px;
+  height: 100%;
+  width: 100%; /* Đảm bảo widget chiếm toàn bộ chiều rộng của ô grid */
+  box-sizing: border-box; /* Đảm bảo padding không làm tăng kích thước */
 }
 
 .widget-header h3 {
@@ -109,12 +109,6 @@
   text-align: right;
 }
 
-.dashboard-layout {
-  display: flex;
-  flex-direction: row;
-  height: 100vh;
-}
-
 .dashboard-top {
   display: flex;
   justify-content: space-between;
@@ -123,9 +117,11 @@
   height: 50%;
 }
 
+/* Sửa .dashboard-widgets để hiển thị dạng lưới 2x2 */
 .dashboard-widgets {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 cột có chiều rộng bằng nhau */
+  grid-template-rows: repeat(2, 1fr); /* 2 hàng có chiều cao bằng nhau */
   gap: 20px;
   flex: 1;
   max-width: 50%;
@@ -133,14 +129,14 @@
 
 .dashboard-chart {
   flex: 1;
-  background-color: #fff;
+  background-color: transparent;
   border-radius: 8px;
   width: 50%;
 }
 
 .dashboard-bottom {
   margin-top: 5px;
-  background-color: #fff;
+  background-color: transparent;
   border-radius: 8px;
   width: 50%;
 }
@@ -148,20 +144,26 @@
 /* Media Queries cho giao diện đáp ứng */
 @media (max-width: 1024px) {
   .dashboard-content {
-    margin-left: 0; /* Loại bỏ khoảng cách khi Sidebar bị ẩn */
+    margin-left: 0;
   }
 
   .dashboard-top {
-    flex-direction: column; /* Chuyển sang bố cục dọc */
+    flex-direction: column;
+  }
+
+  .dashboard-widgets {
+    grid-template-columns: 1fr; /* Chuyển thành 1 cột trên màn hình nhỏ hơn */
+    grid-template-rows: auto; /* Tự động điều chỉnh số hàng */
+    max-width: 100%; /* Chiếm toàn bộ chiều rộng */
   }
 
   .widget-container {
-    flex: 1 1 100%; /* Mỗi widget chiếm toàn bộ chiều rộng */
+    width: 100%;
     max-width: 100%;
   }
 
   .dashboard-chart {
-    flex: 1 1 100%; /* Biểu đồ chiếm toàn bộ chiều rộng */
+    flex: 1 1 100%;
     max-width: 100%;
   }
 }
@@ -191,47 +193,45 @@
 
 @media (max-width: 768px) {
   .dashboard-layout {
-    flex-direction: column; /* Chuyển sang bố cục dọc */
+    flex-direction: column;
   }
 
   .dashboard-content {
-    padding: 10px; /* Giảm padding để phù hợp với màn hình nhỏ */
+    padding: 10px;
   }
 
   .widget-container {
-    flex: 1 1 100%; /* Biểu đồ chiếm toàn bộ chiều rộng */
+    width: 100%;
     max-width: 100%;
-    height: auto; /* Cho phép chiều cao tự động */
+    height: auto;
   }
 
   .dashboard-chart {
-    padding: 10px; /* Giảm padding cho biểu đồ */
-    min-width: 100%; /* Biểu đồ chiếm toàn bộ chiều rộng */
+    padding: 10px;
+    min-width: 100%;
   }
 }
 
 @media (max-width: 480px) {
   .widget-container {
-    flex: 1 1 100%; /* Mỗi widget chiếm toàn bộ chiều rộng */
+    width: 100%;
     max-width: 100%;
-    margin-bottom: 10px; /* Tạo khoảng cách giữa các widget */
+    margin-bottom: 10px;
   }
 
   .dashboard-chart {
     padding: 10px;
-    min-width: 100%; /* Biểu đồ chiếm toàn bộ chiều rộng */
+    min-width: 100%;
   }
 }
 
 .dashboard-title {
-  position: relative; /* Đảm bảo các phần tử con có thể định vị tuyệt đối */
-  margin-bottom: 20px;
+  position: relative;
 }
 
 .dashboard-subtitles {
   display: flex;
   gap: 15px;
-  margin-bottom: 10px; /* Tạo khoảng cách dưới subtitles */
 }
 
 .dashboard-date-filters {
@@ -240,7 +240,7 @@
   right: 20px;
   display: flex;
   gap: 10px;
-  z-index: 10; /* Đảm bảo hiển thị trên các phần tử khác */
+  z-index: 10;
 }
 
 .dashboard-date-filters select {
@@ -250,11 +250,98 @@
   font-size: 14px;
   cursor: pointer;
   background-color: #fff;
-  min-width: 70px; /* Đảm bảo đủ rộng để hiển thị nội dung */
+  min-width: 70px;
 }
 
 .dashboard-date-filters select:focus {
   outline: none;
   border-color: #3fbf48;
   box-shadow: 0 0 5px rgba(63, 191, 72, 0.5);
+}
+
+.chart-container {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  border: none !important;
+}
+
+.chart-body {
+  background-color: #fff;
+  padding: 10px;
+  border: none !important;
+}
+
+.dashboard-chart,
+.dashboard-bottom-chart {
+  background-color: #fff !important;
+  border: none !important;
+}
+
+/* Thêm container để căn chỉnh tiêu đề và bộ lọc ngang nhau */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-header {
+  margin-bottom: 0;
+}
+
+.table-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.table-filter {
+  position: relative;
+}
+
+.filter-button {
+  margin-bottom: 10px;
+}
+
+.filter-text {
+  margin-right: 5px;
+}
+
+.filter-icon {
+  font-size: 16px;
+}
+
+.filter-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  z-index: 10;
+}
+
+.filter-dropdown li {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.filter-dropdown li:hover {
+  background-color: #f5f5f5;
+}
+
+.table-download {
+  margin-bottom: 10px;
+}
+
+.download-text {
+  margin-right: 5px;
+}
+
+.download-icon {
+  font-size: 16px;
 }
