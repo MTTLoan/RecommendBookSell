@@ -60,6 +60,7 @@ public class HomeFragment extends Fragment {
     private List<Book> bestSellersList = new ArrayList<>();
     private List<Book> newBooksList = new ArrayList<>();
     private List<Book> recommendationList = new ArrayList<>();
+
     private ApiService apiService;
 
     // Constants
