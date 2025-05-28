@@ -31,7 +31,6 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Lỗi khi lấy dữ liệu sách" });
   }
 });
-
 router.get("/all-book", getBooks);
 router.get("/book-detail/:id", getBookDetail);
 router.get("/book-detail/:bookId/reviews", getBookReviews);

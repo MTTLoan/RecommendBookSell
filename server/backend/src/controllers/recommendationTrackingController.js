@@ -60,7 +60,7 @@ export const recordClick = async (req, res) => {
 
 export const recordAddToCart = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     const { bookId, cartId } = req.body;
 
     if (!bookId || isNaN(bookId) || !cartId || isNaN(cartId)) {
@@ -88,7 +88,7 @@ export const recordAddToCart = async (req, res) => {
 
 export const recordPurchase = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     const { bookId, orderId } = req.body;
 
     if (!bookId || isNaN(bookId) || !orderId || isNaN(orderId)) {
