@@ -20,7 +20,7 @@ router.get("/search", user_jwt, searchCategories);
 // Lấy danh sách danh mục
 router.get("/", user_jwt, getCategories);
 // Lấy chi tiết danh mục
-router.get("/:id", user_jwt, getCategoryById);
+router.get("/:id", getCategoryById);
 // Thêm danh mục mới (có upload ảnh)
 router.post("/", user_jwt, uploadAvatar, createCategory);
 // Sửa danh mục (có upload ảnh)

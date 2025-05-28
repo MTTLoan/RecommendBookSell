@@ -1,20 +1,22 @@
 import axios from "axios";
 import { API_BASE_URL } from "../utils/constants";
 
-export const fetchCategories = async () => {
+// Helper để lấy headers nếu có token
+const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
-  const res = await axios.get(`${API_BASE_URL}/categories/all-categories`, {
-    headers,
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+export const fetchCategories = async () => {
+  const res = await axios.get(`${API_BASE_URL}/categories`, {
+    headers: getAuthHeaders(),
   });
-  return res.data.categories;
+  return res.data.categories || res.data;
 };
 
 export const fetchCategoryStats = async () => {
-  const token = localStorage.getItem("token");
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
-  const res = await axios.get(`${API_BASE_URL}/categories/category-stats`, {
-    headers,
+  const res = await axios.get(`${API_BASE_URL}/categories/stats`, {
+    headers: getAuthHeaders(),
   });
   return res.data;
 };
@@ -28,22 +30,10 @@ export const addCategory = async (data) => {
       formData.append("avatar", data.imageFile);
     }
 
-    console.log("FormData being sent:");
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
-
-    const token = localStorage.getItem("token");
-    const headers = {
-      "Content-Type": "multipart/form-data",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
-    const res = await axios.post(
-      `${API_BASE_URL}/categories/add-category`,
-      formData,
-      { headers }
-    );
-    return res.data.category;
+    const res = await axios.post(`${API_BASE_URL}/categories`, formData, {
+      headers: { "Content-Type": "multipart/form-data", ...getAuthHeaders() },
+    });
+    return res.data.category || res.data;
   } catch (error) {
     console.error("Service error:", error.response?.data || error.message);
     throw error;
@@ -60,35 +50,25 @@ export const updateCategory = async (id, data) => {
   if (data.imageFile) {
     formData.append("avatar", data.imageFile);
   }
-  const token = localStorage.getItem("token");
-  const headers = {
-    "Content-Type": "multipart/form-data",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
   const res = await axios.put(
-    `${API_BASE_URL}/categories/update-category/${Number(id)}`,
+    `${API_BASE_URL}/categories/${Number(id)}`,
     formData,
-    { headers }
+    { headers: { "Content-Type": "multipart/form-data", ...getAuthHeaders() } }
   );
-  return res.data.category;
+  return res.data.category || res.data;
 };
 
 export const deleteCategory = async (id) => {
-  const token = localStorage.getItem("token");
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
-  const res = await axios.delete(
-    `${API_BASE_URL}/categories/delete-category/${Number(id)}`,
-    { headers }
-  );
-  return res.data.category;
+  const res = await axios.delete(`${API_BASE_URL}/categories/${Number(id)}`, {
+    headers: getAuthHeaders(),
+  });
+  return res.data.category || res.data;
 };
 
 export const searchCategories = async (query) => {
-  const token = localStorage.getItem("token");
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
   const res = await axios.get(
     `${API_BASE_URL}/categories/search?q=${encodeURIComponent(query)}`,
-    { headers }
+    { headers: getAuthHeaders() }
   );
-  return res.data.categories || [];
+  return res.data.categories || res.data;
 };

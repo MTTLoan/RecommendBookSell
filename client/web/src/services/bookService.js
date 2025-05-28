@@ -1,39 +1,55 @@
 import axios from "axios";
 import { API_BASE_URL } from "../utils/constants";
 
-const API_URL = "http://localhost:5000/api/books/all-book";
-
-// Tạo instance axios riêng cho bookService nếu cần, hoặc dùng axios trực tiếp
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
-});
-
-export const searchNameBooks = async (query) => {
+// Helper để lấy headers nếu có token
+const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
-  const res = await axios.get(
-    `${API_BASE_URL}/books/search?q=${encodeURIComponent(query)}`,
-    { headers }
-  );
-  return res.data.books || [];
+  return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-export const fetchBooks = async () => {
-  const res = await axios.get(API_URL);
-  return res.data.book;
+export const searchNameBooks = async (query) => {
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}/books/search?query=${encodeURIComponent(query)}`,
+      { headers: getAuthHeaders() }
+    );
+    return res.data.book || res.data.books || [];
+  } catch (error) {
+    console.error(
+      "Lỗi searchNameBooks:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const fetchBooks = async (categoryId) => {
+  try {
+    const params = categoryId ? { categoryId } : {};
+    const res = await axios.get(`${API_BASE_URL}/books`, {
+      headers: getAuthHeaders(),
+      params,
+    });
+    return res.data.book || res.data.books || res.data;
+  } catch (error) {
+    console.error("Lỗi fetchBooks:", error.response?.data || error.message);
+    throw error;
+  }
 };
 
 export const fetchBookDetail = async (id) => {
-  const token = localStorage.getItem("token");
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
-  const res = await axios.get(`${API_BASE_URL}/books/book-detail/${id}`, {
-    headers,
-  });
-  return res.data.book;
+  try {
+    const res = await axios.get(`${API_BASE_URL}/books/${Number(id)}`, {
+      headers: getAuthHeaders(),
+    });
+    return res.data.book || res.data;
+  } catch (error) {
+    console.error(
+      "Lỗi fetchBookDetail:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
 };
 
 export const addBook = async (bookData) => {
@@ -78,11 +94,16 @@ export const deleteBook = async (id) => {
 // Upload ảnh sản phẩm lên S3 (dùng chung S3, backend sẽ không gán vào user)
 export const uploadProductImage = async (formData) => {
   try {
-    const response = await api.post("/books/upload-image", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const response = await axios.post(
+      `${API_BASE_URL}/books/upload-image`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          ...getAuthHeaders(),
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Upload product image error:", error);
