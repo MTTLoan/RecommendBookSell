@@ -11,7 +11,7 @@ import reviewRoutes from "./routes/reviewRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import forgotPasswordRoutes from "./routes/forgotPassword.js";
-import bookRoutes from "./routes/book.js";
+import bookRoutes from "./routes/bookRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
