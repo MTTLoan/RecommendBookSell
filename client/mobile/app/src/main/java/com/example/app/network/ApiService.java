@@ -149,6 +149,9 @@ public interface ApiService {
     @GET("/api/recommendations/")
     Call<BookResponse> getRecommendations(@Header("Authorization") String token);
 
+    @GET("/api/recommendations/book/{bookId}")
+    Call<BookResponse> getRecommendationsByBook(@Header("Authorization") String token, @Path("bookId") int bookId);
+
     @POST("/api/recommendations/click")
     Call<Void> recordRecommendationClick(@Header("Authorization") String token, @Query("bookId") int bookId);
 

@@ -8,6 +8,7 @@ import android.widget.*;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
@@ -15,6 +16,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.app.R;
 import com.example.app.adapters.BookImageAdapter;
 import com.example.app.adapters.DisplayReviewAdapter;
+import com.example.app.adapters.RecommendationAdapter;
 import com.example.app.models.Book;
 import com.example.app.models.Cart;
 import com.example.app.models.CartItem;
@@ -24,6 +26,7 @@ import com.example.app.models.Review;
 import com.example.app.models.response.BookDetailResponse;
 import com.example.app.models.response.CategoryResponse;
 import com.example.app.models.response.ReviewResponse;
+import com.example.app.models.response.BookResponse;
 import com.example.app.network.ApiService;
 import com.example.app.network.RetrofitClient;
 import com.example.app.utils.AuthUtils;
@@ -42,14 +45,15 @@ public class BookDetailActivity extends AppCompatActivity {
 
     private ViewPager2 imageViewPager;
     private TextView tvTilte, tabIndicator, txtBookName, txtAuthor, tvPrice, tvDescription,
-            tvToggle, tvRating, tvNumberReview, tvQuantity, tvToggleReview;
+            tvToggle, tvRating, tvNumberReview, tvQuantity, tvToggleReview, recommendationsTitle;
     private ImageButton btnArrowLeft, btnArrowRight, btnIncrease, btnDecrease;
     private RatingBar ratingBar;
-    private RecyclerView reviewRecyclerView;
+    private RecyclerView reviewRecyclerView, recommendationsRecyclerView;
     private Button btnAddToCart;
 
     private DisplayReviewAdapter reviewAdapter;
     private BookImageAdapter imageAdapter;
+    private RecommendationAdapter recommendationsAdapter;
     private ApiService apiService;
     private int bookId;
     private int quantity = 1;
@@ -57,7 +61,9 @@ public class BookDetailActivity extends AppCompatActivity {
     private List<Review> fullReviewList = new ArrayList<>();
     private boolean isReviewExpanded = false;
     private List<Category> categoryList = new ArrayList<>();
+    private List<Book> recommendationList = new ArrayList<>();
     private Book currentBook; // Lưu tạm book để cập nhật sau
+    private static final int CATEGORY_RECOMMENDATION = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,10 +84,12 @@ public class BookDetailActivity extends AppCompatActivity {
 
         setupQuantityButtons();
         setupAddToCartButton();
+        setupRecommendationsRecyclerView();
 
         fetchCategories();
         fetchBookDetail();
         fetchBookReviews();
+        fetchRecommendations();
     }
 
     private void initViews() {
@@ -97,13 +105,15 @@ public class BookDetailActivity extends AppCompatActivity {
         tvRating = findViewById(R.id.tvRating);
         tvNumberReview = findViewById(R.id.tvNumberReview);
         reviewRecyclerView = findViewById(R.id.reviewRecyclerView);
+        recommendationsRecyclerView = findViewById(R.id.recommendationsRecyclerView);
         tvQuantity = findViewById(R.id.tvQuantity);
         btnIncrease = findViewById(R.id.btnIncrease);
         btnDecrease = findViewById(R.id.btnDecrease);
         btnAddToCart = findViewById(R.id.btnAddToCart);
         btnArrowLeft = findViewById(R.id.btnArrowLeft);
         btnArrowRight = findViewById(R.id.btnArrowRight);
-        tvToggleReview = findViewById(R.id.tvToggleReview); // Khởi tạo tvToggleReview
+        tvToggleReview = findViewById(R.id.tvToggleReview);
+        recommendationsTitle = findViewById(R.id.recommendationsTitle);
 
         reviewAdapter = new DisplayReviewAdapter(new ArrayList<>());
         reviewRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -111,7 +121,8 @@ public class BookDetailActivity extends AppCompatActivity {
         reviewRecyclerView.setAdapter(reviewAdapter);
 
         tvToggle.setOnClickListener(v -> toggleDescription());
-        tvToggleReview.setOnClickListener(v -> toggleReviews()); // Thêm sự kiện click cho tvToggleReview
+        tvToggleReview.setOnClickListener(v -> toggleReviews());
+        recommendationsTitle.setOnClickListener(v -> openListBookActivity());
     }
 
     private void setupQuantityButtons() {
@@ -138,24 +149,16 @@ public class BookDetailActivity extends AppCompatActivity {
                 return;
             }
 
-            // Lấy giá trị fromRecommendation
             boolean isFromRecommendation = getIntent().getBooleanExtra("fromRecommendation", false);
-            Log.d("BookDetailActivity", "isFromRecommendation: " + isFromRecommendation); // Debug
+            Log.d("BookDetailActivity", "isFromRecommendation: " + isFromRecommendation);
 
-            // Tạo CartItem
             CartItem cartItem = new CartItem(bookId, quantity, currentBook, isFromRecommendation);
             List<CartItem> items = new ArrayList<>();
             items.add(cartItem);
 
-            // Tạo Cart
             Cart cart = new Cart();
             cart.setItems(items);
 
-            // Lấy thông tin isRecommended
-//            boolean isRecommended = getIntent().getBooleanExtra("isRecommended", false);
-//            cart.setRecommended(isRecommended); // Thêm trường recommended vào Cart
-
-            // Gọi API thêm vào giỏ hàng
             apiService.addToCart("Bearer " + token, cart).enqueue(new Callback<Cart>() {
                 @Override
                 public void onResponse(Call<Cart> call, Response<Cart> response) {
@@ -163,7 +166,6 @@ public class BookDetailActivity extends AppCompatActivity {
                         Toast.makeText(BookDetailActivity.this, "Đã thêm " + quantity + " sản phẩm vào giỏ hàng", Toast.LENGTH_SHORT).show();
                         Log.d("BookDetailActivity", "Added to cart: " + response.body().toString());
 
-                        // Ghi nhận add_to_cart nếu từ đề xuất
                         if (isFromRecommendation) {
                             apiService.recordRecommendationAddToCart("Bearer " + token, bookId, response.body().getId()).enqueue(new Callback<Void>() {
                                 @Override
@@ -210,6 +212,14 @@ public class BookDetailActivity extends AppCompatActivity {
             });
         });
     }
+
+    private void setupRecommendationsRecyclerView() {
+        recommendationsRecyclerView.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false));
+        recommendationsRecyclerView.setNestedScrollingEnabled(false);
+        recommendationsAdapter = new RecommendationAdapter(this, recommendationList, categoryList, 0);
+        recommendationsRecyclerView.setAdapter(recommendationsAdapter);
+    }
+
     private void toggleDescription() {
         isDescriptionExpanded = !isDescriptionExpanded;
         tvDescription.setMaxLines(isDescriptionExpanded ? Integer.MAX_VALUE : 5);
@@ -218,7 +228,19 @@ public class BookDetailActivity extends AppCompatActivity {
 
     private void toggleReviews() {
         isReviewExpanded = !isReviewExpanded;
-        displayReviews(); // Cập nhật danh sách đánh giá khi toggle
+        displayReviews();
+    }
+
+    private void openListBookActivity() {
+        Intent intent = new Intent(this, ListBookActivity.class);
+        intent.putExtra("category_id", CATEGORY_RECOMMENDATION);
+        intent.putExtra("category_name", "Đề xuất liên quan");
+        intent.putParcelableArrayListExtra("book_list", new ArrayList<>(recommendationList));
+        if (recommendationList.isEmpty()) {
+            Toast.makeText(this, "Đang tải sách đề xuất, vui lòng thử lại sau.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        startActivity(intent);
     }
 
     private void fetchCategories() {
@@ -228,7 +250,7 @@ public class BookDetailActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     categoryList.clear();
                     categoryList.addAll(response.body().getCategories());
-                    // Cập nhật lại tiêu đề nếu sách đã được tải
+                    recommendationsAdapter.setCategories(new ArrayList<>(categoryList));
                     if (currentBook != null) {
                         updateCategoryTitle(currentBook);
                     }
@@ -251,7 +273,7 @@ public class BookDetailActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     Book book = response.body().getBook();
                     if (book != null) {
-                        currentBook = book; // Lưu book tạm thời
+                        currentBook = book;
                         loadBookData(book);
                     }
                 } else {
@@ -289,10 +311,50 @@ public class BookDetailActivity extends AppCompatActivity {
         });
     }
 
+    private void fetchRecommendations() {
+        String token = AuthUtils.getToken(this);
+        if (token == null) {
+            Toast.makeText(this, "Vui lòng đăng nhập để xem đề xuất.", Toast.LENGTH_SHORT).show();
+            recommendationsTitle.setVisibility(View.GONE);
+            recommendationsRecyclerView.setVisibility(View.GONE);
+            return;
+        }
+
+        apiService.getRecommendationsByBook("Bearer " + token, bookId).enqueue(new Callback<BookResponse>() {
+            @Override
+            public void onResponse(Call<BookResponse> call, Response<BookResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    recommendationList.clear();
+                    List<Book> books = response.body().getBooks();
+                    if (books != null) {
+                        recommendationList.addAll(books);
+                        Log.d("BookDetailActivity", "Recommendations loaded: " + books.size() + " books");
+                    } else {
+                        Log.w("BookDetailActivity", "Recommendations books is null");
+                    }
+                    recommendationsAdapter.setBooks(recommendationList);
+                    recommendationsTitle.setVisibility(recommendationList.isEmpty() ? View.GONE : View.VISIBLE);
+                    recommendationsRecyclerView.setVisibility(recommendationList.isEmpty() ? View.GONE : View.VISIBLE);
+                } else {
+                    handleError(response.errorBody(), "Không thể lấy sách đề xuất.");
+                    recommendationsTitle.setVisibility(View.GONE);
+                    recommendationsRecyclerView.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BookResponse> call, Throwable t) {
+                showError(t, "Lỗi khi tải sách đề xuất.");
+                recommendationsTitle.setVisibility(View.GONE);
+                recommendationsRecyclerView.setVisibility(View.GONE);
+            }
+        });
+    }
+
     private void displayReviews() {
         List<Review> toDisplay;
         if (isReviewExpanded) {
-            toDisplay = new ArrayList<>(fullReviewList); // Sao chép toàn bộ danh sách
+            toDisplay = new ArrayList<>(fullReviewList);
             tvToggleReview.setText("Thu gọn");
         } else {
             toDisplay = fullReviewList.size() > 5 ? new ArrayList<>(fullReviewList.subList(0, 5)) : new ArrayList<>(fullReviewList);
@@ -314,20 +376,16 @@ public class BookDetailActivity extends AppCompatActivity {
     }
 
     private void loadBookData(Book book) {
-        // Ảnh sách
         List<Image> imageList = book.getImages() != null ? book.getImages() : new ArrayList<>();
         imageAdapter = new BookImageAdapter(this, imageList);
         imageViewPager.setAdapter(imageAdapter);
 
         setupImagePagerNavigation();
 
-        // Cập nhật tiêu đề danh mục
         updateCategoryTitle(book);
 
-        // Thông tin sách
         txtBookName.setText(book.getName());
         txtAuthor.setText("Tác giả: " + String.join(", ", book.getAuthor()));
-        // Rating
         if (book.getRatingCount() == 0) {
             ratingBar.setVisibility(View.GONE);
             tvRating.setText("Chưa có đánh giá");

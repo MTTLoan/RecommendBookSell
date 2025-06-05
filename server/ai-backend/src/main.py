@@ -39,7 +39,7 @@ def create_matrix(df):
     return X, user_mapper, book_mapper, user_inv_mapper, book_inv_mapper
 
 # Tìm sách tương tự
-def find_similar_books(book_id, X, k, metric='cosine', book_mapper=None, book_inv_mapper=None):
+def find_similar_books(book_id, X, k, metric='cosine', book_mapper=None, book_inv_mapper=None, books=None):
     if book_id not in book_mapper:
         return []
     
@@ -52,8 +52,16 @@ def find_similar_books(book_id, X, k, metric='cosine', book_mapper=None, book_in
     neighbour = kNN.kneighbors(book_vec, return_distance=False)
     
     neighbour_ids = [book_inv_mapper[n] for n in neighbour[0]]
-    neighbour_ids.pop(0)  # Loại bỏ chính sách đầu vào
-    return neighbour_ids
+    neighbour_ids.pop(0)  # Loại bỏ sách đầu vào
+    
+    # Lấy thông tin chi tiết của sách được gợi ý
+    recommended_details = []
+    for book_id in neighbour_ids:
+        book_info = books[books['id'] == book_id][['id', 'name', 'averageRating']].to_dict('records')
+        if book_info:
+            recommended_details.append(book_info[0])
+    
+    return recommended_details
 
 # Gợi ý sách cho người dùng
 def recommend_books_for_user(user_id, X, user_mapper, book_mapper, book_inv_mapper, reviews, books, k=10):
@@ -63,16 +71,9 @@ def recommend_books_for_user(user_id, X, user_mapper, book_mapper, book_inv_mapp
         return []
     
     book_id = df1[df1['rating'] == max(df1['rating'])]['bookId'].iloc[0]
-    similar_ids = find_similar_books(book_id, X, k, book_mapper=book_mapper, book_inv_mapper=book_inv_mapper)
+    similar_ids = find_similar_books(book_id, X, k, book_mapper=book_mapper, book_inv_mapper=book_inv_mapper, books=books)
     
-    # Lấy thông tin chi tiết của sách được gợi ý
-    recommended_details = []
-    for book_id in similar_ids:
-        book_info = books[books['id'] == book_id][['id', 'name', 'averageRating']].to_dict('records')
-        if book_info:
-            recommended_details.append(book_info[0])
-    
-    return recommended_details
+    return similar_ids
 
 # Load dữ liệu từ API
 books, reviews = fetch_data()
@@ -80,13 +81,28 @@ X, user_mapper, book_mapper, user_inv_mapper, book_inv_mapper = create_matrix(re
 
 # Hàm chính để gọi từ Node.js
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print(json.dumps({"error": "Vui lòng cung cấp userId"}))
+    if len(sys.argv) < 2:
+        print(json.dumps({"error": "Vui lòng cung cấp userId hoặc bookId"}))
         sys.exit(1)
     
     try:
-        user_id = int(sys.argv[1])
-        recommended_books = recommend_books_for_user(user_id, X, user_mapper, book_mapper, book_inv_mapper, reviews, books, k=20)
-        print(json.dumps({"recommended_books": recommended_books}))
+        input_type = sys.argv[1]
+        if input_type == "--user":
+            if len(sys.argv) != 3:
+                print(json.dumps({"error": "Vui lòng cung cấp userId"}))
+                sys.exit(1)
+            user_id = int(sys.argv[2])
+            recommended_books = recommend_books_for_user(user_id, X, user_mapper, book_mapper, book_inv_mapper, reviews, books, k=20)
+            print(json.dumps({"recommended_books": recommended_books}))
+        elif input_type == "--book":
+            if len(sys.argv) != 3:
+                print(json.dumps({"error": "Vui lòng cung cấp bookId"}))
+                sys.exit(1)
+            book_id = int(sys.argv[2])
+            recommended_books = find_similar_books(book_id, X, k=20, metric='cosine', book_mapper=book_mapper, book_inv_mapper=book_inv_mapper, books=books)
+            print(json.dumps({"recommended_books": recommended_books}))
+        else:
+            print(json.dumps({"error": "Loại đầu vào không hợp lệ. Sử dụng --user hoặc --book"}))
+            sys.exit(1)
     except Exception as e:
         print(json.dumps({"error": str(e)}))
