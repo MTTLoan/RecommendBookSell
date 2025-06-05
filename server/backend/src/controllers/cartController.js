@@ -1,4 +1,3 @@
-// controllers/cartController.js
 import mongoose from "mongoose";
 import RecommendationTracking from "../models/RecommendationTracking.js";
 import Cart from "../models/Cart.js";
@@ -14,7 +13,7 @@ const getNextSequence = async (name) => {
   return counter.seq;
 };
 
-// Hàm thêm vào giỏ hàng (giữ nguyên)
+// Hàm thêm vào giỏ hàng
 export const addToCart = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -53,7 +52,7 @@ export const addToCart = async (req, res) => {
       const existingItem = cart.items.find((i) => i.bookId === bookId);
       if (existingItem) {
         existingItem.quantity += quantity;
-        if (recommend) existingItem.recommend = true; // Cập nhật recommend nếu từ đề xuất
+        if (recommend) existingItem.recommend = true;
       } else {
         cart.items.push({ bookId, quantity, recommend, selected: false });
       }
@@ -96,9 +95,6 @@ export const getCart = async (req, res) => {
       return res.status(404).json({ message: "Giỏ hàng không tồn tại" });
     }
 
-    // Debug: Log dữ liệu thô
-    console.log("Raw cart data:", cart);
-
     // Lấy tất cả bookId từ items
     const bookIds = cart.items.map((item) => item.bookId);
 
@@ -115,11 +111,11 @@ export const getCart = async (req, res) => {
 
     // Cập nhật items với thông tin sách
     cart.items = cart.items.map((item) => ({
-      bookId: item.bookId, // Giữ bookId là số
+      bookId: item.bookId,
       quantity: item.quantity,
-      selected: item.selected || false, // Đảm bảo có trường selected
-      recommend: item.recommend || false, // Đảm bảo có trường recommend
-      book: bookMap[item.bookId] || null, // Thêm trường book chứa thông tin chi tiết
+      selected: item.selected || false,
+      recommend: item.recommend || false,
+      book: bookMap[item.bookId] || null,
     }));
 
     // Loại bỏ các trường không mong muốn trong response
@@ -138,6 +134,7 @@ export const getCart = async (req, res) => {
   }
 };
 
+// Hàm cập nhật giỏ hàng
 export const updateCart = async (req, res) => {
   try {
     const user = req.user;

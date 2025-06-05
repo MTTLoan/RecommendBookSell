@@ -3,6 +3,7 @@ import Order from "../models/Order.js";
 import bcrypt from "bcryptjs";
 import { deleteS3File } from "../middleware/uploadToS3.js";
 
+// Lấy mã user tiếp theo
 export const peekNextUserId = async (req, res) => {
   try {
     const lastUser = await User.findOne({}).sort({ id: -1 });
@@ -16,6 +17,7 @@ export const peekNextUserId = async (req, res) => {
   }
 };
 
+// Lấy thông tin người dùng hiện tại
 export const adminSearchUsersController = async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -46,6 +48,7 @@ export const adminSearchUsersController = async (req, res) => {
   }
 };
 
+// Lấy danh sách tất cả người dùng (chỉ cho admin)
 export const adminGetAllUsersController = async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -91,11 +94,9 @@ export const adminGetAllUsersController = async (req, res) => {
   }
 };
 
+// Thêm người dùng mới (chỉ cho admin)
 export const adminAddUserController = async (req, res) => {
   try {
-    console.log("Request body:", req.body);
-    console.log("Request file:", req.file);
-
     const {
       username,
       fullName,
@@ -111,7 +112,6 @@ export const adminAddUserController = async (req, res) => {
       verified,
     } = req.body;
 
-    // Validate required fields
     if (!username || !fullName || !email || !phoneNumber) {
       return res.status(400).json({
         success: false,
@@ -126,7 +126,6 @@ export const adminAddUserController = async (req, res) => {
       });
     }
 
-    // Check if username or email already exists
     const existingUser = await User.findOne({
       $or: [{ username }, { email }],
     });
@@ -141,7 +140,6 @@ export const adminAddUserController = async (req, res) => {
       });
     }
 
-    // Handle avatar upload
     let avatarUrl = null;
     if (req.file && req.file.location) {
       avatarUrl = req.file.location; // S3 URL
@@ -150,10 +148,8 @@ export const adminAddUserController = async (req, res) => {
       console.log("No avatar file uploaded");
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user object with explicit fields
     const userData = {
       username: username.trim(),
       fullName: fullName.trim(),
@@ -164,7 +160,6 @@ export const adminAddUserController = async (req, res) => {
       verified: verified === "true" || verified === true || false,
     };
 
-    // Add optional fields only if they exist and are not empty
     if (birthday && birthday.trim()) {
       userData.birthday = new Date(birthday);
     }
@@ -185,7 +180,6 @@ export const adminAddUserController = async (req, res) => {
       userData.addressDetail = addressDetail.trim();
     }
 
-    // Only add avatar if it exists
     if (avatarUrl) {
       userData.avatar = avatarUrl;
     }
@@ -195,7 +189,6 @@ export const adminAddUserController = async (req, res) => {
       password: "[HIDDEN]",
     });
 
-    // Ensure Counter model exists and get next ID manually if needed
     try {
       const Counter = mongoose.model("Counter");
       const counter = await Counter.findOneAndUpdate(
@@ -207,7 +200,6 @@ export const adminAddUserController = async (req, res) => {
       console.log("Generated ID:", userData.id);
     } catch (counterError) {
       console.error("Counter error, using fallback:", counterError);
-      // Fallback: get max ID from existing users
       const lastUser = await User.findOne({}).sort({ id: -1 });
       userData.id = lastUser ? lastUser.id + 1 : 1;
       console.log("Fallback ID:", userData.id);
@@ -216,7 +208,6 @@ export const adminAddUserController = async (req, res) => {
     const user = new User(userData);
     await user.save();
 
-    // Remove password from response
     const userResponse = user.toObject();
     delete userResponse.password;
 
@@ -231,7 +222,6 @@ export const adminAddUserController = async (req, res) => {
     console.error("Error in adminAddUserController:", error);
     console.error("Error stack:", error.stack);
 
-    // Handle specific errors
     if (error.code === 11000) {
       const field = Object.keys(error.keyPattern)[0];
       return res.status(400).json({
@@ -246,7 +236,6 @@ export const adminAddUserController = async (req, res) => {
       });
     }
 
-    // Handle validation errors
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((err) => err.message);
       return res.status(400).json({
@@ -273,7 +262,6 @@ export const adminUpdateUserController = async (req, res) => {
         .status(404)
         .json({ success: false, msg: "Không tìm thấy user." });
     }
-    // Nếu có file mới và user có avatar cũ, xóa avatar cũ khỏi S3
     if (req.file && req.file.location) {
       if (user.avatar) {
         await deleteS3File(user.avatar);
@@ -289,7 +277,7 @@ export const adminUpdateUserController = async (req, res) => {
   }
 };
 
-// Xóa user (chỉ cho admin)
+// Xóa người dùng (chỉ cho admin)
 export const adminDeleteUserController = async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -318,6 +306,7 @@ export const adminDeleteUserController = async (req, res) => {
   }
 };
 
+// Lấy chi tiết người dùng (chỉ cho admin)
 export const adminGetUserDetailController = async (req, res) => {
   try {
     if (req.user.role !== "admin") {

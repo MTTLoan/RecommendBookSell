@@ -2,13 +2,18 @@ import Order from "../models/Order.js";
 import Book from "../models/Book.js";
 import Category from "../models/Category.js";
 
+// Hàm lấy thống kê dashboard
 export const getDashboardStats = async (req, res) => {
   try {
     const filterCategory = req.query.category || null;
     const filterMonth = req.query.month ? parseInt(req.query.month) : null;
     const filterYear = req.query.year ? parseInt(req.query.year) : null;
 
-    console.log("Backend received:", { filterCategory, filterMonth, filterYear });
+    console.log("Backend received:", {
+      filterCategory,
+      filterMonth,
+      filterYear,
+    });
 
     const yearListAgg = await Order.aggregate([
       { $group: { _id: { $year: "$orderDate" } } },
@@ -74,11 +79,9 @@ export const getDashboardStats = async (req, res) => {
 
     // Lấy đơn hàng trong khoảng thời gian hiện tại và trước đó
     const ordersThisPeriod = await Order.find({
-      status: "Đã giao",
       orderDate: { $gte: start, $lte: end },
     }).lean();
     const ordersPrevPeriod = await Order.find({
-      status: "Đã giao",
       orderDate: { $gte: prevStart, $lte: prevEnd },
     }).lean();
 
@@ -92,10 +95,14 @@ export const getDashboardStats = async (req, res) => {
       let orderRevenue = 0;
       for (const item of order.items) {
         const book = bookMap[item.bookId];
-        if (filterCategory && String(book?.categoryId) !== String(filterCategory)) {
+        if (
+          filterCategory &&
+          String(book?.categoryId) !== String(filterCategory)
+        ) {
           continue; // Bỏ qua nếu không thuộc danh mục được lọc
         }
-        orderRevenue += (item.quantity || 0) * (item.unitPrice || book?.price || 0);
+        orderRevenue +=
+          (item.quantity || 0) * (item.unitPrice || book?.price || 0);
         customerIdsThisPeriod.add(order.userId);
       }
       revenue += orderRevenue;
@@ -105,10 +112,14 @@ export const getDashboardStats = async (req, res) => {
       let orderRevenue = 0;
       for (const item of order.items) {
         const book = bookMap[item.bookId];
-        if (filterCategory && String(book?.categoryId) !== String(filterCategory)) {
+        if (
+          filterCategory &&
+          String(book?.categoryId) !== String(filterCategory)
+        ) {
           continue; // Bỏ qua nếu không thuộc danh mục được lọc
         }
-        orderRevenue += (item.quantity || 0) * (item.unitPrice || book?.price || 0);
+        orderRevenue +=
+          (item.quantity || 0) * (item.unitPrice || book?.price || 0);
         customerIdsPrevPeriod.add(order.userId);
       }
       revenuePrev += orderRevenue;
@@ -132,13 +143,17 @@ export const getDashboardStats = async (req, res) => {
     const orders = ordersThisPeriod.filter((order) => {
       return order.items.some((item) => {
         const book = bookMap[item.bookId];
-        return !filterCategory || String(book?.categoryId) === String(filterCategory);
+        return (
+          !filterCategory || String(book?.categoryId) === String(filterCategory)
+        );
       });
     }).length;
     const ordersPrev = ordersPrevPeriod.filter((order) => {
       return order.items.some((item) => {
         const book = bookMap[item.bookId];
-        return !filterCategory || String(book?.categoryId) === String(filterCategory);
+        return (
+          !filterCategory || String(book?.categoryId) === String(filterCategory)
+        );
       });
     }).length;
     const ordersChange =
@@ -156,7 +171,10 @@ export const getDashboardStats = async (req, res) => {
     ordersThisPeriod.forEach((order) => {
       order.items.forEach((item) => {
         const book = bookMap[item.bookId];
-        if (filterCategory && String(book?.categoryId) !== String(filterCategory)) {
+        if (
+          filterCategory &&
+          String(book?.categoryId) !== String(filterCategory)
+        ) {
           return;
         }
         products += item.quantity || 0;
@@ -167,7 +185,10 @@ export const getDashboardStats = async (req, res) => {
     ordersPrevPeriod.forEach((order) => {
       order.items.forEach((item) => {
         const book = bookMap[item.bookId];
-        if (filterCategory && String(book?.categoryId) !== String(filterCategory)) {
+        if (
+          filterCategory &&
+          String(book?.categoryId) !== String(filterCategory)
+        ) {
           return;
         }
         productsPrev += item.quantity || 0;
@@ -187,7 +208,10 @@ export const getDashboardStats = async (req, res) => {
       order.items.forEach((item) => {
         const bookId = item.bookId;
         const book = bookMap[bookId] || {};
-        if (filterCategory && String(book.categoryId) !== String(filterCategory)) {
+        if (
+          filterCategory &&
+          String(book.categoryId) !== String(filterCategory)
+        ) {
           return;
         }
         if (!productSales[bookId]) {
@@ -295,7 +319,6 @@ export const getRevenueData = async (req, res) => {
     if (filterMonth !== null) {
       // Nếu có chọn tháng, nhóm theo ngày
       const orders = await Order.find({
-        status: "Đã giao",
         orderDate: { $gte: queryStart, $lte: queryEnd },
       }).lean();
 
@@ -311,10 +334,14 @@ export const getRevenueData = async (req, res) => {
         // Tính tổng doanh thu, áp dụng bộ lọc danh mục nếu có
         for (const item of order.items) {
           const book = bookMap[item.bookId];
-          if (filterCategory && String(book?.categoryId) !== String(filterCategory)) {
+          if (
+            filterCategory &&
+            String(book?.categoryId) !== String(filterCategory)
+          ) {
             continue; // Bỏ qua nếu không thuộc danh mục được lọc
           }
-          totalAmount += (item.quantity || 0) * (item.unitPrice || book?.price || 0);
+          totalAmount +=
+            (item.quantity || 0) * (item.unitPrice || book?.price || 0);
         }
 
         revenueByDay[day] += totalAmount;
@@ -328,7 +355,6 @@ export const getRevenueData = async (req, res) => {
     } else {
       // Nếu không chọn tháng, nhóm theo tháng
       const orders = await Order.find({
-        status: "Đã giao",
         orderDate: { $gte: queryStart, $lte: queryEnd },
       }).lean();
 
@@ -342,10 +368,14 @@ export const getRevenueData = async (req, res) => {
 
         for (const item of order.items) {
           const book = bookMap[item.bookId];
-          if (filterCategory && String(book?.categoryId) !== String(filterCategory)) {
+          if (
+            filterCategory &&
+            String(book?.categoryId) !== String(filterCategory)
+          ) {
             continue; // Bỏ qua nếu không thuộc danh mục được lọc
           }
-          totalAmount += (item.quantity || 0) * (item.unitPrice || book?.price || 0);
+          totalAmount +=
+            (item.quantity || 0) * (item.unitPrice || book?.price || 0);
         }
 
         revenueByMonth[month] += totalAmount;

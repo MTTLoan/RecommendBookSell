@@ -1,5 +1,9 @@
 import express from "express";
-import { submitReview, getReviewStatsForBooks, getReviewsByBookId } from "../controllers/reviewController.js";
+import {
+  submitReview,
+  getReviewStatsForBooks,
+  getReviewsByBookId,
+} from "../controllers/reviewController.js";
 import userJwtMiddleware from "../middleware/user_jwt.js";
 import Review from "../models/Review.js";
 import mongoose from "mongoose";
@@ -15,11 +19,9 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Lỗi khi lấy dữ liệu đánh giá" });
   }
 });
-
 // Route gửi đánh giá
 router.post("/", userJwtMiddleware, submitReview);
-
-// Endpoint kiểm tra xem đơn hàng có review chưa
+// Route kiểm tra xem người dùng đã đánh giá đơn hàng hay chưa
 router.get("/:orderId/reviews", userJwtMiddleware, async (req, res) => {
   try {
     const orderId = parseInt(req.params.orderId);
@@ -39,8 +41,9 @@ router.get("/:orderId/reviews", userJwtMiddleware, async (req, res) => {
     });
   }
 });
-
+// Route lấy thống kê đánh giá cho các sách
 router.post("/stats", getReviewStatsForBooks);
+// Route lấy đánh giá theo bookId
 router.get("/book/:bookId", getReviewsByBookId);
 
 export default router;

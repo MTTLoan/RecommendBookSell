@@ -19,21 +19,32 @@ export const getRevenueStats = async (req, res) => {
       endDate = new Date(selectedYear, selectedMonth, 0, 23, 59, 59);
     }
 
-    // Lấy tổng doanh thu từ Order theo khoảng thời gian
+    // Lấy doanh thu từ các mục được đề xuất
     const recommendedOrders = await Order.aggregate([
       {
         $match: {
-          "items.recommend": true,
           orderDate: { $gte: startDate, $lte: endDate },
-          status: "Đã giao",
         },
       },
-      { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } },
+      { $unwind: "$items" },
+      {
+        $match: {
+          "items.recommend": true,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: {
+            $sum: { $multiply: ["$items.quantity", "$items.unitPrice"] },
+          },
+        },
+      },
     ]);
     const totalRevenue =
       recommendedOrders.length > 0 ? recommendedOrders[0].totalRevenue : 0;
 
-    // So sánh với khoảng thời gian trước (năm trước hoặc tháng trước)
+    // So sánh với khoảng thời gian trước
     let lastPeriodStart, lastPeriodEnd;
     if (month === undefined || month === "null" || month === null) {
       lastPeriodStart = new Date(selectedYear - 1, 0, 1);
@@ -48,17 +59,27 @@ export const getRevenueStats = async (req, res) => {
     const lastPeriodOrders = await Order.aggregate([
       {
         $match: {
-          "items.recommend": true,
           orderDate: { $gte: lastPeriodStart, $lte: lastPeriodEnd },
-          status: "Đã giao",
         },
       },
-      { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } },
+      { $unwind: "$items" },
+      {
+        $match: {
+          "items.recommend": true,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: {
+            $sum: { $multiply: ["$items.quantity", "$items.unitPrice"] },
+          },
+        },
+      },
     ]);
     const lastPeriodRevenue =
       lastPeriodOrders.length > 0 ? lastPeriodOrders[0].totalRevenue : 0;
 
-    // Tính phần trăm thay đổi
     const revenuePercentage =
       lastPeriodRevenue > 0
         ? ((totalRevenue - lastPeriodRevenue) / lastPeriodRevenue) * 100
@@ -298,10 +319,9 @@ export const getRevenueChartData = async (req, res) => {
     let startDate, endDate, labels, totalRevenueData, recommendedRevenueData;
 
     if (month === undefined || month === "null" || month === null) {
-      // Báo cáo theo năm (hiển thị theo tháng)
       startDate = new Date(selectedYear, 0, 1);
       endDate = new Date(selectedYear, 11, 31, 23, 59, 59);
-      labels = Array.from({ length: 12 }, (_, i) => (i + 1).toString()); // Tháng 1-12
+      labels = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
       totalRevenueData = Array(12).fill(0);
       recommendedRevenueData = Array(12).fill(0);
 
@@ -310,7 +330,6 @@ export const getRevenueChartData = async (req, res) => {
         {
           $match: {
             orderDate: { $gte: startDate, $lte: endDate },
-            status: "Đã giao",
           },
         },
         {
@@ -321,19 +340,25 @@ export const getRevenueChartData = async (req, res) => {
         },
       ]);
 
-      // Lấy doanh thu từ hệ thống đề xuất
+      // Lấy doanh thu từ các mục được đề xuất
       const recommendedRevenue = await Order.aggregate([
         {
           $match: {
-            "items.recommend": true,
             orderDate: { $gte: startDate, $lte: endDate },
-            status: "Đã giao",
+          },
+        },
+        { $unwind: "$items" },
+        {
+          $match: {
+            "items.recommend": true,
           },
         },
         {
           $group: {
             _id: { $month: "$orderDate" },
-            total: { $sum: "$totalAmount" },
+            total: {
+              $sum: { $multiply: ["$items.quantity", "$items.unitPrice"] },
+            },
           },
         },
       ]);
@@ -345,7 +370,6 @@ export const getRevenueChartData = async (req, res) => {
         recommendedRevenueData[entry._id - 1] = entry.total;
       });
     } else {
-      // Báo cáo theo tháng (hiển thị theo ngày)
       const selectedMonth = month || new Date().getMonth();
       startDate = new Date(selectedYear, selectedMonth - 1, 1);
       endDate = new Date(selectedYear, selectedMonth, 0, 23, 59, 59);
@@ -360,7 +384,6 @@ export const getRevenueChartData = async (req, res) => {
         {
           $match: {
             orderDate: { $gte: startDate, $lte: endDate },
-            status: "Đã giao",
           },
         },
         {
@@ -374,15 +397,21 @@ export const getRevenueChartData = async (req, res) => {
       const recommendedRevenue = await Order.aggregate([
         {
           $match: {
-            "items.recommend": true,
             orderDate: { $gte: startDate, $lte: endDate },
-            status: "Đã giao",
+          },
+        },
+        { $unwind: "$items" },
+        {
+          $match: {
+            "items.recommend": true,
           },
         },
         {
           $group: {
             _id: { $dayOfMonth: "$orderDate" },
-            total: { $sum: "$totalAmount" },
+            total: {
+              $sum: { $multiply: ["$items.quantity", "$items.unitPrice"] },
+            },
           },
         },
       ]);

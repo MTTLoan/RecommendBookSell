@@ -75,7 +75,7 @@ export const registerController = async (req, res) => {
 };
 
 export const loginController = async (req, res) => {
-  let { identifier, password } = req.body; // `identifier` có thể là username hoặc email
+  let { identifier, password } = req.body;
   password = password.trim();
 
   try {
@@ -105,7 +105,6 @@ export const loginController = async (req, res) => {
 
     // Kiểm tra mật khẩu
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log("Password match:", isMatch ? "Yes" : "No"); // Log kết quả so sánh mật khẩu
 
     if (!isMatch) {
       return res.status(400).json({
@@ -185,7 +184,6 @@ export const googleAuthController = async (req, res) => {
     let user = await User.findOne({ $or: [{ googleId }, { email }] });
 
     if (!user) {
-      // Generate a unique username
       let username;
       let usernameExists;
       let attempts = 0;
@@ -208,7 +206,7 @@ export const googleAuthController = async (req, res) => {
 
       // Tạo người dùng mới
       user = new User({
-        id: counter.seq, // <-- Thêm dòng này để tránh lỗi
+        id: counter.seq,
         googleId,
         email,
         fullName,
@@ -331,6 +329,7 @@ export const getProfileController = async (req, res) => {
   }
 };
 
+// Cập nhật hồ sơ người dùng
 export const updateProfileController = async (req, res) => {
   try {
     const {
@@ -383,6 +382,7 @@ export const updateProfileController = async (req, res) => {
   }
 };
 
+// Cập nhật avatar người dùng
 export const uploadAvatarController = async (req, res) => {
   try {
     if (!req.file || !req.file.location) {
@@ -422,6 +422,7 @@ export const uploadAvatarController = async (req, res) => {
   }
 };
 
+// Yêu cầu khôi phục mật khẩu
 export const resetPasswordController = async (req, res) => {
   const { token, password } = req.body;
 
@@ -454,6 +455,7 @@ export const resetPasswordController = async (req, res) => {
   }
 };
 
+// Cập nhật hồ sơ người dùng với avatar mới
 export const updateProfileWithAvatarController = async (req, res) => {
   try {
     // Multer middleware đã upload file avatar lên S3, req.file.location có URL ảnh mới

@@ -27,12 +27,12 @@
             app:layout_constraintTop_toTopOf="@id/header"
             app:tint="@color/black" />
 
-        <!-- Tiêu đề THÔNG BÁO -->
+        <!-- Tiêu đề -->
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="THÔNG BÁO"
+            android:text="THÔNG TIN GIAO HÀNG"
             android:textSize="20sp"
             android:textStyle="bold"
             android:fontFamily="@font/quicksand_bold"
@@ -272,7 +272,8 @@
                     android:gravity="center_vertical"
                     android:textSize="14sp"
                     android:button="@null"
-                    android:drawableRight="?android:attr/listChoiceIndicatorMultiple" />
+                    android:drawableRight="?android:attr/listChoiceIndicatorMultiple"
+                    android:drawableTint="@color/black"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -286,7 +287,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Thời gian giao hàng dự kiến: 11/4 - 15/4"
+                        android:text="Thời gian giao hàng dự kiến: 10/6 - 11/6"
                         android:textSize="12sp"
                         android:textColor="#757575" />
 
@@ -314,7 +315,8 @@
                     android:gravity="center_vertical"
                     android:textSize="14sp"
                     android:button="@null"
-                    android:drawableRight="?android:attr/listChoiceIndicatorMultiple" />
+                    android:drawableRight="?android:attr/listChoiceIndicatorMultiple"
+                    android:drawableTint="@color/black"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -328,7 +330,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Thời gian giao hàng dự kiến: 11/4 - 17/4"
+                        android:text="Thời gian giao hàng dự kiến: 12/6 - 13/6"
                         android:textSize="12sp"
                         android:textColor="#757575" />
 

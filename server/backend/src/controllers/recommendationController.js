@@ -9,7 +9,10 @@ const __dirname = dirname(__filename);
 // Đường dẫn tới script Python
 const pythonScriptPath = resolve(__dirname, "../../../ai-backend/src/main.py");
 // Đường dẫn tới Python trong môi trường ảo
-const pythonExec = resolve(__dirname, "../../../ai-backend/venv/bin/python");
+const pythonExec = resolve(
+  __dirname,
+  "../../../ai-backend/venv/Scripts/python.exe"
+);
 
 const getRecommendations = async (req, res) => {
   const userId = req.user?.id;

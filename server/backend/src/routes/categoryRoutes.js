@@ -12,20 +12,19 @@ import uploadAvatar from "../middleware/uploadToS3.js";
 
 const router = express.Router();
 
+// Route để lấy thống kê danh mục
 router.get("/category-stats", getCategoryStats);
-
+// Route để tìm kiếm danh mục
 router.get("/search", searchCategories);
-
-// Lấy danh sách danh mục
+// Route để lấy tất cả danh mục
 router.get("/all-categories", getCategories);
-
-// Lấy chi tiết danh mục
+// Route để lấy danh mục theo ID
 router.get("/:id", getCategoryById);
-
-// Thêm danh mục mới (có upload ảnh)
+// Route để thêm danh mục (có upload ảnh)
 router.post("/add-category", uploadAvatar, createCategory);
-// Sửa danh mục (có upload ảnh)
+// Route để cập nhật danh mục (có upload ảnh)
 router.put("/update-category/:id", uploadAvatar, updateCategory);
+// Route để xóa danh mục
 router.delete("/delete-category/:id", deleteCategory);
 
 export default router;

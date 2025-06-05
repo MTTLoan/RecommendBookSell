@@ -23,7 +23,6 @@ const uploadAvatar = multer({
       cb(null, fileName);
     },
     contentType: multerS3.AUTO_CONTENT_TYPE,
-    // acl: "public-read", // Removed to fix S3 ACL error
   }),
   limits: { fileSize: 5 * 1024 * 1024 },
 }).single("avatar");
@@ -49,11 +48,11 @@ const deleteS3File = async (fileUrl) => {
   // Tách key từ URL (sau bucket name)
   const bucket = "upload-avatar-473";
   const url = new URL(fileUrl);
-  const key = decodeURIComponent(url.pathname).substring(1); // bỏ dấu `/` đầu
+  const key = decodeURIComponent(url.pathname).substring(1);
 
   try {
     const url = new URL(fileUrl);
-    const key = decodeURIComponent(url.pathname).substring(1); // bỏ dấu `/` đầu
+    const key = decodeURIComponent(url.pathname).substring(1);
 
     await s3
       .deleteObject({

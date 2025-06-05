@@ -13,6 +13,7 @@ async function getNextBookId() {
   return counter.seq;
 }
 
+// Lấy danh sách sách, có thể lọc theo categoryId
 export const getBooks = async (req, res) => {
   try {
     const categoryId = req.query.categoryId
@@ -75,13 +76,13 @@ export const getBookReviews = async (req, res) => {
       { $match: { bookId } },
       {
         $lookup: {
-          from: "users", // Collection name in MongoDB (lowercase, plural)
+          from: "users",
           localField: "userId",
           foreignField: "id",
           as: "user",
         },
       },
-      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } }, // Keep reviews even if no user found
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           id: 1,
@@ -90,7 +91,7 @@ export const getBookReviews = async (req, res) => {
           rating: 1,
           comment: 1,
           createdAt: 1,
-          username: "$user.username", // Add username from user.name
+          username: "$user.username",
         },
       },
       { $sort: { createdAt: -1 } },
@@ -114,19 +115,18 @@ export const getBookReviews = async (req, res) => {
 export const getBestSellers = async (req, res) => {
   try {
     // Tính thời gian cho tháng trước
-    const currentDate = new Date(); 
+    const currentDate = new Date();
     const startOfLastMonth = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth() - 1,
       1
-    ); 
+    );
     const endOfLastMonth = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
       0
     );
 
-    // Aggregate orders to calculate total quantity sold per book for last month
     const bestSellers = await Order.aggregate([
       {
         $match: {
@@ -155,10 +155,9 @@ export const getBestSellers = async (req, res) => {
       {
         $limit: 20,
       },
-      // Lookup to join with the books collection
       {
         $lookup: {
-          from: "books", // Tên của collection books
+          from: "books",
           localField: "_id",
           foreignField: "id",
           as: "bookDetails",
@@ -206,16 +205,10 @@ export const getBestSellers = async (req, res) => {
   }
 };
 
+// Lấy danh sách sách mới nhất trong tháng hiện tại
 export const getNewBooks = async (req, res) => {
   try {
-    const currentMonth = new Date().getMonth() + 1; // 5 cho tháng 5
-    const currentYear = new Date().getFullYear(); // 2025
-    const books = await Book.find({
-      createdAt: {
-        $gte: new Date(`${currentYear}-${currentMonth}-01`),
-        $lt: new Date(`${currentYear}-${currentMonth + 1}-01`),
-      },
-    })
+    const books = await Book.find({})
       .select(
         "id name description images price stockQuantity categoryId createdAt author averageRating ratingCount"
       )
@@ -225,7 +218,7 @@ export const getNewBooks = async (req, res) => {
     if (!books || books.length === 0) {
       return res.status(200).json({
         success: true,
-        msg: "Không tìm thấy sách mới trong tháng này.",
+        msg: "Không tìm thấy sách nào.",
         book: [],
       });
     }
@@ -245,10 +238,10 @@ export const getNewBooks = async (req, res) => {
   }
 };
 
-// Search books controller
+// Tìm kiếm sách theo tên, tác giả, thể loại và khoảng giá
 export const searchBooks = async (req, res) => {
   try {
-    const query = req.query.query || ""; // Default to empty string if not provided
+    const query = req.query.query || "";
     const categoryId = req.query.categoryId
       ? parseInt(req.query.categoryId)
       : null;
@@ -257,12 +250,10 @@ export const searchBooks = async (req, res) => {
       ? parseFloat(req.query.maxPrice)
       : Number.MAX_SAFE_INTEGER;
 
-    // Log incoming parameters
     console.log("SearchBooks - Query:", query);
     console.log("SearchBooks - CategoryId:", categoryId);
     console.log("SearchBooks - Price Range:", minPrice, "to", maxPrice);
 
-    // Build the search query
     const searchCriteria = {};
 
     // Query filter
@@ -284,9 +275,6 @@ export const searchBooks = async (req, res) => {
     }
 
     const books = await Book.find(searchCriteria);
-
-    // Log the number of books found
-    console.log("SearchBooks - Found:", books.length, "books");
 
     return res.status(200).json({
       success: true,
@@ -331,8 +319,8 @@ export const createBook = async (req, res) => {
       stockQuantity,
       images,
       categoryId,
-      authors, // frontend gửi authors
-      author, // phòng trường hợp gửi author
+      authors,
+      author,
     } = req.body;
     const id = await getNextBookId(); // Lấy id tự tăng
     // Đảm bảo luôn lưu vào trường 'author' (schema)
@@ -349,7 +337,7 @@ export const createBook = async (req, res) => {
       stockQuantity,
       images,
       categoryId,
-      author: authorArr, // luôn lưu vào trường 'author'
+      author: authorArr,
       createdAt: new Date(),
     });
     await newBook.save();
@@ -429,6 +417,7 @@ export const deleteBook = async (req, res) => {
   }
 };
 
+// Tìm kiếm sách theo tên (name) - không tìm theo id
 export const searchNameBooks = async (req, res) => {
   try {
     const { q } = req.query;

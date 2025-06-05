@@ -7,7 +7,7 @@ export const fetchNotifications = async () => {
     const res = await axios.get(`${API_BASE_URL}/notifications/admin`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
-    console.log("Fetched notifications:", res.data); // Log dữ liệu
+    console.log("Fetched notifications:", res.data);
     return res.data;
   } catch (error) {
     console.error(

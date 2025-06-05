@@ -23,6 +23,7 @@ import uploadProductImages from "../middleware/uploadProductImages.js";
 
 const router = express.Router();
 
+// Route để lấy danh sách sách với thông tin cơ bản
 router.get("/", async (req, res) => {
   try {
     const books = await Book.find().select("id name averageRating");
@@ -31,16 +32,27 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Lỗi khi lấy dữ liệu sách" });
   }
 });
+// Route để lấy danh sách sách
 router.get("/all-book", getBooks);
+// Route để lấy chi tiết sách theo ID
 router.get("/book-detail/:id", getBookDetail);
+// Route để lấy đánh giá sách theo ID sách
 router.get("/book-detail/:bookId/reviews", getBookReviews);
+// Route tìm kiếm sách theo tên
 router.get("/search", searchRateLimiter, handleValidationErrors, searchBooks);
+// Route tìm kiếm sách theo tên (dùng cho admin)
 router.get("/best-sellers", getBestSellers);
+// Route lấy sách mới nhất
 router.get("/new-books", getNewBooks);
+// Route lấy ID sách tiếp theo
 router.get("/peek-next-id", peekNextBookIdApi);
+// Route để lấy sách theo tên (dùng cho admin)
 router.post("/add-book", createBook);
+// Route để cập nhật thông tin sách
 router.put("/update-book/:id", updateBook);
+// Route để xóa sách
 router.delete("/delete-book/:id", deleteBook);
+// Route tìm kiếm sách theo tên (dùng cho admin)
 router.get("/search", searchNameBooks);
 // API upload nhiều ảnh sản phẩm
 router.post("/upload-image", uploadProductImages, (req, res) => {

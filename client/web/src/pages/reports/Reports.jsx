@@ -54,9 +54,9 @@ const Reports = () => {
     data: [],
   });
 
-  const [monthFilter, setMonthFilter] = useState(4);
+  const [monthFilter, setMonthFilter] = useState(5);
   const [yearFilter, setYearFilter] = useState(2025);
-  const [monthText, setMonthText] = useState("Tháng 5");
+  const [monthText, setMonthText] = useState("Tháng 6");
   const [yearText, setYearText] = useState("2025");
   const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);

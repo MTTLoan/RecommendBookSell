@@ -12,7 +12,7 @@ export const rateLimitForgotPassword = async (req, res, next) => {
 
     const recentRequests = await PasswordReset.find({
       userId: user._id,
-      createdAt: { $gt: Date.now() - 3600000 }, // Chỉ tính các yêu cầu trong 1 giờ qua
+      createdAt: { $gt: Date.now() - 3600000 },
     });
 
     if (recentRequests.length >= 3) {

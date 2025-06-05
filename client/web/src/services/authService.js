@@ -7,7 +7,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // Thêm option này để gửi credentials
+  withCredentials: true,
 });
 
 // Thêm interceptor để xử lý token
@@ -100,8 +100,6 @@ export const isAuthenticated = () => {
 
 // Hàm quên mật khẩu
 export const forgotPassword = async (email) => {
-  console.log("Sending email to backend:", email); // Log email gửi đi
-  console.log("API URL:", `${API_BASE_URL}/forgot_password/forgot-password`); // Log URL API
   try {
     const response = await axios.post(
       `${API_BASE_URL}/forgot_password/forgot-password`,
@@ -126,7 +124,6 @@ export const forgotPassword = async (email) => {
 // Hàm đặt lại mật khẩu
 export const resetPassword = async (data) => {
   try {
-    // Đúng endpoint backend cho OTP: /forgot_password/reset-password
     const response = await axios.post(
       `${API_BASE_URL}/forgot_password/reset-password`,
       data

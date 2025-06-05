@@ -7,13 +7,6 @@ export const submitReview = async (req, res) => {
   try {
     const userId = req.user.id;
     const { bookId, rating, comment, orderId } = req.body;
-    console.log("Submitting review:", {
-      userId,
-      bookId,
-      rating,
-      comment,
-      orderId,
-    });
 
     // Kiểm tra dữ liệu đầu vào
     if (!bookId || !rating || rating < 1 || rating > 5 || !orderId) {
@@ -27,7 +20,6 @@ export const submitReview = async (req, res) => {
     // Kiểm tra xem đã có review cho bookId và orderId chưa
     const existingReview = await Review.findOne({ userId, bookId, orderId });
     if (existingReview) {
-      console.log("Duplicate review detected");
       return res.status(400).json({
         success: false,
         message: "Bạn đã đánh giá sách này cho đơn hàng này",
@@ -42,8 +34,6 @@ export const submitReview = async (req, res) => {
         { $inc: { seq: 1 } },
         { returnDocument: "after", upsert: true }
       );
-
-    console.log("Counter result:", counterResult);
 
     // Kiểm tra kết quả
     if (!counterResult || typeof counterResult.seq !== "number") {
@@ -145,21 +135,24 @@ export const getReviewsByBookId = async (req, res) => {
     const reviews = await Review.find({ bookId });
 
     // Lấy tất cả userId duy nhất từ review
-    const userIds = [...new Set(reviews.map(r => r.userId))];
+    const userIds = [...new Set(reviews.map((r) => r.userId))];
 
     // Lấy thông tin user tương ứng
-    const users = await User.find({ id: { $in: userIds } }, { id: 1, username: 1 });
+    const users = await User.find(
+      { id: { $in: userIds } },
+      { id: 1, username: 1 }
+    );
 
     // Map userId -> username
     const userMap = {};
-    users.forEach(u => {
+    users.forEach((u) => {
       userMap[u.id] = u.username;
     });
 
     // Gắn username vào từng review
-    const mapped = reviews.map(r => ({
+    const mapped = reviews.map((r) => ({
       ...r._doc,
-      userName: userMap[r.userId] || "Ẩn danh"
+      userName: userMap[r.userId] || "Ẩn danh",
     }));
 
     res.json({ reviews: mapped });

@@ -3,6 +3,7 @@ import Counter from "../models/Counter.js";
 import Book from "../models/Book.js";
 import { deleteS3File } from "../middleware/uploadToS3.js";
 
+// Lấy thống kê số lượng sách theo danh mục
 export const getCategoryStats = async (req, res) => {
   try {
     console.log("Request received:", req.url, req.query);
@@ -135,9 +136,6 @@ export const getCategoryById = async (req, res) => {
 // Thêm danh mục mới
 export const createCategory = async (req, res) => {
   try {
-    console.log("Request body:", req.body);
-    console.log("Request file:", req.file);
-
     const { name, description } = req.body;
 
     // Kiểm tra dữ liệu đầu vào
@@ -276,6 +274,7 @@ export const deleteCategory = async (req, res) => {
   }
 };
 
+// Tìm kiếm danh mục theo từ khóa
 export const searchCategories = async (req, res) => {
   try {
     const { q } = req.query;

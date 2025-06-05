@@ -13,8 +13,8 @@ import com.example.app.R;
 public class CongratulationActivity extends AppCompatActivity {
 
     private TextView tvTitle;
-    private ImageView ivReturn; // Nút quay lại
-    private Button btnLogin; // Nút "Back to Login"
+    private ImageView ivReturn;
+    private Button btnLogin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -15,15 +15,14 @@ const s3 = new AWS.S3({
 const uploadProductImages = multer({
   storage: multerS3({
     s3: s3,
-    bucket: "upload-avatar-473", // dùng chung bucket
+    bucket: "upload-avatar-473",
     key: function (req, file, cb) {
-      // Lưu vào thư mục products
       const fileName = `products/${Date.now()}-${file.originalname}`;
       cb(null, fileName);
     },
     contentType: multerS3.AUTO_CONTENT_TYPE,
   }),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB/ảnh
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
       cb(null, true);
@@ -31,7 +30,7 @@ const uploadProductImages = multer({
       cb(new Error("Chỉ cho phép upload file ảnh"), false);
     }
   },
-}).array("image", 10); // Tối đa 10 ảnh mỗi lần
+}).array("image", 10);
 
 const uploadProductImagesWithErrorHandling = (req, res, next) => {
   uploadProductImages(req, res, (err) => {

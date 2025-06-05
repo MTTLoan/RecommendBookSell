@@ -16,23 +16,18 @@ const router = express.Router();
 
 // Route lấy lịch sử đơn hàng
 router.get("/history", userJwtMiddleware, getOrderHistory);
-
+// Route tìm kiếm đơn hàng theo tên sách
 router.get("/search", searchOrdersByBookName);
-
 // Route cập nhật trạng thái đơn hàng
 router.put("/:id/status", userJwtMiddleware, updateOrderStatus);
-
 // Route lấy thông tin đơn hàng theo ID
 router.get("/:id", userJwtMiddleware, getOrderById);
-
+// Route lấy thông tin đơn hàng theo ID (admin)
 router.get("/admin/:id", userJwtMiddleware, adminGetOrderById);
-
 // Route thêm đơn hàng mới
 router.post("/", userJwtMiddleware, addOrder);
-
 // Sửa đơn hàng
 router.put("/admin/:id/status", userJwtMiddleware, adminUpdateOrderStatus);
-//router.put("/:id", userJwtMiddleware, updateOrder);
 
 router.get("/", getAllOrders);
 

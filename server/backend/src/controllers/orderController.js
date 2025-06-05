@@ -268,7 +268,7 @@ export const updateOrderStatus = async (req, res) => {
     // Tìm và cập nhật đơn hàng
     const order = await Order.findOneAndUpdate(
       { id: orderId, userId: userId },
-      { status: status, updatedAt: new Date() }, // Cập nhật updatedAt
+      { status: status, updatedAt: new Date() },
       { new: true }
     );
 

@@ -9,9 +9,13 @@ import {
 
 const router = express.Router();
 
+// API để lấy gợi ý sách cho người dùng
 router.get("/", userJwtMiddleware, getRecommendations);
+// API để ghi nhận hành động click
 router.post("/click", userJwtMiddleware, recordClick);
+// API để ghi nhận hành động thêm vào giỏ hàng
 router.post("/add-to-cart", userJwtMiddleware, recordAddToCart);
+// API để ghi nhận hành động mua hàng
 router.post("/purchase", userJwtMiddleware, recordPurchase);
 
 export default router;
