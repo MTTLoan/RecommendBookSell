@@ -48,7 +48,7 @@ def find_similar_books(book_id, X, k, metric='cosine', book_mapper=None, book_in
     k += 1
     kNN = NearestNeighbors(n_neighbors=k, algorithm="brute", metric=metric)
     kNN.fit(X)
-    book_vec = book_vec.reshape(1, -1)
+    book_vec = book_vec.reshape(1, -1) # Chuyển đổi thành ma trận 2D
     neighbour = kNN.kneighbors(book_vec, return_distance=False)
     
     neighbour_ids = [book_inv_mapper[n] for n in neighbour[0]]
