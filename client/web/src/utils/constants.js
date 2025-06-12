@@ -12,34 +12,34 @@ export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 // Các loại thông báo
 export const NOTIFICATION_TYPES = {
-  SUCCESS: 'success',
-  ERROR: 'error',
-  WARNING: 'warning',
-  INFO: 'info',
+  SUCCESS: "success",
+  ERROR: "error",
+  WARNING: "warning",
+  INFO: "info",
 };
 
 // Trạng thái của đơn hàng
 export const ORDER_STATUS = {
-    PACKAGING: 'packaging', // Đang đóng gói
-    SHIPPING: 'shipping',   // Đang giao hàng
-    DELIVERED: 'delivered', // Đã giao
-    RETURNED: 'returned',   // Trả hàng
-    CANCELLED: 'cancelled', // Đã hủy
+  PACKAGING: "packaging", // Đang đóng gói
+  SHIPPING: "shipping", // Đang giao hàng
+  DELIVERED: "delivered", // Đã giao
+  RETURNED: "returned", // Trả hàng
+  CANCELLED: "cancelled", // Đã hủy
 };
 
 // Phương thức thanh toán
 export const PAYMENT_METHODS = {
-  CASH: 'cash',
-  BANK_TRANSFER: 'bank_transfer',
-  CREDIT_CARD: 'credit_card',
-  MOMO: 'momo',
-  VNPAY: 'vnpay',
+  CASH: "cash",
+  BANK_TRANSFER: "bank_transfer",
+  CREDIT_CARD: "credit_card",
+  MOMO: "momo",
+  VNPAY: "vnpay",
 };
 
 // Vai trò người dùng
 export const USER_ROLES = {
-    ADMIN: 'admin', // Quản trị viên
-    USER: 'user',   // Người dùng thông thường
+  ADMIN: "admin", // Quản trị viên
+  USER: "user", // Người dùng thông thường
 };
 
 // Giới hạn phân trang
@@ -58,21 +58,22 @@ export const TIME_CONSTANTS = {
 };
 
 // URL API
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+export const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://34.239.134.151:5000/api";
 
 // Đường dẫn chính
 export const ROUTES = {
-  HOME: '/',
-  LOGIN: '/auth/login',
-  FORGOT_PASSWORD: '/auth/forgot-password',
-  RESET_PASSWORD: '/auth/reset-password',
-  DASHBOARD: '/dashboard',
-  PRODUCTS: '/products',
-  CATEGORIES: '/categories',
-  ORDERS: '/orders',
-  CUSTOMERS: '/customers',
-  SETTINGS: '/settings',
-  PROFILE: '/settings/profile',
-  SECURITY: '/settings/security',
-  REPORTS: '/reports',
+  HOME: "/",
+  LOGIN: "/auth/login",
+  FORGOT_PASSWORD: "/auth/forgot-password",
+  RESET_PASSWORD: "/auth/reset-password",
+  DASHBOARD: "/dashboard",
+  PRODUCTS: "/products",
+  CATEGORIES: "/categories",
+  ORDERS: "/orders",
+  CUSTOMERS: "/customers",
+  SETTINGS: "/settings",
+  PROFILE: "/settings/profile",
+  SECURITY: "/settings/security",
+  REPORTS: "/reports",
 };

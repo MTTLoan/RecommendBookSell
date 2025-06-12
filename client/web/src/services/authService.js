@@ -315,7 +315,7 @@ export const changePassWord = async (data) => {
 // Kiểm tra OTP hợp lệ với backend
 export async function verifyOTP(email, otp) {
   try {
-    const res = await fetch("http://localhost:5000/api/otp/verify", {
+    const res = await fetch("http://34.239.134.151:5000/api/otp/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, otp }),
@@ -339,7 +339,7 @@ export async function verifyOTP(email, otp) {
 // Kiểm tra OTP hợp lệ với backend (API mới: /api/otp/check)
 export async function checkOTP(email, otp) {
   try {
-    const res = await fetch("http://localhost:5000/api/otp/check", {
+    const res = await fetch("http://34.239.134.151:5000/api/otp/check", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, otp }),

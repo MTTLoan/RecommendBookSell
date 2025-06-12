@@ -1,7 +1,7 @@
 import axios from "axios";
 import { API_BASE_URL } from "../utils/constants";
 
-const API_URL = "http://localhost:5000/api/books/all-book";
+const API_URL = "http://34.239.134.151:5000/api/books/all-book";
 
 // Tạo instance axios riêng cho bookService nếu cần, hoặc dùng axios trực tiếp
 const api = axios.create({

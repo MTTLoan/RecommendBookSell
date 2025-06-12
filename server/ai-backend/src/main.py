@@ -9,8 +9,8 @@ import requests
 # Lấy dữ liệu từ API
 def fetch_data():
     try:
-        books_response = requests.get('http://localhost:5000/api/books')
-        reviews_response = requests.get('http://localhost:5000/api/reviews')
+        books_response = requests.get('http://34.239.134.151:5000/api/books')
+        reviews_response = requests.get('http://34.239.134.151:5000/api/reviews')
         
         if books_response.status_code != 200 or reviews_response.status_code != 200:
             raise Exception("Lỗi khi gọi API")

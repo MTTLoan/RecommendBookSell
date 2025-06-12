@@ -1,7 +1,7 @@
 import axios from "axios";
 import { API_BASE_URL } from "../utils/constants";
 
-const REPORTS_API_URL = "http://localhost:5000/api/reports";
+const REPORTS_API_URL = "http://34.239.134.151:5000/api/reports";
 
 const getHeaders = () => ({
   "Content-Type": "application/json",
