@@ -59,7 +59,7 @@ export const TIME_CONSTANTS = {
 
 // URL API
 export const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://34.239.134.151:5000/api";
+  process.env.REACT_APP_API_URL || "http://52.5.208.132:5000/api";
 
 // Đường dẫn chính
 export const ROUTES = {

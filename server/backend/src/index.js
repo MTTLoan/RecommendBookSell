@@ -23,7 +23,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://34.239.134.151:3000", "http://34.239.134.151:3000"],
+    origin: ["http://52.5.208.132:3000", "http://52.5.208.132:3000"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
