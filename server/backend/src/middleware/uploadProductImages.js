@@ -6,16 +6,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: "ap-southeast-1",
+  region: "us-east-1",
 });
 
 // Middleware upload nhiều ảnh cho sản phẩm
 const uploadProductImages = multer({
   storage: multerS3({
     s3: s3,
-    bucket: "upload-avatar-473",
+    bucket: "upload-file-10",
     key: function (req, file, cb) {
       const fileName = `products/${Date.now()}-${file.originalname}`;
       cb(null, fileName);

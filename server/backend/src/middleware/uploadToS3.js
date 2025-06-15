@@ -6,16 +6,13 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: "ap-southeast-1",
-  region: "ap-southeast-1",
+  region: "us-east-1",
 });
 
 const uploadAvatar = multer({
   storage: multerS3({
     s3: s3,
-    bucket: "upload-avatar-473",
+    bucket: "upload-file-10",
     key: function (req, file, cb) {
       console.log("File received:", file.originalname);
       // Lưu vào thư mục avatars
@@ -46,7 +43,7 @@ export default uploadAvatarWithErrorHandling;
 
 const deleteS3File = async (fileUrl) => {
   // Tách key từ URL (sau bucket name)
-  const bucket = "upload-avatar-473";
+  const bucket = "upload-file-10";
   const url = new URL(fileUrl);
   const key = decodeURIComponent(url.pathname).substring(1);
 
